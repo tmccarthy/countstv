@@ -1,6 +1,6 @@
-package au.id.tmm.countstv
+package au.id.tmm
 
-package object model {
+package object countstv {
 
   type CandidateIndex = Int
   type NormalisedBallot[C] = IndexedSeq[C]

@@ -1,20 +1,21 @@
 package au.id.tmm.countstv.model
 
 import au.id.tmm.countstv.model.PreferenceTree.PreferenceTreeNode
+import au.id.tmm.countstv.{CandidateIndex, NormalisedBallot}
 
 import scala.annotation.tailrec
 import scala.collection.mutable
 
 sealed class PreferenceTree[C] {
 
-  private var internalNumPapers = 0
+  private var internalNumPapers: Long = 0
 
   private val children: mutable.Map[C, PreferenceTreeNode[C]] = mutable.Map()
 
   private def getOrCreateChildFor(candidate: C): PreferenceTreeNode[C] =
     children.getOrElseUpdate(candidate, new PreferenceTreeNode[C](candidate))
 
-  def numPapers: Int = internalNumPapers
+  def numPapers: Long = internalNumPapers
 
   def childFor(candidate: C): Option[PreferenceTreeNode[C]] = children.get(candidate)
 
@@ -31,6 +32,8 @@ sealed class PreferenceTree[C] {
 }
 
 object PreferenceTree {
+
+  def empty[C]: PreferenceTree[C] = new PreferenceTree[C]()
 
   def from[C](
                ballots: Iterable[NormalisedBallot[C]],

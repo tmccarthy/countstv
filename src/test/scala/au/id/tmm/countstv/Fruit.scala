@@ -1,10 +1,8 @@
-package au.id.tmm.countstv.model
+package au.id.tmm.countstv
 
 import au.id.tmm.utilities.collection.BiMap
 
-sealed trait Fruit {
-
-}
+sealed trait Fruit
 
 object Fruit {
   case object Apple extends Fruit
