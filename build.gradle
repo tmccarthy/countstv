@@ -1,6 +1,7 @@
 plugins {
-    id 'com.github.maiflai.scalatest' version '0.16'
     id 'scala'
+    id 'com.github.maiflai.scalatest' version '0.16'
+    id "org.scoverage" version "2.1.0"
 }
 
 group = 'au.id.tmm'
@@ -30,4 +31,16 @@ dependencies {
 
     // Needed to produce scalatest report
     testRuntime 'org.pegdown:pegdown:1.4.2'
+
+    scoverage "org.scoverage:scalac-scoverage-plugin${s}:$scoverageVersion"
+    scoverage "org.scoverage:scalac-scoverage-runtime${s}:$scoverageVersion"
 }
+
+compileScoverageScala.shouldRunAfter(test)
+
+checkScoverage {
+    coverageType = 'Line'
+    minimumRate = 1
+}
+
+check.dependsOn(checkScoverage)
