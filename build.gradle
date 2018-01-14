@@ -1,0 +1,33 @@
+plugins {
+    id 'com.github.maiflai.scalatest' version '0.16'
+    id 'scala'
+}
+
+group = 'au.id.tmm'
+
+repositories {
+    mavenCentral()
+    maven {
+        url 'http://artifactory.ambitious.tools/artifactory/sbt-libs-release-local/'
+    }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '4.4.1'
+    distributionUrl = "http://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
+}
+
+dependencies {
+    compile "org.scala-lang:scala-library:$scalaVersion"
+
+    compile "au.id.tmm:tmmutils${s}:$tmmUtilsVersion"
+
+    compile 'net.sf.trove4j:trove4j:3.0.3'
+
+    testCompile "org.scalatest:scalatest${s}:$scalaTestVersion"
+    testCompile "au.id.tmm:tmmtestutils${s}:$tmmUtilsVersion"
+    testCompile 'org.slf4j:slf4j-simple:1.7.25'
+
+    // Needed to produce scalatest report
+    testRuntime 'org.pegdown:pegdown:1.4.2'
+}
