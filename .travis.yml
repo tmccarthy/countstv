@@ -7,4 +7,4 @@ script: "./gradlew build --info --stacktrace"
 
 
 after_success:
-- bash <(curl -s https://codecov.io/bash)
+ - bash <(curl -s https://codecov.io/bash)
