@@ -1,17 +1,11 @@
 package au.id.tmm.countstv.model
 
 import au.id.tmm.countstv.Fruit._
-import au.id.tmm.countstv.{Fruit, NormalisedBallot}
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
 class PreferenceTreeSpec extends ImprovedFlatSpec {
 
-  private val testBallot1: NormalisedBallot[Fruit] = Vector(
-    Banana,
-    Pear,
-    Strawberry,
-    Apple,
-  )
+  import au.id.tmm.countstv.BallotFixtures._
 
   "an empty preference tree" should "have no papers" in {
     val emptyPreferenceTree = PreferenceTree.empty
@@ -21,7 +15,7 @@ class PreferenceTreeSpec extends ImprovedFlatSpec {
 
   "a preference tree with a single ballot" should "have 1 paper" in {
     val preferenceTree = PreferenceTree.from(List(
-      testBallot1
+      ballotWith4Preferences
     ))
 
     assert(preferenceTree.numPapers === 1)
@@ -29,25 +23,25 @@ class PreferenceTreeSpec extends ImprovedFlatSpec {
 
   it should "have a child for the first preference" in {
     val preferenceTree = PreferenceTree.from(List(
-      testBallot1
+      ballotWith4Preferences
     ))
 
-    val childNode = preferenceTree.childFor(testBallot1.head)
+    val childNode = preferenceTree.childFor(ballotWith4Preferences.head)
 
     assert(childNode.exists(_.numPapers === 1))
   }
 
   it should "have a child for the last preference" in {
     val preferenceTree = PreferenceTree.from(List(
-      testBallot1
+      ballotWith4Preferences
     ))
 
     val lastChildNode = preferenceTree
         .childFor(
-          testBallot1(0),
-          testBallot1(1),
-          testBallot1(2),
-          testBallot1(3),
+          ballotWith4Preferences(0),
+          ballotWith4Preferences(1),
+          ballotWith4Preferences(2),
+          ballotWith4Preferences(3),
         )
 
     assert(lastChildNode.exists(_.numPapers === 1))
@@ -55,15 +49,15 @@ class PreferenceTreeSpec extends ImprovedFlatSpec {
 
   it should "have no child when preferences are exhausted" in {
     val preferenceTree = PreferenceTree.from(List(
-      testBallot1
+      ballotWith4Preferences
     ))
 
     val lastChildNode = preferenceTree
       .childFor(
-        testBallot1(0),
-        testBallot1(1),
-        testBallot1(2),
-        testBallot1(3),
+        ballotWith4Preferences(0),
+        ballotWith4Preferences(1),
+        ballotWith4Preferences(2),
+        ballotWith4Preferences(3),
       )
       .get
 
@@ -72,11 +66,11 @@ class PreferenceTreeSpec extends ImprovedFlatSpec {
 
   "a preference tree child node" should "be associated with a candidate" in {
     val preferenceTree = PreferenceTree.from(List(
-      testBallot1
+      ballotWith4Preferences
     ))
 
-    val childNode = preferenceTree.childFor(testBallot1.head).get
+    val childNode = preferenceTree.childFor(ballotWith4Preferences.head).get
 
-    assert(childNode.associatedCandidate === testBallot1.head)
+    assert(childNode.associatedCandidate === ballotWith4Preferences.head)
   }
 }
