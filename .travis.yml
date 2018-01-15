@@ -4,3 +4,7 @@ jdk:
   - oraclejdk8
 
 script: "./gradlew build --info --stacktrace"
+
+
+after_success:
+- bash <(curl -s https://codecov.io/bash)
