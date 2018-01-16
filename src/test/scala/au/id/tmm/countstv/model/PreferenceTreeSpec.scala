@@ -64,6 +64,16 @@ class PreferenceTreeSpec extends ImprovedFlatSpec {
     assert(lastChildNode.childFor(Banana).isEmpty)
   }
 
+  it should "have children" in {
+    val preferenceTree = PreferenceTree.from(
+      Vector(Apple, Pear, Banana, Strawberry),
+      Vector(Apple, Banana, Strawberry, Pear),
+      Vector(Banana, Pear),
+    )
+
+    assert(preferenceTree.children.keySet === Set(Apple, Banana))
+  }
+
   "a preference tree child node" should "be associated with a candidate" in {
     val preferenceTree = PreferenceTree.from(List(
       ballotWith4Preferences

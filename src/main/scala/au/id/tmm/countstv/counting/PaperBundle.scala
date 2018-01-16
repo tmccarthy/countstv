@@ -1,5 +1,6 @@
 package au.id.tmm.countstv.counting
 
+import au.id.tmm.countstv.counting.PaperBundle.Origin
 import au.id.tmm.countstv.model.PreferenceTree.PreferenceTreeNode
 
 private[counting] final case class PaperBundle[C](
@@ -8,6 +9,34 @@ private[counting] final case class PaperBundle[C](
                                                    origin: PaperBundle.Origin[C],
                                                  ) {
   def associatedCandidate: C = preferenceTreeNode.associatedCandidate
+
+  def distributionGivenIneligibles(ineligibleCandidates: Set[C]): Set[PaperBundle[C]] = {
+    if (ineligibleCandidates contains associatedCandidate) {
+
+      val originForDistributedBundles = Origin.IneligibleCandidate(associatedCandidate)
+
+      val nodesForDistributedBundles = childNodesNotAssignedTo(preferenceTreeNode, ineligibleCandidates)
+
+      nodesForDistributedBundles
+        .map(childNode => PaperBundle(this.transferValue, childNode, originForDistributedBundles))
+        .toSet
+    } else {
+      Set(this)
+    }
+  }
+
+  private def childNodesNotAssignedTo(
+                                       rootNode: PreferenceTreeNode[C],
+                                       candidatesToAvoid: Set[C],
+                                     ): Iterator[PreferenceTreeNode[C]] = {
+    rootNode.children.valuesIterator.flatMap { childNode =>
+      if (candidatesToAvoid contains childNode.associatedCandidate) {
+        childNodesNotAssignedTo(childNode, candidatesToAvoid)
+      } else {
+        Set(childNode)
+      }
+    }
+  }
 }
 
 object PaperBundle {

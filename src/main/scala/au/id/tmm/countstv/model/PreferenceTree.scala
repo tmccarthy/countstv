@@ -10,14 +10,16 @@ sealed class PreferenceTree[C] {
 
   private var internalNumPapers: Long = 0
 
-  private val children: mutable.Map[C, PreferenceTreeNode[C]] = mutable.Map()
-
-  private def getOrCreateChildFor(candidate: C): PreferenceTreeNode[C] =
-    children.getOrElseUpdate(candidate, new PreferenceTreeNode[C](candidate))
-
   def numPapers: Long = internalNumPapers
 
-  def childFor(candidate: C): Option[PreferenceTreeNode[C]] = children.get(candidate)
+  private val internalChildren: mutable.Map[C, PreferenceTreeNode[C]] = mutable.Map()
+
+  def children: scala.collection.Map[C, PreferenceTreeNode[C]] = internalChildren
+
+  private def getOrCreateChildFor(candidate: C): PreferenceTreeNode[C] =
+    internalChildren.getOrElseUpdate(candidate, new PreferenceTreeNode[C](candidate))
+
+  def childFor(candidate: C): Option[PreferenceTreeNode[C]] = internalChildren.get(candidate)
 
   final def childFor(firstCandidate: C, subsequentCandidates: C*): Option[PreferenceTreeNode[C]] = {
     var currentChild = childFor(firstCandidate)
@@ -35,9 +37,9 @@ object PreferenceTree {
 
   def empty[C]: PreferenceTree[C] = new PreferenceTree[C]()
 
-  def from[C](
-               ballots: Iterable[NormalisedBallot[C]],
-             ): PreferenceTree[C] = {
+  def from[C](ballots: NormalisedBallot[C]*): PreferenceTree[C] = from(ballots)
+
+  def from[C](ballots: Iterable[NormalisedBallot[C]]): PreferenceTree[C] = {
     val returnedPreferenceTree = new PreferenceTree[C]()
 
     for (ballot <- ballots) {
