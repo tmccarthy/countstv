@@ -1,6 +1,7 @@
 package au.id.tmm.countstv.counting
 
 import au.id.tmm.countstv.counting.PaperBundle.Origin
+import au.id.tmm.countstv.model.CandidateStatuses
 import au.id.tmm.countstv.model.PreferenceTree.PreferenceTreeNode
 
 private[counting] final case class PaperBundle[C](
@@ -10,30 +11,33 @@ private[counting] final case class PaperBundle[C](
                                                  ) {
   def associatedCandidate: C = preferenceTreeNode.associatedCandidate
 
-  def distributionGivenIneligibles(ineligibleCandidates: Set[C]): Set[PaperBundle[C]] = {
-    if (ineligibleCandidates contains associatedCandidate) {
-
-      val originForDistributedBundles = Origin.IneligibleCandidate(associatedCandidate)
-
-      val nodesForDistributedBundles = childNodesNotAssignedTo(preferenceTreeNode, ineligibleCandidates)
+  def distributeToRemainingCandidates(
+                                       origin: Origin[C],
+                                       candidateStatuses: CandidateStatuses[C],
+                                     ): Set[PaperBundle[C]] = {
+    if (candidateStatuses.remaining contains associatedCandidate) {
+      Set(this)
+    } else {
+      val nodesForDistributedBundles = childNodesAssignedToRemainingCandidates(
+        preferenceTreeNode,
+        candidateStatuses.remaining,
+      )
 
       nodesForDistributedBundles
-        .map(childNode => PaperBundle(this.transferValue, childNode, originForDistributedBundles))
+        .map(childNode => PaperBundle(this.transferValue, childNode, origin))
         .toSet
-    } else {
-      Set(this)
     }
   }
 
-  private def childNodesNotAssignedTo(
-                                       rootNode: PreferenceTreeNode[C],
-                                       candidatesToAvoid: Set[C],
-                                     ): Iterator[PreferenceTreeNode[C]] = {
+  private def childNodesAssignedToRemainingCandidates(
+                                                       rootNode: PreferenceTreeNode[C],
+                                                       remainingCandidates: Set[C],
+                                                     ): Iterator[PreferenceTreeNode[C]] = {
     rootNode.children.valuesIterator.flatMap { childNode =>
-      if (candidatesToAvoid contains childNode.associatedCandidate) {
-        childNodesNotAssignedTo(childNode, candidatesToAvoid)
-      } else {
+      if (remainingCandidates contains childNode.associatedCandidate) {
         Set(childNode)
+      } else {
+        childNodesAssignedToRemainingCandidates(childNode, remainingCandidates)
       }
     }
   }

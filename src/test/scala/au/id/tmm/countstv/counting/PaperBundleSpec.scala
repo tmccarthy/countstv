@@ -1,13 +1,18 @@
 package au.id.tmm.countstv.counting
 
+import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit.{Apple, Banana, Pear, Strawberry}
-import au.id.tmm.countstv.model.PreferenceTree
-import au.id.tmm.countstv.{BallotFixtures, Fruit}
+import au.id.tmm.countstv.model.{CandidateStatus, CandidateStatuses, PreferenceTree}
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
 class PaperBundleSpec extends ImprovedFlatSpec {
 
-  private val testPreferenceTree = PreferenceTree.from(List(BallotFixtures.ballotWith4Preferences))
+  private val testPreferenceTree = PreferenceTree.from[Fruit](
+    Vector(Apple, Pear, Banana, Strawberry),
+    Vector(Apple, Banana, Strawberry, Pear),
+    Vector(Banana, Pear),
+  )
+
   private val bananaPreferenceTreeNode = testPreferenceTree.childFor(Fruit.Banana).get
 
   "a paper bundle" should "have a transfer value" in {
@@ -86,104 +91,107 @@ class PaperBundleSpec extends ImprovedFlatSpec {
     assert(paperBundle.associatedCandidate === Fruit.Banana)
   }
 
-  "a paper bundle not assigned to an ineligible candidate" should "not be distributed" in {
-    val paperBundle = PaperBundle[Fruit](
-      transferValue = 1d,
-      preferenceTreeNode = bananaPreferenceTreeNode,
+  private def testDistribution(
+                                originalCandidate: Fruit,
+                                appleStatus: CandidateStatus = CandidateStatus.Remaining,
+                                bananaStatus: CandidateStatus = CandidateStatus.Remaining,
+                                pearStatus: CandidateStatus = CandidateStatus.Remaining,
+                                strawberryStatus: CandidateStatus = CandidateStatus.Remaining,
+                                originalTransferValue: Double = 1d,
+                                expectedBundlesAfterDistribution: Set[PaperBundle[Fruit]] = Set.empty,
+                                expectBundleUnchanged: Boolean = false,
+                              ): Unit = {
+    val candidateStatuses = CandidateStatuses[Fruit](
+      Fruit.Apple -> appleStatus,
+      Fruit.Banana -> bananaStatus,
+      Fruit.Pear -> pearStatus,
+      Fruit.Strawberry -> strawberryStatus,
+    )
+
+    val originalBundle = PaperBundle[Fruit](
+      transferValue = originalTransferValue,
+      preferenceTreeNode = testPreferenceTree.childFor(originalCandidate).get,
       origin = PaperBundle.Origin.InitialAllocation,
     )
 
-    val ineligibleCandidates: Set[Fruit] = Set(Fruit.Apple)
+    val origin = PaperBundle.Origin.IneligibleCandidate(originalCandidate)
 
-    val bundlesAfterDistribution = paperBundle.distributionGivenIneligibles(ineligibleCandidates)
+    val actualBundlesAfterDistribution = originalBundle.distributeToRemainingCandidates(origin, candidateStatuses)
 
-    assert(bundlesAfterDistribution === Set(paperBundle))
+    if (expectBundleUnchanged) {
+      assert(actualBundlesAfterDistribution === Set(originalBundle))
+    } else {
+      assert(actualBundlesAfterDistribution === expectedBundlesAfterDistribution)
+    }
+  }
+
+  "a paper bundle assigned to a remaining candidate" should "not be distributed" in {
+    testDistribution(
+      originalCandidate = Banana,
+      bananaStatus = CandidateStatus.Remaining,
+      expectBundleUnchanged = true
+    )
   }
 
   "a paper bundle assigned to an ineligible candidate" can "be distributed to one bundle" in {
-    val originalBundle = PaperBundle[Fruit](
-      transferValue = 1d,
-      preferenceTreeNode = bananaPreferenceTreeNode,
-      origin = PaperBundle.Origin.InitialAllocation,
+    testDistribution(
+      originalCandidate = Banana,
+      bananaStatus = CandidateStatus.Ineligible,
+      expectedBundlesAfterDistribution = Set(
+        PaperBundle[Fruit](
+          transferValue = 1d,
+          preferenceTreeNode = testPreferenceTree.childFor(Banana, Pear).get,
+          origin = PaperBundle.Origin.IneligibleCandidate(Banana),
+        )
+      )
     )
-
-    val ineligibleCandidates: Set[Fruit] = Set(Fruit.Banana)
-
-    val bundlesAfterDistribution = originalBundle.distributionGivenIneligibles(ineligibleCandidates)
-
-    val expectedBundle = PaperBundle[Fruit](
-      transferValue = 1d,
-      preferenceTreeNode = bananaPreferenceTreeNode.childFor(Fruit.Pear).get,
-      origin = PaperBundle.Origin.IneligibleCandidate(Fruit.Banana),
-    )
-
-    assert(bundlesAfterDistribution === Set(expectedBundle))
   }
 
   it can "be distributed to multiple bundles" in {
-    val preferenceTree = PreferenceTree.from[Fruit](
-      Vector(Apple, Pear, Banana, Strawberry),
-      Vector(Apple, Banana, Strawberry, Pear),
-      Vector(Banana, Pear),
+    testDistribution(
+      originalCandidate = Apple,
+      appleStatus = CandidateStatus.Ineligible,
+      expectedBundlesAfterDistribution = Set(
+        PaperBundle(
+          transferValue = 1d,
+          preferenceTreeNode = testPreferenceTree.childFor(Apple, Pear).get,
+          origin = PaperBundle.Origin.IneligibleCandidate(Apple),
+        ),
+        PaperBundle(
+          transferValue = 1d,
+          preferenceTreeNode = testPreferenceTree.childFor(Apple, Banana).get,
+          origin = PaperBundle.Origin.IneligibleCandidate(Apple),
+        ),
+      )
     )
-
-    val originalBundle = PaperBundle(
-      transferValue = 1d,
-      preferenceTreeNode = preferenceTree.childFor(Fruit.Apple).get,
-      origin = PaperBundle.Origin.InitialAllocation,
-    )
-
-    val ineligibleCandidates: Set[Fruit] = Set(Fruit.Apple)
-
-    val actualBundlesAfterDistribution = originalBundle.distributionGivenIneligibles(ineligibleCandidates)
-
-    val expectedBundlesAfterDistribution = Set(
-      PaperBundle(
-        transferValue = 1d,
-        preferenceTreeNode = preferenceTree.childFor(Apple, Pear).get,
-        origin = PaperBundle.Origin.IneligibleCandidate(Apple),
-      ),
-      PaperBundle(
-        transferValue = 1d,
-        preferenceTreeNode = preferenceTree.childFor(Apple, Banana).get,
-        origin = PaperBundle.Origin.IneligibleCandidate(Apple),
-      ),
-    )
-
-    assert(actualBundlesAfterDistribution === expectedBundlesAfterDistribution)
   }
 
   it can "be distributed to multiple bundles when more than one candidate is ineligible" in {
-    val preferenceTree = PreferenceTree.from[Fruit](
-      Vector(Apple, Pear, Banana, Strawberry),
-      Vector(Apple, Banana, Strawberry, Pear),
-      Vector(Banana, Pear),
+    testDistribution(
+      originalCandidate = Apple,
+      appleStatus = CandidateStatus.Ineligible,
+      bananaStatus = CandidateStatus.Ineligible,
+      expectedBundlesAfterDistribution = Set(
+        PaperBundle(
+          transferValue = 1d,
+          preferenceTreeNode = testPreferenceTree.childFor(Apple, Pear).get,
+          origin = PaperBundle.Origin.IneligibleCandidate(Apple),
+        ),
+        PaperBundle(
+          transferValue = 1d,
+          preferenceTreeNode = testPreferenceTree.childFor(Apple, Banana, Strawberry).get,
+          origin = PaperBundle.Origin.IneligibleCandidate(Apple),
+        ),
+      )
     )
-
-    val originalBundle = PaperBundle(
-      transferValue = 1d,
-      preferenceTreeNode = preferenceTree.childFor(Apple).get,
-      origin = PaperBundle.Origin.InitialAllocation,
-    )
-
-    val ineligibleCandidates: Set[Fruit] = Set(Apple, Banana)
-
-    val actualBundlesAfterDistribution = originalBundle.distributionGivenIneligibles(ineligibleCandidates)
-
-    val expectedBundlesAfterDistribution = Set(
-      PaperBundle(
-        transferValue = 1d,
-        preferenceTreeNode = preferenceTree.childFor(Apple, Pear).get,
-        origin = PaperBundle.Origin.IneligibleCandidate(Apple),
-      ),
-      PaperBundle(
-        transferValue = 1d,
-        preferenceTreeNode = preferenceTree.childFor(Apple, Banana, Strawberry).get,
-        origin = PaperBundle.Origin.IneligibleCandidate(Apple),
-      ),
-    )
-
-    assert(actualBundlesAfterDistribution === expectedBundlesAfterDistribution)
   }
 
+  it can "be distributed until exhausted" in {
+    testDistribution(
+      originalCandidate = Banana,
+      bananaStatus = CandidateStatus.Excluded(ordinalExcluded = 0, excludedAtCount = 1),
+      pearStatus = CandidateStatus.Excluded(ordinalExcluded = 1, excludedAtCount = 2),
+      expectedBundlesAfterDistribution = Set.empty,
+    )
+  }
 }
