@@ -15,14 +15,14 @@ object VoteCounting {
     val initialVoteCount = VoteCount(numPapers = initialNumPapers, numVotes = initialNumPapers)
 
     val votesPerCandidate: mutable.Map[C, VoteCount] = mutable.Map[C, VoteCount]()
-    var exhaustedVotes: VoteCount = VoteCount.empty
+    var exhaustedVotes: VoteCount = VoteCount.zero
 
     candidateStatuses
       .asMap
       .foreach { case (candidate, status) =>
         val voteCount = status match {
           case _: CandidateStatus.Elected => VoteCount(numPapers = 0, numVotes = quota)
-          case _ => VoteCount.empty,
+          case _ => VoteCount.zero,
         }
 
         votesPerCandidate(candidate) = voteCount
@@ -38,7 +38,7 @@ object VoteCounting {
           numVotes = numVotes,
         )
 
-        b.assignedCandiate match {
+        b.assignedCandidate match {
           case Some(assignedCandidate) => votesPerCandidate(assignedCandidate) += voteCount
           case None => exhaustedVotes += voteCount
         }
@@ -49,7 +49,7 @@ object VoteCounting {
     }
 
     exhaustedVotes = roundVotes(exhaustedVotes)
-    val totalVoteCount = votesPerCandidate.valuesIterator.fold(VoteCount.empty)(_ + _)
+    val totalVoteCount = votesPerCandidate.valuesIterator.fold(VoteCount.zero)(_ + _)
 
     CandidateVoteCounts(
       perCandidate = votesPerCandidate.toMap,

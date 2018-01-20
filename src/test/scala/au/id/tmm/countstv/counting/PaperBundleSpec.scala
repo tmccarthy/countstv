@@ -92,7 +92,7 @@ class PaperBundleSpec extends ImprovedFlatSpec {
       origin = PaperBundle.Origin.InitialAllocation,
     )
 
-    assert(paperBundle.assignedCandiate === Some(Fruit.Banana))
+    assert(paperBundle.assignedCandidate === Some(Fruit.Banana))
   }
 
   it can "not be assigned to a candidate" in {
@@ -102,7 +102,7 @@ class PaperBundleSpec extends ImprovedFlatSpec {
       origin = PaperBundle.Origin.InitialAllocation,
     )
 
-    assert(paperBundle.assignedCandiate === None)
+    assert(paperBundle.assignedCandidate === None)
   }
 
   private def testDistribution(
@@ -286,8 +286,42 @@ class PaperBundleSpec extends ImprovedFlatSpec {
     assert(actualBundlesAfterDistribution === expectedBundlesAfterDistribution)
   }
 
-  "an initial set of paper bundles" can "be constructed from a PreferenceTree" in {
-    val actualBundles = PaperBundle.initialBundlesFor(testPreferenceTree)
+  "a root paper bundle" can "be constructed from a PreferenceTree" in {
+    val actualBundle = PaperBundle.rootBundleFor(testPreferenceTree)
+
+    val expectedBundle = RootPaperBundle[Fruit](
+      testPreferenceTree,
+    )
+
+    assert(actualBundle === expectedBundle)
+  }
+
+  it should "originate from the initial allocation" in {
+    assert(PaperBundle.rootBundleFor(testPreferenceTree).origin === PaperBundle.Origin.InitialAllocation)
+  }
+
+  it should "not be assigned to a candidate" in {
+    assert(PaperBundle.rootBundleFor(testPreferenceTree).assignedCandidate === None)
+  }
+
+  it should "return the number of ballots in the preference tree" in {
+    assert(PaperBundle.rootBundleFor(testPreferenceTree).numPapers === testPreferenceTree.numPapers)
+  }
+
+  it should "have a transfer value of 1.0" in {
+    assert(PaperBundle.rootBundleFor(testPreferenceTree).transferValue === 1.0d)
+  }
+
+  it can "distribute its papers" in {
+    val candidateStatuses = CandidateStatuses[Fruit](
+      Fruit.Apple -> CandidateStatus.Remaining,
+      Fruit.Banana -> CandidateStatus.Remaining,
+      Fruit.Pear -> CandidateStatus.Remaining,
+      Fruit.Strawberry -> CandidateStatus.Remaining,
+    )
+
+    val actualBundles = PaperBundle.rootBundleFor(testPreferenceTree)
+      .distributeToRemainingCandidates(PaperBundle.Origin.InitialAllocation, candidateStatuses)
 
     val expectedBundles = Bag[PaperBundle[Fruit]](
       AssignedPaperBundle(
@@ -305,7 +339,14 @@ class PaperBundleSpec extends ImprovedFlatSpec {
     assert(actualBundles === expectedBundles)
   }
 
-  it can "have immediately exhausted ballots" in {
+  it can "distribute its papers to an immediate exhausted ballot" in {
+    val candidateStatuses = CandidateStatuses[Fruit](
+      Fruit.Apple -> CandidateStatus.Remaining,
+      Fruit.Banana -> CandidateStatus.Remaining,
+      Fruit.Pear -> CandidateStatus.Remaining,
+      Fruit.Strawberry -> CandidateStatus.Remaining,
+    )
+
     val testPreferenceTree = PreferenceTree.from[Fruit](
       Vector(Apple, Pear, Banana, Strawberry),
       Vector(Apple, Banana, Strawberry, Pear),
@@ -313,7 +354,8 @@ class PaperBundleSpec extends ImprovedFlatSpec {
       Vector(),
     )
 
-    val actualBundles = PaperBundle.initialBundlesFor(testPreferenceTree)
+    val actualBundles = PaperBundle.rootBundleFor(testPreferenceTree)
+      .distributeToRemainingCandidates(PaperBundle.Origin.InitialAllocation, candidateStatuses)
 
     val expectedBundles = Bag[PaperBundle[Fruit]](
       AssignedPaperBundle(
@@ -325,7 +367,12 @@ class PaperBundleSpec extends ImprovedFlatSpec {
         transferValue = 1d,
         preferenceTreeNode = testPreferenceTree.childFor(Banana).get,
         origin = PaperBundle.Origin.InitialAllocation,
-      )
+      ),
+      ExhaustedPaperBundle[Fruit](
+        numPapers = 1,
+        transferValue = 1.0d,
+        origin = PaperBundle.Origin.InitialAllocation,
+      ),
     )
 
     assert(actualBundles === expectedBundles)

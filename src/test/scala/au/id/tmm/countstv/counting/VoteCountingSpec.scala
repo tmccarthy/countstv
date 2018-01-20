@@ -20,14 +20,15 @@ class VoteCountingSpec extends ImprovedFlatSpec {
   )
 
   "a voteCount" should "correctly count the votes when no candidates are elected" in {
-    val paperBundles = PaperBundle.initialBundlesFor(testPreferenceTree)
-
     val candidateStatuses = CandidateStatuses[Fruit](
       Apple -> CandidateStatus.Remaining,
       Banana -> CandidateStatus.Remaining,
       Pear -> CandidateStatus.Remaining,
       Strawberry -> CandidateStatus.Remaining,
     )
+
+    val paperBundles = PaperBundle.rootBundleFor(testPreferenceTree)
+      .distributeToRemainingCandidates(PaperBundle.Origin.InitialAllocation, candidateStatuses)
 
     val actualVoteCounts = VoteCounting.countVotes[Fruit](
       initialNumPapers = testPreferenceTree.numPapers,
@@ -40,11 +41,11 @@ class VoteCountingSpec extends ImprovedFlatSpec {
       perCandidate = Map(
         Apple -> VoteCount(numPapers = 3, numVotes = 3),
         Banana -> VoteCount(numPapers = 1, numVotes = 1),
-        Pear -> VoteCount.empty,
+        Pear -> VoteCount.zero,
         Strawberry -> VoteCount(numPapers = 1, numVotes = 1),
       ),
-      exhausted = VoteCount.empty,
-      roundingError = VoteCount.empty,
+      exhausted = VoteCount.zero,
+      roundingError = VoteCount.zero,
     )
 
     assert(actualVoteCounts === expectedVoteCounts)
@@ -60,7 +61,8 @@ class VoteCountingSpec extends ImprovedFlatSpec {
 
     val transferValue = 0.666666666d
 
-    val paperBundles = PaperBundle.initialBundlesFor(testPreferenceTree)
+    val paperBundles = PaperBundle.rootBundleFor(testPreferenceTree)
+      .distributeToRemainingCandidates(PaperBundle.Origin.InitialAllocation, candidateStatuses)
       .flatMap { b =>
         b.distributeToRemainingCandidates(PaperBundle.Origin.ElectedCandidate(Apple, transferValue), candidateStatuses)
       }
@@ -79,7 +81,7 @@ class VoteCountingSpec extends ImprovedFlatSpec {
         Pear -> VoteCount(numPapers = 1, numVotes = 0),
         Strawberry -> VoteCount(numPapers = 2, numVotes = 1),
       ),
-      exhausted = VoteCount.empty,
+      exhausted = VoteCount.zero,
       roundingError = VoteCount(numPapers = 0, numVotes = -1),
     )
 

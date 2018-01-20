@@ -20,5 +20,5 @@ final case class VoteCount(numPapers: Long, numVotes: Double) {
 }
 
 object VoteCount {
-  val empty: VoteCount = VoteCount(0, 0d)
+  val zero: VoteCount = VoteCount(0, 0d)
 }

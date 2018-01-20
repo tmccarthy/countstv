@@ -16,6 +16,6 @@ class VoteCountSpec extends ImprovedFlatSpec {
   }
 
   "an empty vote count" should "have no votes or papers" in {
-    assert(VoteCount.empty === VoteCount(0, 0d))
+    assert(VoteCount.zero === VoteCount(0, 0d))
   }
 }
