@@ -1,18 +1,23 @@
 package au.id.tmm.countstv.model
 
+import au.id.tmm.utilities.collection.OrderedSet
+
 final case class CandidateStatuses[C](asMap: Map[C, CandidateStatus]) {
   def allCandidates: Set[C] = asMap.keySet
 
-  val elected: Set[C] = candidatesWithStatusMatching {
-    case _: CandidateStatus.Elected => true
-    case _ => false
-  }
+  val electedCandidates: OrderedSet[C] =
+    asMap
+      .toStream
+      .collect { case (candidate, status: CandidateStatus.Elected) => candidate -> status }
+      .sortBy { case (candidate, status) => status.ordinalElected }
+      .map { case (candidate, status) => candidate }
+      .to[OrderedSet]
 
-  val remaining: Set[C] = candidatesWithStatusMatching(_ == CandidateStatus.Remaining)
+  val remainingCandidates: Set[C] = candidatesWithStatusMatching(_ == CandidateStatus.Remaining)
 
-  val ineligible: Set[C] = candidatesWithStatusMatching(_ == CandidateStatus.Ineligible)
+  val ineligibleCandidates: Set[C] = candidatesWithStatusMatching(_ == CandidateStatus.Ineligible)
 
-  val excluded: Set[C] = candidatesWithStatusMatching {
+  val excludedCandidates: Set[C] = candidatesWithStatusMatching {
     case _: CandidateStatus.Excluded => true
     case _ => false
   }
@@ -24,7 +29,7 @@ final case class CandidateStatuses[C](asMap: Map[C, CandidateStatus]) {
     }
     .toSet
 
-  val ineligibleForPreferenceFlows: Set[C] = allCandidates -- remaining
+  val ineligibleForPreferenceFlows: Set[C] = allCandidates -- remainingCandidates
 
 }
 

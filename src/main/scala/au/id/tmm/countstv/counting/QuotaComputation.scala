@@ -2,6 +2,7 @@ package au.id.tmm.countstv.counting
 
 object QuotaComputation {
 
-  def computeQuota(numVacancies: Int, numBallots: Long): Long = (Math.ceil(numBallots).toLong / (numVacancies + 1)) + 1
+  def computeQuota(numVacancies: Int, numFormalPapers: Long): Long =
+    (Math.ceil(numFormalPapers).toLong / (numVacancies + 1)) + 1
 
 }

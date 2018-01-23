@@ -25,19 +25,30 @@ class CandidateStatusesSpec extends ImprovedFlatSpec {
   }
 
   it should "indicate elected candidates" in {
-    assert(testCandidateStatuses.elected === Set(Apple))
+    assert(testCandidateStatuses.electedCandidates === Set(Apple))
+  }
+
+  it should "indicate elected candidates in order" in {
+    val testCandidateStatuses: CandidateStatuses[Fruit] = CandidateStatuses(
+      Apple -> CandidateStatus.Elected(ordinalElected = 2, electedAtCount = 1),
+      Banana -> CandidateStatus.Elected(ordinalElected = 1, electedAtCount = 1),
+      Pear -> CandidateStatus.Ineligible,
+      Strawberry -> CandidateStatus.Excluded(ordinalExcluded = 0, excludedAtCount = 1),
+    )
+
+    assert(testCandidateStatuses.electedCandidates.toList === List(Banana, Apple))
   }
 
   it should "indicate remaining candidates" in {
-    assert(testCandidateStatuses.remaining === Set(Banana))
+    assert(testCandidateStatuses.remainingCandidates === Set(Banana))
   }
 
   it should "indicate ineligible candidates" in {
-    assert(testCandidateStatuses.ineligible === Set(Pear))
+    assert(testCandidateStatuses.ineligibleCandidates === Set(Pear))
   }
 
   it should "indicate excluded candidates" in {
-    assert(testCandidateStatuses.excluded === Set(Strawberry))
+    assert(testCandidateStatuses.excludedCandidates === Set(Strawberry))
   }
 
   it should "indicate the candidates that are ineligble for preference flows" in {

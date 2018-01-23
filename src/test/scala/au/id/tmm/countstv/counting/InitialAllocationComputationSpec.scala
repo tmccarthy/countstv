@@ -48,7 +48,7 @@ class InitialAllocationComputationSpec extends ImprovedFlatSpec {
     .distributeToRemainingCandidates(PaperBundle.Origin.InitialAllocation, candidateStatuses)
 
   private val numPapers: Long = testPreferenceTree.numPapers
-  private val quota = QuotaComputation.computeQuota(numVacancies = 2, numBallots = numPapers)
+  private val quota = QuotaComputation.computeQuota(numVacancies = 2, numFormalPapers = numPapers)
 
   "an initial allocation" can "not be computed if a candidate is elected" in {
     val candidateStatuses = CandidateStatuses(

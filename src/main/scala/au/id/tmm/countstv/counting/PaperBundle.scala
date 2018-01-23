@@ -69,11 +69,11 @@ object PaperBundle {
 
     bundle match {
       case b: ExhaustedPaperBundle[C] => Bag[PaperBundle[C]](b)
-      case b if b.assignedCandidate.exists(candidateStatuses.remaining.contains) => Bag[PaperBundle[C]](b)
+      case b if b.assignedCandidate.exists(candidateStatuses.remainingCandidates.contains) => Bag[PaperBundle[C]](b)
       case b: AssignedPaperBundle[C] =>
         val nodesForDistributedBundles = childNodesAssignedToRemainingCandidates(
           b.preferenceTreeNode,
-          candidateStatuses.remaining,
+          candidateStatuses.remainingCandidates,
         )
 
         distributeToRemainingCandidates(b, origin, nodesForDistributedBundles)
