@@ -2,6 +2,7 @@ package au.id.tmm.countstv.model
 
 import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
+import au.id.tmm.utilities.collection.DupelessSeq
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
 class CandidateStatusesSpec extends ImprovedFlatSpec {
@@ -25,7 +26,7 @@ class CandidateStatusesSpec extends ImprovedFlatSpec {
   }
 
   it should "indicate elected candidates" in {
-    assert(testCandidateStatuses.electedCandidates === Set(Apple))
+    assert(testCandidateStatuses.electedCandidates === DupelessSeq(Apple))
   }
 
   it should "indicate elected candidates in order" in {

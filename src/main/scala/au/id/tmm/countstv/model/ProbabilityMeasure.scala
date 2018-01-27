@@ -16,8 +16,34 @@ final case class ProbabilityMeasure[A](asMap: Map[A, Rational]) {
     ProbabilityMeasure(newAsMap)
   }
 
+  def flatMap[U](f: A => ProbabilityMeasure[U]): ProbabilityMeasure[U] = {
+    val newAsMap = for {
+      (possibility, branchProbability) <- asMap
+      (newPossibility, subBranchProbability) <- f(possibility).asMap
+    } yield newPossibility -> branchProbability * subBranchProbability
+
+    ProbabilityMeasure(newAsMap)
+  }
+
 }
 
 object ProbabilityMeasure {
+
+  def always[A](possibility: A): ProbabilityMeasure[A] = evenly(possibility)
+
+  def evenly[A](possibilities: A*): ProbabilityMeasure[A] = allElementsEvenly(possibilities)
+
+  def allElementsEvenly[A](possibilities: Traversable[A]): ProbabilityMeasure[A] = {
+    val probability = Rational(1, possibilities.size)
+
+    val asMap = possibilities
+      .map(p => p -> probability)
+      .toMap
+
+    ProbabilityMeasure(
+      asMap
+    )
+  }
+
   def apply[A](branches: (A, Rational)*): ProbabilityMeasure[A] = ProbabilityMeasure(branches.toMap)
 }

@@ -3,17 +3,32 @@ package au.id.tmm.countstv.counting
 import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
 import au.id.tmm.countstv.model.CandidateStatus._
-import au.id.tmm.countstv.model.{CandidateStatuses, CandidateVoteCounts, VoteCount}
-import au.id.tmm.utilities.collection.OrderedSet
+import au.id.tmm.countstv.model.{CandidateStatuses, CandidateVoteCounts, ProbabilityMeasure, VoteCount}
+import au.id.tmm.utilities.collection.DupelessSeq
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
+import spire.math.Rational
 
-class CandidateStatusComputationSpec extends ImprovedFlatSpec {
+class ElectedCandidateComputationsSpec extends ImprovedFlatSpec {
 
   private def testElectionComputation(
                                        candidateVoteCounts: Map[Fruit, Int],
                                        candidateStatuses: CandidateStatuses[Fruit],
                                        numVacancies: Int,
-                                       expectedElected: OrderedSet[Fruit],
+                                       expectedElected: DupelessSeq[Fruit],
+                                     ): Unit = {
+    testTiedElectionComputation(
+      candidateVoteCounts,
+      candidateStatuses,
+      numVacancies,
+      ProbabilityMeasure.always(expectedElected),
+    )
+  }
+
+  private def testTiedElectionComputation(
+                                       candidateVoteCounts: Map[Fruit, Int],
+                                       candidateStatuses: CandidateStatuses[Fruit],
+                                       numVacancies: Int,
+                                       expectedElected: ProbabilityMeasure[DupelessSeq[Fruit]],
                                      ): Unit = {
     val counts = CandidateVoteCounts[Fruit](
       perCandidate = candidateVoteCounts.mapValues(votes => VoteCount(votes, votes)),
@@ -25,7 +40,7 @@ class CandidateStatusComputationSpec extends ImprovedFlatSpec {
 
     val quota = QuotaComputation.computeQuota(numVacancies, numFormalPapers)
 
-    val actualElectedCandidates = CandidateStatusComputation.computeElected(
+    val actualElectedCandidates = ElectedCandidateComputations.computeElected(
       counts,
       candidateStatuses,
       numVacancies,
@@ -50,11 +65,32 @@ class CandidateStatusComputationSpec extends ImprovedFlatSpec {
         Strawberry -> Remaining,
       ),
       numVacancies = 2,
-      expectedElected = OrderedSet(Apple, Banana),
+      expectedElected = DupelessSeq[Fruit](Apple, Banana),
     )
   }
 
-  // TODO case where there is a tie for the number of votes
+  it should "be correct when there there is a tie for an elected candidate" in {
+    testTiedElectionComputation(
+      candidateVoteCounts = Map(
+        Apple -> 42,
+        Banana -> 42,
+        Pear -> 10,
+        Strawberry -> 2,
+      ),
+      candidateStatuses = CandidateStatuses[Fruit](
+        Apple -> Remaining,
+        Banana -> Remaining,
+        Pear -> Remaining,
+        Strawberry -> Remaining,
+      ),
+      numVacancies = 3,
+      expectedElected =
+        ProbabilityMeasure(
+          DupelessSeq[Fruit](Apple, Banana) -> Rational(1, 2),
+          DupelessSeq[Fruit](Banana, Apple) -> Rational(1, 2),
+        ),
+    )
+  }
 
   it should "be correct when there is an already elected candidate" in {
     testElectionComputation(
@@ -71,7 +107,7 @@ class CandidateStatusComputationSpec extends ImprovedFlatSpec {
         Strawberry -> Remaining,
       ),
       numVacancies = 2,
-      expectedElected = OrderedSet(Apple, Banana),
+      expectedElected = DupelessSeq[Fruit](Apple, Banana),
     )
   }
 
@@ -92,7 +128,7 @@ class CandidateStatusComputationSpec extends ImprovedFlatSpec {
         Strawberry -> Remaining,
       ),
       numVacancies = 2,
-      expectedElected = OrderedSet(Apple),
+      expectedElected = DupelessSeq[Fruit](Apple),
     )
   }
 
@@ -111,11 +147,31 @@ class CandidateStatusComputationSpec extends ImprovedFlatSpec {
         Strawberry -> Excluded(ordinalExcluded = 1, excludedAtCount = 3),
       ),
       numVacancies = 3,
-      expectedElected = OrderedSet(Apple, Pear, Banana),
+      expectedElected = DupelessSeq[Fruit](Apple, Pear, Banana),
     )
   }
 
-  // TODO case where remaining candidates are tied for votes
+  it should "be correct when there are 2 tied candidates remaining and only 1 vacancy" in {
+    testTiedElectionComputation(
+      candidateVoteCounts = Map(
+        Apple -> 0,
+        Banana -> 40,
+        Pear -> 40,
+        Strawberry -> 0,
+      ),
+      candidateStatuses = CandidateStatuses[Fruit](
+        Apple -> Elected(ordinalElected = 0, electedAtCount = 1),
+        Banana -> Remaining,
+        Pear -> Remaining,
+        Strawberry -> Excluded(ordinalExcluded = 1, excludedAtCount = 3),
+      ),
+      numVacancies = 2,
+      expectedElected = ProbabilityMeasure(
+        DupelessSeq[Fruit](Apple, Pear) -> Rational(1, 2),
+        DupelessSeq[Fruit](Apple, Banana) -> Rational(1, 2),
+      )
+    )
+  }
 
   it should "be correct when there are 2 remaining candidates and 2 of 3 vacancies have been filled" in {
     testElectionComputation(
@@ -132,7 +188,7 @@ class CandidateStatusComputationSpec extends ImprovedFlatSpec {
         Strawberry -> Remaining,
       ),
       numVacancies = 3,
-      expectedElected = OrderedSet(Apple, Banana),
+      expectedElected = DupelessSeq[Fruit](Apple, Banana),
     )
   }
 
@@ -151,7 +207,7 @@ class CandidateStatusComputationSpec extends ImprovedFlatSpec {
         Strawberry -> Remaining,
       ),
       numVacancies = 2,
-      expectedElected = OrderedSet(Apple, Banana),
+      expectedElected = DupelessSeq[Fruit](Apple, Banana),
     )
   }
 }

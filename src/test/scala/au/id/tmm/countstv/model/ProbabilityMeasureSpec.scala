@@ -1,6 +1,7 @@
 package au.id.tmm.countstv.model
 
 import au.id.tmm.countstv.Fruit
+import au.id.tmm.countstv.Fruit._
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 import spire.math.Rational
 
@@ -8,28 +9,28 @@ class ProbabilityMeasureSpec extends ImprovedFlatSpec {
 
   "a probability measure" should "assign a probability to each possibility" in {
     val pMeasure = ProbabilityMeasure(
-      Fruit.Apple -> Rational(1, 3),
-      Fruit.Banana -> Rational(1, 3),
-      Fruit.Pear -> Rational(1, 6),
-      Fruit.Strawberry -> Rational(1, 6),
+      Apple -> Rational(1, 3),
+      Banana -> Rational(1, 3),
+      Pear -> Rational(1, 6),
+      Strawberry -> Rational(1, 6),
     )
 
-    assert(pMeasure.chanceOf(Fruit.Apple) === Rational(1, 3))
+    assert(pMeasure.chanceOf(Apple) === Rational(1, 3))
   }
 
   it must "sum to 1" in {
     intercept[IllegalArgumentException] {
       ProbabilityMeasure(
-        Fruit.Apple -> Rational(2, 3),
-        Fruit.Banana -> Rational(2, 3),
+        Apple -> Rational(2, 3),
+        Banana -> Rational(2, 3),
       )
     }
   }
 
   it can "apply an operation on the possibility" in {
     val pMeasure = ProbabilityMeasure(
-      Fruit.Apple -> Rational(1, 3),
-      Fruit.Banana -> Rational(2, 3),
+      Apple -> Rational(1, 3),
+      Banana -> Rational(2, 3),
     )
 
     val f: Fruit => Char = _.toString.charAt(0)
@@ -44,12 +45,61 @@ class ProbabilityMeasureSpec extends ImprovedFlatSpec {
     assert(actualResult === expectedResult)
   }
 
+  it can "map a possibility to another ProbabilityMeasure" in {
+    val pMeasure = ProbabilityMeasure(
+      Apple -> Rational(1, 3),
+      Banana -> Rational(2, 3),
+    )
+
+    val f: Fruit => ProbabilityMeasure[(Fruit, Fruit)] = {
+      case Apple => ProbabilityMeasure(
+        (Apple, Pear) -> Rational(3, 4),
+        (Apple, Strawberry) -> Rational(1, 4),
+      )
+      case Banana => ProbabilityMeasure(
+        (Banana, Pear) -> Rational(2, 5),
+        (Banana, Strawberry) -> Rational(3, 5),
+      )
+    }
+
+    val expectedResult = ProbabilityMeasure(
+      (Apple, Pear) -> Rational(1, 3) * Rational(3, 4),
+      (Apple, Strawberry) -> Rational(1, 3) * Rational(1, 4),
+      (Banana, Pear) -> Rational(2, 3) * Rational(2, 5),
+      (Banana, Strawberry) -> Rational(2, 3) * Rational(3, 5),
+    )
+
+    val actualResult = pMeasure.flatMap(f)
+
+    assert(actualResult === expectedResult)
+  }
+
+  it can "be built from a number of evenly distributed possibilities" in {
+    val actualResult = ProbabilityMeasure.evenly(Apple, Pear, Strawberry)
+
+    val expectedResult = ProbabilityMeasure(
+      Apple -> Rational(1, 3),
+      Pear -> Rational(1, 3),
+      Strawberry -> Rational(1, 3),
+    )
+
+    assert(actualResult === expectedResult)
+  }
+
+  it can "be built from a single possibility" in {
+    val actualResult = ProbabilityMeasure.always(Apple)
+
+    val expectedResult = ProbabilityMeasure(Apple -> Rational.one)
+
+    assert(actualResult === expectedResult)
+  }
+
   "a possibility" must "have a positive probability" in {
     intercept[IllegalArgumentException] {
       ProbabilityMeasure(
-        Fruit.Apple -> Rational(-1, 3),
-        Fruit.Banana -> Rational(2, 3),
-        Fruit.Strawberry -> Rational(2, 3),
+        Apple -> Rational(-1, 3),
+        Banana -> Rational(2, 3),
+        Strawberry -> Rational(2, 3),
       )
     }
   }
@@ -57,7 +107,7 @@ class ProbabilityMeasureSpec extends ImprovedFlatSpec {
   it must "have a probability equal to or less than 1" in {
     intercept[IllegalArgumentException] {
       ProbabilityMeasure(
-        Fruit.Apple -> Rational(2),
+        Apple -> Rational(2),
       )
     }
   }
@@ -65,18 +115,18 @@ class ProbabilityMeasureSpec extends ImprovedFlatSpec {
   it can "not be duplicated" in {
     intercept[IllegalArgumentException] {
       ProbabilityMeasure(
-        Fruit.Apple -> Rational(2, 3),
-        Fruit.Apple -> Rational(1, 3),
+        Apple -> Rational(2, 3),
+        Apple -> Rational(1, 3),
       )
     }
   }
 
   "an unlisted possibility" should "have a possibility of zero" in {
     val pMeasure = ProbabilityMeasure(
-      Fruit.Apple -> Rational(1, 3),
-      Fruit.Banana -> Rational(2, 3),
+      Apple -> Rational(1, 3),
+      Banana -> Rational(2, 3),
     )
 
-    assert(pMeasure.chanceOf(Fruit.Pear) === Rational.zero)
+    assert(pMeasure.chanceOf(Pear) === Rational.zero)
   }
 }

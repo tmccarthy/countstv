@@ -1,17 +1,17 @@
 package au.id.tmm.countstv.model
 
-import au.id.tmm.utilities.collection.OrderedSet
+import au.id.tmm.utilities.collection.DupelessSeq
 
 final case class CandidateStatuses[C](asMap: Map[C, CandidateStatus]) {
   def allCandidates: Set[C] = asMap.keySet
 
-  val electedCandidates: OrderedSet[C] =
+  val electedCandidates: DupelessSeq[C] =
     asMap
       .toStream
       .collect { case (candidate, status: CandidateStatus.Elected) => candidate -> status }
       .sortBy { case (candidate, status) => status.ordinalElected }
       .map { case (candidate, status) => candidate }
-      .to[OrderedSet]
+      .to[DupelessSeq]
 
   val remainingCandidates: Set[C] = candidatesWithStatusMatching(_ == CandidateStatus.Remaining)
 
