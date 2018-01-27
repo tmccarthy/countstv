@@ -7,6 +7,36 @@ import spire.math.Rational
 
 class TieSensitiveSortingSpec extends ImprovedFlatSpec {
 
+  "the minimum of an empty set" should "be nothing" in {
+    assert(TieSensitiveSorting.minBy(Set[Int]())(x => x) === None)
+  }
+
+  "the minimum of a list with no duplicates" should "be the minimum" in {
+    val list = List(1, 2, 3)
+
+    assert(TieSensitiveSorting.minBy(list)(x => x) === Some(ProbabilityMeasure.always(1)))
+  }
+
+  "the minimum of a list with some duplicates" should "be an evenly distributed probability across all the minimums" in {
+    val list = List(
+      "apple",
+      "cat",
+      "dog",
+      "pear",
+    )
+
+    val scoreFn: String => Int = _.length
+
+    val expectedMin = ProbabilityMeasure(
+      "cat" -> Rational(1, 2),
+      "dog" -> Rational(1, 2),
+    )
+
+    val actualMin = TieSensitiveSorting.minBy(list)(scoreFn)
+
+    assert(actualMin === Some(expectedMin))
+  }
+
   "a set with no tied elements" should "have only one outcome" in {
     val set = Set(4, 2, 1, 5, 3)
 
