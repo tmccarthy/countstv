@@ -12,13 +12,13 @@ object InitialAllocationComputation {
   def computeInitialAllocation[C](
                                    candidateStatuses: CandidateStatuses[C],
                                    quota: Long,
-                                   initialNumPapers: Long,
+                                   numFormalPapers: Long,
                                    paperBundles: Bag[PaperBundle[C]],
                                  ): InitialAllocation[C] = {
     require(candidateStatuses.asMap.valuesIterator.forall(allowedCandidateStatuses.contains))
 
     val candidateVoteCounts = VoteCounting.countVotes(
-      initialNumPapers = initialNumPapers,
+      initialNumPapers = numFormalPapers,
       quota = quota,
       candidateStatuses = candidateStatuses,
       paperBundles = paperBundles

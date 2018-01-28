@@ -14,13 +14,13 @@ class ElectedCandidateComputationsSpec extends ImprovedFlatSpec {
                                        candidateVoteCounts: Map[Fruit, Int],
                                        candidateStatuses: CandidateStatuses[Fruit],
                                        numVacancies: Int,
-                                       expectedElected: DupelessSeq[Fruit],
+                                       expectedNewlyElected: DupelessSeq[Fruit],
                                      ): Unit = {
     testTiedElectionComputation(
       candidateVoteCounts,
       candidateStatuses,
       numVacancies,
-      ProbabilityMeasure.always(expectedElected),
+      ProbabilityMeasure.always(expectedNewlyElected),
     )
   }
 
@@ -28,7 +28,7 @@ class ElectedCandidateComputationsSpec extends ImprovedFlatSpec {
                                        candidateVoteCounts: Map[Fruit, Int],
                                        candidateStatuses: CandidateStatuses[Fruit],
                                        numVacancies: Int,
-                                       expectedElected: ProbabilityMeasure[DupelessSeq[Fruit]],
+                                       expectedNewlyElected: ProbabilityMeasure[DupelessSeq[Fruit]],
                                      ): Unit = {
     val counts = CandidateVoteCounts[Fruit](
       perCandidate = candidateVoteCounts.mapValues(votes => VoteCount(votes, votes)),
@@ -40,17 +40,17 @@ class ElectedCandidateComputationsSpec extends ImprovedFlatSpec {
 
     val quota = QuotaComputation.computeQuota(numVacancies, numFormalPapers)
 
-    val actualElectedCandidates = ElectedCandidateComputations.computeElected(
+    val actualElectedCandidates = ElectedCandidateComputations.computeNewlyElected(
       counts,
       candidateStatuses,
       numVacancies,
       quota,
     )
 
-    assert(actualElectedCandidates === expectedElected)
+    assert(actualElectedCandidates === expectedNewlyElected)
   }
 
-  "identifying elected candidates" should "be correct when there are no elected candidates" in {
+  "identifying newly elected candidates" should "be correct when there are no newly elected candidates" in {
     testElectionComputation(
       candidateVoteCounts = Map(
         Apple -> 42,
@@ -65,7 +65,26 @@ class ElectedCandidateComputationsSpec extends ImprovedFlatSpec {
         Strawberry -> Remaining,
       ),
       numVacancies = 2,
-      expectedElected = DupelessSeq[Fruit](Apple, Banana),
+      expectedNewlyElected = DupelessSeq[Fruit](Apple, Banana),
+    )
+  }
+
+  it should "be correct when a candidate has exactly a quota" in {
+    testElectionComputation(
+      candidateVoteCounts = Map(
+        Apple -> 34,
+        Banana -> 32,
+        Pear -> 22,
+        Strawberry -> 12,
+      ),
+      candidateStatuses = CandidateStatuses[Fruit](
+        Apple -> Remaining,
+        Banana -> Remaining,
+        Pear -> Remaining,
+        Strawberry -> Remaining,
+      ),
+      numVacancies = 2,
+      expectedNewlyElected = DupelessSeq[Fruit](Apple),
     )
   }
 
@@ -84,7 +103,7 @@ class ElectedCandidateComputationsSpec extends ImprovedFlatSpec {
         Strawberry -> Remaining,
       ),
       numVacancies = 3,
-      expectedElected =
+      expectedNewlyElected =
         ProbabilityMeasure(
           DupelessSeq[Fruit](Apple, Banana) -> Rational(1, 2),
           DupelessSeq[Fruit](Banana, Apple) -> Rational(1, 2),
@@ -107,7 +126,7 @@ class ElectedCandidateComputationsSpec extends ImprovedFlatSpec {
         Strawberry -> Remaining,
       ),
       numVacancies = 2,
-      expectedElected = DupelessSeq[Fruit](Apple, Banana),
+      expectedNewlyElected = DupelessSeq[Fruit](Banana),
     )
   }
 
@@ -128,7 +147,7 @@ class ElectedCandidateComputationsSpec extends ImprovedFlatSpec {
         Strawberry -> Remaining,
       ),
       numVacancies = 2,
-      expectedElected = DupelessSeq[Fruit](Apple),
+      expectedNewlyElected = DupelessSeq.empty[Fruit],
     )
   }
 
@@ -147,7 +166,7 @@ class ElectedCandidateComputationsSpec extends ImprovedFlatSpec {
         Strawberry -> Excluded(ordinalExcluded = 1, excludedAtCount = 3),
       ),
       numVacancies = 3,
-      expectedElected = DupelessSeq[Fruit](Apple, Pear, Banana),
+      expectedNewlyElected = DupelessSeq[Fruit](Pear, Banana),
     )
   }
 
@@ -166,9 +185,9 @@ class ElectedCandidateComputationsSpec extends ImprovedFlatSpec {
         Strawberry -> Excluded(ordinalExcluded = 1, excludedAtCount = 3),
       ),
       numVacancies = 2,
-      expectedElected = ProbabilityMeasure(
-        DupelessSeq[Fruit](Apple, Pear) -> Rational(1, 2),
-        DupelessSeq[Fruit](Apple, Banana) -> Rational(1, 2),
+      expectedNewlyElected = ProbabilityMeasure(
+        DupelessSeq[Fruit](Pear) -> Rational(1, 2),
+        DupelessSeq[Fruit](Banana) -> Rational(1, 2),
       )
     )
   }
@@ -188,7 +207,7 @@ class ElectedCandidateComputationsSpec extends ImprovedFlatSpec {
         Strawberry -> Remaining,
       ),
       numVacancies = 3,
-      expectedElected = DupelessSeq[Fruit](Apple, Banana),
+      expectedNewlyElected = DupelessSeq.empty[Fruit],
     )
   }
 
@@ -207,7 +226,7 @@ class ElectedCandidateComputationsSpec extends ImprovedFlatSpec {
         Strawberry -> Remaining,
       ),
       numVacancies = 2,
-      expectedElected = DupelessSeq[Fruit](Apple, Banana),
+      expectedNewlyElected = DupelessSeq.empty[Fruit],
     )
   }
 }

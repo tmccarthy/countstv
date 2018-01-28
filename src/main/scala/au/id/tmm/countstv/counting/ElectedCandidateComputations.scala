@@ -5,12 +5,12 @@ import au.id.tmm.utilities.collection.DupelessSeq
 
 object ElectedCandidateComputations {
 
-  def computeElected[C](
-                         counts: CandidateVoteCounts[C],
-                         candidateStatuses: CandidateStatuses[C],
-                         numVacancies: Int,
-                         quota: Long,
-                       ): ProbabilityMeasure[DupelessSeq[C]] = {
+  def computeNewlyElected[C](
+                              counts: CandidateVoteCounts[C],
+                              candidateStatuses: CandidateStatuses[C],
+                              numVacancies: Int,
+                              quota: Long,
+                            ): ProbabilityMeasure[DupelessSeq[C]] = {
     val alreadyElected = candidateStatuses
       .electedCandidates
 
@@ -33,7 +33,7 @@ object ElectedCandidateComputations {
 
         val remainingCandidatesAboveQuota = candidateStatuses.remainingCandidates
           .toStream
-          .filter { candidate => counts.perCandidate(candidate).numVotes > quota }
+          .filter { candidate => counts.perCandidate(candidate).numVotes >= quota }
 
         TieSensitiveSorting.sortBy(remainingCandidatesAboveQuota)(candidate => counts.perCandidate(candidate).numVotes)
           .map(_.take(numUnfilledVacancies))
@@ -42,7 +42,6 @@ object ElectedCandidateComputations {
     }
 
     newlyElected
-      .map(alreadyElected ++ _)
   }
 
 }

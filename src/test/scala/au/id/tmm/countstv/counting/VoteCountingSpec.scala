@@ -144,4 +144,34 @@ class VoteCountingSpec extends ImprovedFlatSpec {
 
     assert(actualVoteCounts === expectedVoteCounts)
   }
+
+  it should "correctly perform a simple count on a set of paper bundles" in {
+    val candidateStatuses = CandidateStatuses[Fruit](
+      Apple -> CandidateStatus.Remaining,
+      Banana -> CandidateStatus.Remaining,
+      Pear -> CandidateStatus.Remaining,
+      Strawberry -> CandidateStatus.Excluded(0, 1),
+    )
+
+    val paperBundles = PaperBundle.rootBundleFor(testPreferenceTree)
+      .distributeToRemainingCandidates(PaperBundle.Origin.InitialAllocation, candidateStatuses)
+      .flatMap { b =>
+        b.distributeToRemainingCandidates(PaperBundle.Origin.ExcludedCandidate(Strawberry), candidateStatuses)
+      }
+
+    val actualCount = VoteCounting.performSimpleCount(candidateStatuses.allCandidates, paperBundles)
+
+    val expectedCount = CandidateVoteCounts(
+      perCandidate = Map(
+        Apple -> VoteCount(3, 3),
+        Banana -> VoteCount(1, 1),
+        Pear -> VoteCount.zero,
+        Strawberry -> VoteCount.zero,
+      ),
+      exhausted = VoteCount(1, 1),
+      roundingError = VoteCount.zero,
+    )
+
+    assert(actualCount === expectedCount)
+  }
 }

@@ -14,19 +14,47 @@ object VoteCounting {
                    ): CandidateVoteCounts[C] = {
     val initialVoteCount = VoteCount(numPapers = initialNumPapers, numVotes = initialNumPapers)
 
-    val votesPerCandidate: mutable.Map[C, VoteCount] = mutable.Map[C, VoteCount]()
-    var exhaustedVotes: VoteCount = VoteCount.zero
-
-    candidateStatuses
+    val votesFromElectedCandidates = candidateStatuses
       .asMap
-      .foreach { case (candidate, status) =>
+      .map { case (candidate, status) =>
         val voteCount = status match {
+          // TODO this only applies if they are elected and have no papers assigned to them
           case _: CandidateStatus.Elected => VoteCount(numPapers = 0, numVotes = quota)
-          case _ => VoteCount.zero,
+          case _ => VoteCount.zero
         }
 
-        votesPerCandidate(candidate) = voteCount
+        candidate -> voteCount
       }
+
+    val simpleCount = performSimpleCount(candidateStatuses.allCandidates, paperBundles)
+
+    val countIncorporatingElectedCandidates = simpleCount.copy(
+      perCandidate = simpleCount.perCandidate.map { case (candidate, voteCountFromSimpleCount) =>
+        candidate -> (voteCountFromSimpleCount + votesFromElectedCandidates(candidate))
+      }
+    )
+
+    val totalVoteCount = countIncorporatingElectedCandidates.perCandidate.valuesIterator.fold(VoteCount.zero)(_ + _)
+    val roundingError = (totalVoteCount + countIncorporatingElectedCandidates.exhausted) - initialVoteCount
+
+    countIncorporatingElectedCandidates.copy(
+      roundingError = roundingError
+    )
+  }
+
+  def performSimpleCount[C](
+                             allCandidates: Set[C],
+                             paperBundles: Bag[PaperBundle[C]],
+                           ): CandidateVoteCounts[C] = {
+
+    val votesPerCandidate: mutable.Map[C, VoteCount] = mutable.Map(
+      allCandidates
+        .toStream
+        .map(c => c -> VoteCount.zero)
+        : _*
+    )
+
+    var exhaustedVotes: VoteCount = VoteCount.zero
 
     paperBundles
       .toIterator
@@ -45,16 +73,15 @@ object VoteCounting {
       }
 
     votesPerCandidate.transform { case (_, voteCount) =>
-        roundVotes(voteCount)
+      roundVotes(voteCount)
     }
 
     exhaustedVotes = roundVotes(exhaustedVotes)
-    val totalVoteCount = votesPerCandidate.valuesIterator.fold(VoteCount.zero)(_ + _)
 
     CandidateVoteCounts(
       perCandidate = votesPerCandidate.toMap,
       exhausted = exhaustedVotes,
-      roundingError = (totalVoteCount + exhaustedVotes) - initialVoteCount,
+      roundingError = VoteCount.zero,
     )
   }
 
