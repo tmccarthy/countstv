@@ -37,12 +37,12 @@ class PreferenceTreeSpec extends ImprovedFlatSpec {
     ))
 
     val lastChildNode = preferenceTree
-        .childFor(
-          ballotWith4Preferences(0),
-          ballotWith4Preferences(1),
-          ballotWith4Preferences(2),
-          ballotWith4Preferences(3),
-        )
+      .childFor(
+        ballotWith4Preferences(0),
+        ballotWith4Preferences(1),
+        ballotWith4Preferences(2),
+        ballotWith4Preferences(3),
+      )
 
     assert(lastChildNode.exists(_.numPapers === 1))
   }
@@ -64,9 +64,7 @@ class PreferenceTreeSpec extends ImprovedFlatSpec {
     assert(lastChildNode.childFor(Banana).isEmpty)
   }
 
-  // TODO we should reject empty ballots
-
-  it should "have children" in {
+  "a preference tree" should "have children" in {
     val preferenceTree = PreferenceTree.from(
       Vector(Apple, Pear, Banana, Strawberry),
       Vector(Apple, Banana, Strawberry, Pear),
@@ -94,6 +92,17 @@ class PreferenceTreeSpec extends ImprovedFlatSpec {
     )
 
     assert(preferenceTree.toString === "PreferenceTree(numChildren=2, numPapers=3)")
+  }
+
+  it should "reject empty ballots" in {
+    intercept[IllegalArgumentException] {
+      PreferenceTree.from(
+        Vector(Apple, Pear, Banana, Strawberry),
+        Vector(Apple, Banana, Strawberry, Pear),
+        Vector(),
+        Vector(Banana, Pear),
+      )
+    }
   }
 
   "a preference tree child node" should "be associated with a candidate" in {

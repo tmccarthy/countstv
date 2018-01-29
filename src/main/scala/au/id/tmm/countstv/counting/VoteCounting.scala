@@ -14,23 +14,22 @@ object VoteCounting {
                    ): CandidateVoteCounts[C] = {
     val initialVoteCount = VoteCount(numPapers = initialNumPapers, numVotes = initialNumPapers)
 
-    val votesFromElectedCandidates = candidateStatuses
-      .asMap
-      .map { case (candidate, status) =>
-        val voteCount = status match {
-          // TODO this only applies if they are elected and have no papers assigned to them
-          case _: CandidateStatus.Elected => VoteCount(numPapers = 0, numVotes = quota)
-          case _ => VoteCount.zero
-        }
-
-        candidate -> voteCount
-      }
-
     val simpleCount = performSimpleCount(candidateStatuses.allCandidates, paperBundles)
 
     val countIncorporatingElectedCandidates = simpleCount.copy(
       perCandidate = simpleCount.perCandidate.map { case (candidate, voteCountFromSimpleCount) =>
-        candidate -> (voteCountFromSimpleCount + votesFromElectedCandidates(candidate))
+
+        val candidateStatus = candidateStatuses.asMap(candidate)
+
+        val voteCountForCandidate = {
+          if (candidateStatus.isInstanceOf[CandidateStatus.Elected] && voteCountFromSimpleCount == VoteCount.zero) {
+            voteCountFromSimpleCount + VoteCount(numPapers = 0, numVotes = quota)
+          } else {
+            voteCountFromSimpleCount
+          }
+        }
+
+        candidate -> voteCountForCandidate
       }
     )
 

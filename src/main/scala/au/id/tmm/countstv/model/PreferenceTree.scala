@@ -57,6 +57,8 @@ object PreferenceTree {
     val returnedPreferenceTree = new PreferenceTree[C]()
 
     for (ballot <- ballots) {
+      require(ballot.nonEmpty)
+
       incrementPaperCount(returnedPreferenceTree, ballot)
     }
 

@@ -338,43 +338,4 @@ class PaperBundleSpec extends ImprovedFlatSpec {
 
     assert(actualBundles === expectedBundles)
   }
-
-  it can "distribute its papers to an immediate exhausted ballot" in {
-    val candidateStatuses = CandidateStatuses[Fruit](
-      Fruit.Apple -> CandidateStatus.Remaining,
-      Fruit.Banana -> CandidateStatus.Remaining,
-      Fruit.Pear -> CandidateStatus.Remaining,
-      Fruit.Strawberry -> CandidateStatus.Remaining,
-    )
-
-    val testPreferenceTree = PreferenceTree.from[Fruit](
-      Vector(Apple, Pear, Banana, Strawberry),
-      Vector(Apple, Banana, Strawberry, Pear),
-      Vector(Banana, Pear),
-      Vector(),
-    )
-
-    val actualBundles = PaperBundle.rootBundleFor(testPreferenceTree)
-      .distributeToRemainingCandidates(PaperBundle.Origin.InitialAllocation, candidateStatuses)
-
-    val expectedBundles = Bag[PaperBundle[Fruit]](
-      AssignedPaperBundle(
-        transferValue = 1d,
-        preferenceTreeNode = testPreferenceTree.childFor(Apple).get,
-        origin = PaperBundle.Origin.InitialAllocation,
-      ),
-      AssignedPaperBundle(
-        transferValue = 1d,
-        preferenceTreeNode = testPreferenceTree.childFor(Banana).get,
-        origin = PaperBundle.Origin.InitialAllocation,
-      ),
-      ExhaustedPaperBundle[Fruit](
-        numPapers = 1,
-        transferValue = 1.0d,
-        origin = PaperBundle.Origin.InitialAllocation,
-      ),
-    )
-
-    assert(actualBundles === expectedBundles)
-  }
 }

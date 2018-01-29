@@ -33,8 +33,6 @@ class InitialAllocationComputationSpec extends ImprovedFlatSpec {
     Vector(Strawberry, Apple, Pear, Banana),
     Vector(Strawberry, Banana, Apple, Pear),
     Vector(Strawberry, Pear, Apple, Banana),
-    Vector(),
-    Vector(),
   )
 
   private val candidateStatuses = CandidateStatuses(
@@ -103,7 +101,7 @@ class InitialAllocationComputationSpec extends ImprovedFlatSpec {
         Pear -> VoteCount(8, 8),
         Strawberry -> VoteCount(5, 5),
       ),
-      exhausted = VoteCount(2, 2),
+      exhausted = VoteCount.zero,
       roundingError = VoteCount.zero
     )
 

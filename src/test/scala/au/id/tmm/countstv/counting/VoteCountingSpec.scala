@@ -88,6 +88,38 @@ class VoteCountingSpec extends ImprovedFlatSpec {
     assert(actualVoteCounts === expectedVoteCounts)
   }
 
+  it should "correctly count the votes when a candidate has been elected but its ballots haven't been transferred" in {
+    val candidateStatuses = CandidateStatuses[Fruit](
+      Apple -> CandidateStatus.Elected(ordinalElected = 0, electedAtCount = 1),
+      Banana -> CandidateStatus.Remaining,
+      Pear -> CandidateStatus.Remaining,
+      Strawberry -> CandidateStatus.Remaining,
+    )
+
+    val paperBundles = PaperBundle.rootBundleFor(testPreferenceTree)
+      .distributeToRemainingCandidates(PaperBundle.Origin.InitialAllocation, candidateStatuses)
+
+    val actualVoteCounts = VoteCounting.countVotes[Fruit](
+      initialNumPapers = testPreferenceTree.numPapers,
+      quota = 2l,
+      candidateStatuses = candidateStatuses,
+      paperBundles = paperBundles,
+    )
+
+    val expectedVoteCounts = CandidateVoteCounts[Fruit](
+      perCandidate = Map(
+        Apple -> VoteCount(numPapers = 3, numVotes = 3),
+        Banana -> VoteCount(numPapers = 1, numVotes = 1),
+        Pear -> VoteCount(numPapers = 0, numVotes = 0),
+        Strawberry -> VoteCount(numPapers = 1, numVotes = 1),
+      ),
+      exhausted = VoteCount.zero,
+      roundingError = VoteCount(numPapers = 0, numVotes = 0),
+    )
+
+    assert(actualVoteCounts === expectedVoteCounts)
+  }
+
   it should "correctly count the votes when some ballots have exhausted" in {
     val candidateStatuses = CandidateStatuses[Fruit](
       Apple -> CandidateStatus.Elected(ordinalElected = 0, electedAtCount = 1),
