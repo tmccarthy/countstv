@@ -6,7 +6,7 @@ import au.id.tmm.countstv.model.{CandidateStatuses, PreferenceTree}
 
 import scala.collection.immutable.{Bag, HashedBagConfiguration}
 
-private[counting] sealed trait PaperBundle[C] {
+sealed trait PaperBundle[C] {
 
   def assignedCandidate: Option[C]
 
@@ -24,7 +24,7 @@ private[counting] sealed trait PaperBundle[C] {
 
 }
 
-private[counting] final case class RootPaperBundle[C](preferenceTree: PreferenceTree[C]) extends PaperBundle[C] {
+final case class RootPaperBundle[C](preferenceTree: PreferenceTree[C]) extends PaperBundle[C] {
   override def assignedCandidate: Option[C] = None
 
   override def origin: Origin[C] = PaperBundle.Origin.InitialAllocation
@@ -34,7 +34,7 @@ private[counting] final case class RootPaperBundle[C](preferenceTree: Preference
   override def transferValue: Double = 1.0d
 }
 
-private[counting] final case class AssignedPaperBundle[C](
+final case class AssignedPaperBundle[C](
                                                            transferValue: Double,
                                                            preferenceTreeNode: PreferenceTreeNode[C],
                                                            origin: PaperBundle.Origin[C]
@@ -46,7 +46,7 @@ private[counting] final case class AssignedPaperBundle[C](
 
 }
 
-private[counting] final case class ExhaustedPaperBundle[C](
+final case class ExhaustedPaperBundle[C](
                                                             numPapers: Long,
                                                             transferValue: Double,
                                                             origin: Origin[C],
@@ -61,7 +61,7 @@ object PaperBundle {
 
   def rootBundleFor[C](preferenceTree: PreferenceTree[C]): RootPaperBundle[C] = RootPaperBundle[C](preferenceTree)
 
-  private[counting] def distributeIfCandidateNotRemaining[C](
+  def distributeIfCandidateNotRemaining[C](
                                                               bundle: PaperBundle[C],
                                                               origin: Origin[C],
                                                               candidateStatuses: CandidateStatuses[C],

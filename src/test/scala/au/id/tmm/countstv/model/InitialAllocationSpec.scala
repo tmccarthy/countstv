@@ -45,4 +45,8 @@ class InitialAllocationSpec extends ImprovedFlatSpec {
   it should "have vote counts for each candidate" in {
     assert(testInitialAllocation.candidateVoteCounts === testInitialAllocation.candidateVoteCounts)
   }
+
+  it should "have a count of '0'" in {
+    assert(testInitialAllocation.count === 0)
+  }
 }
