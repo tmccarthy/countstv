@@ -86,12 +86,12 @@ class ProbabilityMeasureSpec extends ImprovedFlatSpec {
     assert(actualResult === expectedResult)
   }
 
-  it can "be built from a single possibility" in {
-    val actualResult = ProbabilityMeasure.always(Apple)
+  "a probability measure with a single possibility" should "have a probability of 1" in {
+    assert(ProbabilityMeasure.always(Apple).chanceOf(Apple) === Rational.one)
+  }
 
-    val expectedResult = ProbabilityMeasure(Apple -> Rational.one)
-
-    assert(actualResult === expectedResult)
+  it should "have no probability of another outcome" in {
+    assert(ProbabilityMeasure.always[Fruit](Apple).chanceOf(Banana) === Rational.zero)
   }
 
   "a possibility" must "have a positive probability" in {
