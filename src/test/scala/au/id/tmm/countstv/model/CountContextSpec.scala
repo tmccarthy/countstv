@@ -35,40 +35,46 @@ class CountContextSpec extends ImprovedFlatSpec {
       ),
       transfersDueToIneligibles = Map.empty[Fruit, CandidateVoteCounts[Fruit]],
     ),
-    candidateCurrentlyBeingElected = None,
-    candidateCurrentlyBeingExcluded = None,
+    electedCandidateBeingDistributed = None,
+    excludedCandidateBeingDistributed = None,
     paperBundlesToBeDistributed = Bag.empty[PaperBundle[Fruit]],
   )
 
   "a count context" should "derive when a candidate is elected and yet to be distributed" in {
-    val localTestContext = testContext
+    val mostRecentCountStep = testContext
+      .mostRecentCountStep
+      .asInstanceOf[AllocationAfterIneligibles[Fruit]]
       .copy(
-        mostRecentCountStep = testContext.mostRecentCountStep.asInstanceOf[AllocationAfterIneligibles[Fruit]].copy(
-          candidateStatuses = CandidateStatuses[Fruit](
-            Apple -> Elected(0, 1),
-            Banana -> Elected(1, 1),
-            Pear -> Remaining,
-            Strawberry -> Remaining,
-          ),
-        )
+        candidateStatuses = CandidateStatuses[Fruit](
+          Apple -> Elected(0, 1),
+          Banana -> Elected(1, 1),
+          Pear -> Remaining,
+          Strawberry -> Remaining,
+        ),
       )
+
+    val localTestContext = testContext.copy(mostRecentCountStep = mostRecentCountStep)
 
     assert(localTestContext.electedCandidatesToBeDistributed === Queue(Apple, Banana))
   }
 
   it should "not indicate a candidate needs to be distributed if they're currently being distributed" in {
-    val localTestContext = testContext
+    val mostRecentCountStep = testContext
+      .mostRecentCountStep
+      .asInstanceOf[AllocationAfterIneligibles[Fruit]]
       .copy(
-        mostRecentCountStep = testContext.mostRecentCountStep.asInstanceOf[AllocationAfterIneligibles[Fruit]].copy(
-          candidateStatuses = CandidateStatuses[Fruit](
-            Apple -> Elected(0, 1),
-            Banana -> Elected(1, 1),
-            Pear -> Remaining,
-            Strawberry -> Remaining,
-          ),
+        candidateStatuses = CandidateStatuses[Fruit](
+          Apple -> Elected(0, 1),
+          Banana -> Elected(1, 1),
+          Pear -> Remaining,
+          Strawberry -> Remaining,
         ),
-        candidateCurrentlyBeingElected = Some(Apple),
       )
+
+    val localTestContext = testContext.copy(
+      mostRecentCountStep = mostRecentCountStep,
+      electedCandidateBeingDistributed = Some(Apple),
+    )
 
     assert(localTestContext.electedCandidatesToBeDistributed === Queue(Banana))
   }

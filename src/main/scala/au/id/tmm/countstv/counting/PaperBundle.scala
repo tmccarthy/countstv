@@ -32,13 +32,25 @@ final case class RootPaperBundle[C](preferenceTree: PreferenceTree[C]) extends P
   override def numPapers: Long = preferenceTree.numPapers
 
   override def transferValue: Double = 1.0d
+
+  def distribute: Bag[PaperBundle[C]] = {
+    val childBundles = preferenceTree.children.valuesIterator.map { childNode =>
+      AssignedPaperBundle(
+        transferValue = 1.0d,
+        preferenceTreeNode = childNode,
+        origin = PaperBundle.Origin.InitialAllocation,
+      )
+    }
+
+    Bag[PaperBundle[C]]() ++ childBundles
+  }
 }
 
 final case class AssignedPaperBundle[C](
-                                                           transferValue: Double,
-                                                           preferenceTreeNode: PreferenceTreeNode[C],
-                                                           origin: PaperBundle.Origin[C]
-                                                         ) extends PaperBundle[C] {
+                                         transferValue: Double,
+                                         preferenceTreeNode: PreferenceTreeNode[C],
+                                         origin: PaperBundle.Origin[C]
+                                       ) extends PaperBundle[C] {
 
   override def assignedCandidate: Option[C] = Some(preferenceTreeNode.associatedCandidate)
 
@@ -47,10 +59,10 @@ final case class AssignedPaperBundle[C](
 }
 
 final case class ExhaustedPaperBundle[C](
-                                                            numPapers: Long,
-                                                            transferValue: Double,
-                                                            origin: Origin[C],
-                                                          ) extends PaperBundle[C] {
+                                          numPapers: Long,
+                                          transferValue: Double,
+                                          origin: Origin[C],
+                                        ) extends PaperBundle[C] {
   override def assignedCandidate: Option[C] = None
 }
 
@@ -62,10 +74,10 @@ object PaperBundle {
   def rootBundleFor[C](preferenceTree: PreferenceTree[C]): RootPaperBundle[C] = RootPaperBundle[C](preferenceTree)
 
   def distributeIfCandidateNotRemaining[C](
-                                                              bundle: PaperBundle[C],
-                                                              origin: Origin[C],
-                                                              candidateStatuses: CandidateStatuses[C],
-                                                            ): Bag[PaperBundle[C]] = {
+                                            bundle: PaperBundle[C],
+                                            origin: Origin[C],
+                                            candidateStatuses: CandidateStatuses[C],
+                                          ): Bag[PaperBundle[C]] = {
 
     bundle match {
       case b: ExhaustedPaperBundle[C] => Bag[PaperBundle[C]](b)

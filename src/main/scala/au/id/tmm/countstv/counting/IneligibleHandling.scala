@@ -2,21 +2,22 @@ package au.id.tmm.countstv.counting
 
 import au.id.tmm.countstv.model._
 
-import scala.collection.immutable.Bag
-
 object IneligibleHandling {
-  def handleIneligibleCandidates[C](
-                                     initialAllocation: InitialAllocation[C],
-                                     initialNumPapers: Long,
-                                     quota: Long,
-                                     numVacancies: Int,
-                                     oldPaperBundles: Bag[PaperBundle[C]],
-                                   ): ProbabilityMeasure[AllocationAfterIneligibles[C]] = {
+
+  def computeContextAfterIneligibles[C](previousContext: CountContext[C]): ProbabilityMeasure[CountContext[C]] = {
+    val initialNumPapers = previousContext.numFormalPapers
+    val numVacancies = previousContext.numVacancies
+    val quota = previousContext.quota
+
+    val initialAllocation = previousContext.mostRecentCountStep
+
     val oldCandidateStatuses = initialAllocation.candidateStatuses
     val oldVoteCounts = initialAllocation.candidateVoteCounts
 
     val allCandidates = oldCandidateStatuses.allCandidates
     val ineligibleCandidates = oldCandidateStatuses.ineligibleCandidates
+
+    val oldPaperBundles = previousContext.paperBundles
 
     val newPaperBundlesPerIneligibleCandidate = oldPaperBundles
       .filter(b => b.assignedCandidate.exists(ineligibleCandidates.contains))
@@ -49,10 +50,13 @@ object IneligibleHandling {
     )
 
     newCandidateStatusPossibilities.map { newCandidateStatuses =>
-      AllocationAfterIneligibles(
-        candidateStatuses = newCandidateStatuses,
-        candidateVoteCounts = newVoteCount,
-        transfersDueToIneligibles = transfersDueToIneligibles,
+      previousContext.copy(
+        paperBundles = newPaperBundles,
+        mostRecentCountStep = AllocationAfterIneligibles(
+          candidateStatuses = newCandidateStatuses,
+          candidateVoteCounts = newVoteCount,
+          transfersDueToIneligibles = transfersDueToIneligibles,
+        ),
       )
     }
   }

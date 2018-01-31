@@ -11,8 +11,8 @@ final case class CountContext[C] (
                                    paperBundles: Bag[PaperBundle[C]],
                                    mostRecentCountStep: CountStep[C],
 
-                                   candidateCurrentlyBeingExcluded: Option[C],
-                                   candidateCurrentlyBeingElected: Option[C],
+                                   excludedCandidateBeingDistributed: Option[C],
+                                   electedCandidateBeingDistributed: Option[C],
 
                                    paperBundlesToBeDistributed: Bag[PaperBundle[C]],
                                  ) {
@@ -22,7 +22,8 @@ final case class CountContext[C] (
     mostRecentCountStep
       .candidateStatuses
       .electedCandidates
-      .filterNot(candidateCurrentlyBeingElected.contains)
+      .toStream
+      .filterNot(electedCandidateBeingDistributed.contains)
       .to[Queue]
   }
 }

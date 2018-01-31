@@ -40,7 +40,7 @@ object ProbabilityMeasure {
     }
   }
 
-  private final case class Always[A](outcome: A) extends ProbabilityMeasure[A] {
+  final case class Always[A](outcome: A) extends ProbabilityMeasure[A] {
     override def chanceOf(possibility: A): Rational = {
       if (outcome == possibility) {
         Rational.one
@@ -56,7 +56,7 @@ object ProbabilityMeasure {
     override def asMap: Map[A, Rational] = Map(outcome -> Rational.one)
   }
 
-  private final case class Varied[A](asMap: Map[A, Rational]) extends ProbabilityMeasure[A] {
+  final case class Varied[A](asMap: Map[A, Rational]) extends ProbabilityMeasure[A] {
     require(asMap.valuesIterator.foldLeft(Rational.zero)(_ + _) == Rational.one)
     require(asMap.valuesIterator.forall(_ >= Rational.zero))
 

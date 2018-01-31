@@ -338,4 +338,24 @@ class PaperBundleSpec extends ImprovedFlatSpec {
 
     assert(actualBundles === expectedBundles)
   }
+
+  it can "distribute its papers regardless of their status" in {
+    val actualBundles = PaperBundle.rootBundleFor(testPreferenceTree)
+      .distribute
+
+    val expectedBundles = Bag[PaperBundle[Fruit]](
+      AssignedPaperBundle(
+        transferValue = 1d,
+        preferenceTreeNode = testPreferenceTree.childFor(Apple).get,
+        origin = PaperBundle.Origin.InitialAllocation,
+      ),
+      AssignedPaperBundle(
+        transferValue = 1d,
+        preferenceTreeNode = testPreferenceTree.childFor(Banana).get,
+        origin = PaperBundle.Origin.InitialAllocation,
+      )
+    )
+
+    assert(actualBundles === expectedBundles)
+  }
 }
