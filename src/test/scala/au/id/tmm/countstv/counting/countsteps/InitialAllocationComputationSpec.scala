@@ -107,8 +107,7 @@ class InitialAllocationComputationSpec extends ImprovedFlatSpec {
           roundingError = VoteCount.zero
         ),
       ),
-      excludedCandidateBeingDistributed = None,
-      electedCandidateBeingDistributed = None,
+      currentDistribution = CountContext.CurrentDistribution.NoDistribution,
       paperBundlesToBeDistributed = Bag.empty(PaperBundle.bagConfiguration),
     )
 

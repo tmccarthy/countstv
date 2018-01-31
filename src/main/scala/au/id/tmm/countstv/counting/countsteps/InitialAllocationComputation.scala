@@ -33,8 +33,7 @@ object InitialAllocationComputation {
           paperBundles = firstSetOfPaperBundles,
         )
       ),
-      excludedCandidateBeingDistributed = None,
-      electedCandidateBeingDistributed = None,
+      currentDistribution = CountContext.CurrentDistribution.NoDistribution,
       paperBundlesToBeDistributed = Bag.empty(PaperBundle.bagConfiguration),
     )
 

@@ -35,8 +35,7 @@ class CountContextSpec extends ImprovedFlatSpec {
       ),
       transfersDueToIneligibles = Map.empty[Fruit, CandidateVoteCounts[Fruit]],
     ),
-    electedCandidateBeingDistributed = None,
-    excludedCandidateBeingDistributed = None,
+    currentDistribution = CountContext.CurrentDistribution.NoDistribution,
     paperBundlesToBeDistributed = Bag.empty[PaperBundle[Fruit]],
   )
 
@@ -73,7 +72,7 @@ class CountContextSpec extends ImprovedFlatSpec {
 
     val localTestContext = testContext.copy(
       mostRecentCountStep = mostRecentCountStep,
-      electedCandidateBeingDistributed = Some(Apple),
+      currentDistribution = CountContext.CurrentDistribution.ElectedCandidate(Apple),
     )
 
     assert(localTestContext.electedCandidatesToBeDistributed === Queue(Banana))
@@ -81,5 +80,12 @@ class CountContextSpec extends ImprovedFlatSpec {
 
   it should "have the right quota" in {
     assert(testContext.quota === QuotaComputation.computeQuota(testContext.numVacancies, testContext.numFormalPapers))
+  }
+
+  "it" can "be currently distributing an excluded candidate" in {
+    val localTestContext = testContext
+      .copy(currentDistribution = CountContext.CurrentDistribution.ExcludedCandidate(Apple))
+
+    assert(localTestContext.currentDistribution === CountContext.CurrentDistribution.ExcludedCandidate(Apple))
   }
 }
