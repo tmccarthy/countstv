@@ -1,8 +1,7 @@
-package au.id.tmm.countstv.counting
+package au.id.tmm.countstv.model
 
-import au.id.tmm.countstv.counting.PaperBundle.Origin
+import au.id.tmm.countstv.model.PaperBundle.Origin
 import au.id.tmm.countstv.model.PreferenceTree.PreferenceTreeNode
-import au.id.tmm.countstv.model.{CandidateStatuses, PreferenceTree}
 
 import scala.collection.immutable.{Bag, HashedBagConfiguration}
 

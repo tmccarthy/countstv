@@ -1,6 +1,6 @@
 package au.id.tmm.countstv.model
 
-import au.id.tmm.countstv.counting.{PaperBundle, QuotaComputation}
+import au.id.tmm.countstv.counting.QuotaComputation
 
 import scala.collection.immutable.{Bag, Queue}
 

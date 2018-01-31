@@ -1,5 +1,6 @@
-package au.id.tmm.countstv.counting
+package au.id.tmm.countstv.counting.countsteps
 
+import au.id.tmm.countstv.counting.{ElectedCandidateComputations, VoteCounting}
 import au.id.tmm.countstv.model._
 
 object IneligibleHandling {

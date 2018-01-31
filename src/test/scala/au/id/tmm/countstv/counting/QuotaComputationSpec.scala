@@ -5,7 +5,9 @@ import au.id.tmm.utilities.testing.ImprovedFlatSpec
 class QuotaComputationSpec extends ImprovedFlatSpec {
 
   private def testQuota(numVacancies: Int, numBallots: Long, expectedQuota: Long): Unit = {
-    assert(QuotaComputation.computeQuota(numVacancies, numBallots) === expectedQuota)
+    s"the quota with $numBallots ballots for $numVacancies vacancies" should s"be $expectedQuota" in {
+      assert(QuotaComputation.computeQuota(numVacancies, numBallots) === expectedQuota)
+    }
   }
 
   testQuota(

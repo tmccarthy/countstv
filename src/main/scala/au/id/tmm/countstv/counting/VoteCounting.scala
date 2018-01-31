@@ -1,6 +1,6 @@
 package au.id.tmm.countstv.counting
 
-import au.id.tmm.countstv.model.{CandidateStatus, CandidateStatuses, CandidateVoteCounts, VoteCount}
+import au.id.tmm.countstv.model._
 
 import scala.collection.immutable.Bag
 import scala.collection.mutable

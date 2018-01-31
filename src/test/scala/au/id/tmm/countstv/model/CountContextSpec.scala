@@ -2,7 +2,7 @@ package au.id.tmm.countstv.model
 
 import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
-import au.id.tmm.countstv.counting.{PaperBundle, QuotaComputation}
+import au.id.tmm.countstv.counting.QuotaComputation
 import au.id.tmm.countstv.model.CandidateStatus._
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
