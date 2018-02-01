@@ -3,8 +3,6 @@ package au.id.tmm.countstv.counting.countsteps
 import au.id.tmm.countstv.counting.{QuotaComputation, VoteCounting}
 import au.id.tmm.countstv.model._
 
-import scala.collection.immutable.Bag
-
 object InitialAllocationComputation {
 
   private val allowedCandidateStatuses: Set[CandidateStatus] =
@@ -33,8 +31,7 @@ object InitialAllocationComputation {
           paperBundles = firstSetOfPaperBundles,
         )
       ),
-      currentDistribution = CountContext.CurrentDistribution.NoDistribution,
-      paperBundlesToBeDistributed = Bag.empty(PaperBundle.bagConfiguration),
+      currentDistribution = None,
     )
 
   }

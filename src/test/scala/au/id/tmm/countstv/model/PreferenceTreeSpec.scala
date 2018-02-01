@@ -1,11 +1,17 @@
 package au.id.tmm.countstv.model
 
 import au.id.tmm.countstv.Fruit._
+import au.id.tmm.countstv.{Fruit, NormalisedBallot}
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
 class PreferenceTreeSpec extends ImprovedFlatSpec {
 
-  import au.id.tmm.countstv.BallotFixtures._
+  private val ballotWith4Preferences: NormalisedBallot[Fruit] = Vector(
+    Banana,
+    Pear,
+    Strawberry,
+    Apple,
+  )
 
   "an empty preference tree" should "have no papers" in {
     val emptyPreferenceTree = PreferenceTree.empty

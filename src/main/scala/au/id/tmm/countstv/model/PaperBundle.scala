@@ -1,5 +1,6 @@
 package au.id.tmm.countstv.model
 
+import au.id.tmm.countstv.PaperBundles
 import au.id.tmm.countstv.model.PaperBundle.Origin
 import au.id.tmm.countstv.model.PreferenceTree.PreferenceTreeNode
 
@@ -14,7 +15,7 @@ sealed trait PaperBundle[C] {
   def distributeToRemainingCandidates(
                                        origin: Origin[C],
                                        candidateStatuses: CandidateStatuses[C],
-                                     ): Bag[PaperBundle[C]] =
+                                     ): PaperBundles[C] =
     PaperBundle.distributeIfCandidateNotRemaining(this, origin, candidateStatuses)
 
   def numPapers: Long
@@ -32,7 +33,7 @@ final case class RootPaperBundle[C](preferenceTree: PreferenceTree[C]) extends P
 
   override def transferValue: Double = 1.0d
 
-  def distribute: Bag[PaperBundle[C]] = {
+  def distribute: PaperBundles[C] = {
     val childBundles = preferenceTree.children.valuesIterator.map { childNode =>
       AssignedPaperBundle(
         transferValue = 1.0d,
@@ -76,7 +77,7 @@ object PaperBundle {
                                             bundle: PaperBundle[C],
                                             origin: Origin[C],
                                             candidateStatuses: CandidateStatuses[C],
-                                          ): Bag[PaperBundle[C]] = {
+                                          ): PaperBundles[C] = {
 
     bundle match {
       case b: ExhaustedPaperBundle[C] => Bag[PaperBundle[C]](b)
@@ -99,7 +100,7 @@ object PaperBundle {
                                                   bundle: PaperBundle[C],
                                                   origin: Origin[C],
                                                   nodesForDistributedBundles: Iterator[PreferenceTreeNode[C]],
-                                                ): Bag[PaperBundle[C]] = {
+                                                ): PaperBundles[C] = {
 
     val distributedTransferValue = origin match {
       case PaperBundle.Origin.ElectedCandidate(_, appliedTransferValue) =>

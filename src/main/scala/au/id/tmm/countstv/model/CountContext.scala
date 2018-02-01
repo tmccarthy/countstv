@@ -1,5 +1,6 @@
 package au.id.tmm.countstv.model
 
+import au.id.tmm.countstv.PaperBundles
 import au.id.tmm.countstv.counting.QuotaComputation
 import au.id.tmm.countstv.model.CountContext.CurrentDistribution
 
@@ -9,18 +10,16 @@ final case class CountContext[C] (
                                    numFormalPapers: Long,
                                    numVacancies: Int,
 
-                                   paperBundles: Bag[PaperBundle[C]],
+                                   paperBundles: PaperBundles[C],
                                    mostRecentCountStep: CountStep[C],
 
-                                   currentDistribution: CurrentDistribution[C],
-
-                                   paperBundlesToBeDistributed: Bag[PaperBundle[C]],
+                                   currentDistribution: Option[CurrentDistribution[C]],
                                  ) {
   val quota: Long = QuotaComputation.computeQuota(numVacancies, numFormalPapers)
 
   def electedCandidatesToBeDistributed: Queue[C] = {
     val electedCandidateCurrentlyBeingDistributed = currentDistribution match {
-      case CurrentDistribution.ElectedCandidate(candidateBeingDistributed) => Some(candidateBeingDistributed)
+      case Some(CurrentDistribution.ElectedCandidate(candidateBeingDistributed, _)) => Some(candidateBeingDistributed)
       case _ => None
     }
 
@@ -35,12 +34,23 @@ final case class CountContext[C] (
 
 object CountContext {
 
-  sealed trait CurrentDistribution[+C]
+  sealed trait CurrentDistribution[C] {
+    def candidateBeingDistributed: C
+    def bundlesToDistribute: Queue[Bag[AssignedPaperBundle[C]]]
+
+    require(bundlesToDistribute.nonEmpty)
+  }
 
   object CurrentDistribution {
-    final case class ExcludedCandidate[C](candidateBeingDistributed: C) extends CurrentDistribution[C]
-    final case class ElectedCandidate[C](candidateBeingDistributed: C) extends CurrentDistribution[C]
-    case object NoDistribution extends CurrentDistribution[Nothing]
+    final case class ExcludedCandidate[C](
+                                           candidateBeingDistributed: C,
+                                           bundlesToDistribute: Queue[Bag[AssignedPaperBundle[C]]],
+                                         ) extends CurrentDistribution[C]
+
+    final case class ElectedCandidate[C](
+                                          candidateBeingDistributed: C,
+                                          bundlesToDistribute: Queue[Bag[AssignedPaperBundle[C]]],
+                                        ) extends CurrentDistribution[C]
   }
 
 }

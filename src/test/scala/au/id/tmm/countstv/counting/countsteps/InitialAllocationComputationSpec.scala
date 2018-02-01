@@ -6,8 +6,6 @@ import au.id.tmm.countstv.model.CandidateStatus._
 import au.id.tmm.countstv.model.{PaperBundle, _}
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
-import scala.collection.immutable.Bag
-
 class InitialAllocationComputationSpec extends ImprovedFlatSpec {
 
   private val testPreferenceTree = PreferenceTree.from[Fruit](
@@ -107,8 +105,7 @@ class InitialAllocationComputationSpec extends ImprovedFlatSpec {
           roundingError = VoteCount.zero
         ),
       ),
-      currentDistribution = CountContext.CurrentDistribution.NoDistribution,
-      paperBundlesToBeDistributed = Bag.empty(PaperBundle.bagConfiguration),
+      currentDistribution = None,
     )
 
     assert(actualContext === expectedContext)

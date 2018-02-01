@@ -1,8 +1,8 @@
 package au.id.tmm.countstv.counting
 
+import au.id.tmm.countstv.PaperBundles
 import au.id.tmm.countstv.model._
 
-import scala.collection.immutable.Bag
 import scala.collection.mutable
 
 object VoteCounting {
@@ -10,7 +10,7 @@ object VoteCounting {
                      initialNumPapers: Long,
                      quota: Long,
                      candidateStatuses: CandidateStatuses[C],
-                     paperBundles: Bag[PaperBundle[C]],
+                     paperBundles: PaperBundles[C],
                    ): CandidateVoteCounts[C] = {
     val initialVoteCount = VoteCount(numPapers = initialNumPapers, numVotes = initialNumPapers)
 
@@ -43,7 +43,7 @@ object VoteCounting {
 
   def performSimpleCount[C](
                              allCandidates: Set[C],
-                             paperBundles: Bag[PaperBundle[C]],
+                             paperBundles: PaperBundles[C],
                            ): CandidateVoteCounts[C] = {
 
     val votesPerCandidate: mutable.Map[C, VoteCount] = mutable.Map(

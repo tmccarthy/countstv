@@ -10,7 +10,8 @@ import scala.collection.immutable.{Bag, HashedBagConfiguration, Queue}
 
 class CountContextSpec extends ImprovedFlatSpec {
 
-  private implicit val bagConfiguration: HashedBagConfiguration[PaperBundle[Fruit]] = PaperBundle.bagConfiguration
+  private implicit def bagConfiguration[A]: HashedBagConfiguration[A] =
+    PaperBundle.bagConfiguration.asInstanceOf[HashedBagConfiguration[A]]
 
   private val testContext = CountContext(
     numFormalPapers = 40,
@@ -35,8 +36,19 @@ class CountContextSpec extends ImprovedFlatSpec {
       ),
       transfersDueToIneligibles = Map.empty[Fruit, CandidateVoteCounts[Fruit]],
     ),
-    currentDistribution = CountContext.CurrentDistribution.NoDistribution,
-    paperBundlesToBeDistributed = Bag.empty[PaperBundle[Fruit]],
+    currentDistribution = None,
+  )
+
+  private val testPreferenceTree = PreferenceTree.from[Fruit](
+    Vector(Apple, Pear, Banana, Strawberry),
+    Vector(Apple, Banana, Strawberry, Pear),
+    Vector(Banana, Pear),
+  )
+
+  private val testBundle = AssignedPaperBundle(
+    transferValue = 1.0d,
+    testPreferenceTree.childFor(Apple).get,
+    PaperBundle.Origin.InitialAllocation,
   )
 
   "a count context" should "derive when a candidate is elected and yet to be distributed" in {
@@ -72,7 +84,12 @@ class CountContextSpec extends ImprovedFlatSpec {
 
     val localTestContext = testContext.copy(
       mostRecentCountStep = mostRecentCountStep,
-      currentDistribution = CountContext.CurrentDistribution.ElectedCandidate(Apple),
+      currentDistribution = Some(
+        CountContext.CurrentDistribution.ElectedCandidate(
+          Apple,
+          Queue(Bag[AssignedPaperBundle[Fruit]](testBundle))
+        )
+      )
     )
 
     assert(localTestContext.electedCandidatesToBeDistributed === Queue(Banana))
@@ -82,10 +99,30 @@ class CountContextSpec extends ImprovedFlatSpec {
     assert(testContext.quota === QuotaComputation.computeQuota(testContext.numVacancies, testContext.numFormalPapers))
   }
 
-  "it" can "be currently distributing an excluded candidate" in {
-    val localTestContext = testContext
-      .copy(currentDistribution = CountContext.CurrentDistribution.ExcludedCandidate(Apple))
+  "a current distribution" can "be for an elected candidate" in {
+    val currentDistribution = CountContext.CurrentDistribution.ElectedCandidate(
+      Apple,
+      Queue(Bag[AssignedPaperBundle[Fruit]](testBundle))
+    )
 
-    assert(localTestContext.currentDistribution === CountContext.CurrentDistribution.ExcludedCandidate(Apple))
+    assert(currentDistribution.candidateBeingDistributed === Apple)
+  }
+
+  it can "be for an excluded candidate" in {
+    val currentDistribution = CountContext.CurrentDistribution.ExcludedCandidate(
+      Apple,
+      Queue(Bag[AssignedPaperBundle[Fruit]](testBundle))
+    )
+
+    assert(currentDistribution.candidateBeingDistributed === Apple)
+  }
+
+  it must "not have an empty queue of bundles to distribute" in {
+    intercept[IllegalArgumentException] {
+      CountContext.CurrentDistribution.ExcludedCandidate(
+        Apple,
+        Queue.empty
+      )
+    }
   }
 }
