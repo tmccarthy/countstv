@@ -3,6 +3,7 @@ package au.id.tmm.countstv.counting
 import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
 import au.id.tmm.countstv.model.CandidateStatus._
+import au.id.tmm.countstv.model.values.Count
 import au.id.tmm.countstv.model.{CandidateStatuses, CandidateVoteCounts, ProbabilityMeasure, VoteCount}
 import au.id.tmm.utilities.collection.DupelessSeq
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
@@ -25,13 +26,13 @@ class ElectedCandidateComputationsSpec extends ImprovedFlatSpec {
   }
 
   private def testTiedElectionComputation(
-                                       candidateVoteCounts: Map[Fruit, Int],
-                                       candidateStatuses: CandidateStatuses[Fruit],
-                                       numVacancies: Int,
-                                       expectedNewlyElected: ProbabilityMeasure[DupelessSeq[Fruit]],
-                                     ): Unit = {
+                                           candidateVoteCounts: Map[Fruit, Int],
+                                           candidateStatuses: CandidateStatuses[Fruit],
+                                           numVacancies: Int,
+                                           expectedNewlyElected: ProbabilityMeasure[DupelessSeq[Fruit]],
+                                         ): Unit = {
     val counts = CandidateVoteCounts[Fruit](
-      perCandidate = candidateVoteCounts.mapValues(votes => VoteCount(votes, votes)),
+      perCandidate = candidateVoteCounts.mapValues(votes => VoteCount(votes)),
       exhausted = VoteCount.zero,
       roundingError = VoteCount.zero,
     )
@@ -120,7 +121,7 @@ class ElectedCandidateComputationsSpec extends ImprovedFlatSpec {
         Strawberry -> 2,
       ),
       candidateStatuses = CandidateStatuses[Fruit](
-        Apple -> Elected(0, electedAtCount = 1),
+        Apple -> Elected(0, Count(1)),
         Banana -> Remaining,
         Pear -> Remaining,
         Strawberry -> Remaining,
@@ -141,8 +142,8 @@ class ElectedCandidateComputationsSpec extends ImprovedFlatSpec {
         Strawberry -> 2,
       ),
       candidateStatuses = CandidateStatuses[Fruit](
-        Apple -> Elected(0, electedAtCount = 1),
-        Banana -> Excluded(2, excludedAtCount = 4),
+        Apple -> Elected(0, Count(1)),
+        Banana -> Excluded(2, Count(4)),
         Pear -> Remaining,
         Strawberry -> Remaining,
       ),
@@ -160,10 +161,10 @@ class ElectedCandidateComputationsSpec extends ImprovedFlatSpec {
         Strawberry -> 1,
       ),
       candidateStatuses = CandidateStatuses[Fruit](
-        Apple -> Elected(ordinalElected = 0, electedAtCount = 1),
+        Apple -> Elected(ordinalElected = 0, Count(1)),
         Banana -> Remaining,
         Pear -> Remaining,
-        Strawberry -> Excluded(ordinalExcluded = 1, excludedAtCount = 3),
+        Strawberry -> Excluded(ordinalExcluded = 1, Count(3)),
       ),
       numVacancies = 3,
       expectedNewlyElected = DupelessSeq[Fruit](Pear, Banana),
@@ -179,10 +180,10 @@ class ElectedCandidateComputationsSpec extends ImprovedFlatSpec {
         Strawberry -> 0,
       ),
       candidateStatuses = CandidateStatuses[Fruit](
-        Apple -> Elected(ordinalElected = 0, electedAtCount = 1),
+        Apple -> Elected(ordinalElected = 0, Count(1)),
         Banana -> Remaining,
         Pear -> Remaining,
-        Strawberry -> Excluded(ordinalExcluded = 1, excludedAtCount = 3),
+        Strawberry -> Excluded(ordinalExcluded = 1, Count(3)),
       ),
       numVacancies = 2,
       expectedNewlyElected = ProbabilityMeasure(
@@ -201,8 +202,8 @@ class ElectedCandidateComputationsSpec extends ImprovedFlatSpec {
         Strawberry -> 1,
       ),
       candidateStatuses = CandidateStatuses[Fruit](
-        Apple -> Elected(ordinalElected = 0, electedAtCount = 1),
-        Banana -> Elected(ordinalElected = 1, electedAtCount = 2),
+        Apple -> Elected(ordinalElected = 0, Count(1)),
+        Banana -> Elected(ordinalElected = 1, Count(2)),
         Pear -> Remaining,
         Strawberry -> Remaining,
       ),
@@ -220,8 +221,8 @@ class ElectedCandidateComputationsSpec extends ImprovedFlatSpec {
         Strawberry -> 30,
       ),
       candidateStatuses = CandidateStatuses[Fruit](
-        Apple -> Elected(ordinalElected = 0, electedAtCount = 1),
-        Banana -> Elected(ordinalElected = 1, electedAtCount = 2),
+        Apple -> Elected(ordinalElected = 0, Count(1)),
+        Banana -> Elected(ordinalElected = 1, Count(2)),
         Pear -> Remaining,
         Strawberry -> Remaining,
       ),

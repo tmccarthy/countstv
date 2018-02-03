@@ -1,6 +1,8 @@
 package au.id.tmm.countstv.model
 
-final case class VoteCount(numPapers: Long, numVotes: Double) {
+import au.id.tmm.countstv.model.values.{NumPapers, NumVotes}
+
+final case class VoteCount(numPapers: NumPapers, numVotes: NumVotes) {
 
   def +(that: VoteCount): VoteCount = VoteCount(
     numPapers = this.numPapers + that.numPapers,
@@ -12,13 +14,10 @@ final case class VoteCount(numPapers: Long, numVotes: Double) {
     numVotes = this.numVotes - that.numVotes,
   )
 
-  def *(scalar: Long): VoteCount = VoteCount(
-    numPapers = this.numPapers * scalar,
-    numVotes = this.numVotes * scalar,
-  )
-
 }
 
 object VoteCount {
-  val zero: VoteCount = VoteCount(0, 0d)
+  val zero: VoteCount = VoteCount(NumPapers(0), NumVotes(0d))
+
+  def apply(numVotesAndPapers: Long): VoteCount = VoteCount(NumPapers(numVotesAndPapers), NumVotes(numVotesAndPapers))
 }

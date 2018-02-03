@@ -1,5 +1,6 @@
 package au.id.tmm.countstv.model
 
+import au.id.tmm.countstv.model.values.Count
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
 class CandidateStatusSpec extends ImprovedFlatSpec {
@@ -13,17 +14,17 @@ class CandidateStatusSpec extends ImprovedFlatSpec {
   }
 
   it can "be 'elected'" in {
-    val elected = CandidateStatus.Elected(ordinalElected = 0, electedAtCount = 1)
+    val elected = CandidateStatus.Elected(ordinalElected = 0, electedAtCount = Count(1))
 
     assert(elected.ordinalElected === 0)
-    assert(elected.electedAtCount === 1)
+    assert(elected.electedAtCount === Count(1))
   }
 
   it can "be 'excluded'" in {
-    val excluded = CandidateStatus.Excluded(ordinalExcluded = 0, excludedAtCount = 1)
+    val excluded = CandidateStatus.Excluded(ordinalExcluded = 0, excludedAtCount = Count(1))
 
     assert(excluded.ordinalExcluded === 0)
-    assert(excluded.excludedAtCount === 1)
+    assert(excluded.excludedAtCount === Count(1))
   }
 
 }

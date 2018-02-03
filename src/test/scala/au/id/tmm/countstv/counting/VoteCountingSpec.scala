@@ -3,6 +3,7 @@ package au.id.tmm.countstv.counting
 import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
 import au.id.tmm.countstv.model._
+import au.id.tmm.countstv.model.values._
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
 import scala.collection.immutable.{Bag, BagConfiguration}
@@ -32,17 +33,17 @@ class VoteCountingSpec extends ImprovedFlatSpec {
 
     val actualVoteCounts = VoteCounting.countVotes[Fruit](
       initialNumPapers = testPreferenceTree.numPapers,
-      quota = 2l,
+      quota = NumVotes(2),
       candidateStatuses = candidateStatuses,
       paperBundles = paperBundles,
     )
 
     val expectedVoteCounts = CandidateVoteCounts[Fruit](
       perCandidate = Map(
-        Apple -> VoteCount(numPapers = 3, numVotes = 3),
-        Banana -> VoteCount(numPapers = 1, numVotes = 1),
+        Apple -> VoteCount(3),
+        Banana -> VoteCount(1),
         Pear -> VoteCount.zero,
-        Strawberry -> VoteCount(numPapers = 1, numVotes = 1),
+        Strawberry -> VoteCount(1),
       ),
       exhausted = VoteCount.zero,
       roundingError = VoteCount.zero,
@@ -53,36 +54,38 @@ class VoteCountingSpec extends ImprovedFlatSpec {
 
   it should "correctly count the votes when a candidate has been elected" in {
     val candidateStatuses = CandidateStatuses[Fruit](
-      Apple -> CandidateStatus.Elected(ordinalElected = 0, electedAtCount = 1),
+      Apple -> CandidateStatus.Elected(ordinalElected = 0, Count(1)),
       Banana -> CandidateStatus.Remaining,
       Pear -> CandidateStatus.Remaining,
       Strawberry -> CandidateStatus.Remaining,
     )
 
-    val transferValue = 0.666666666d
+    val transferValue = TransferValueCoefficient(0.666666666d)
 
     val paperBundles = PaperBundle.rootBundleFor(testPreferenceTree)
       .distributeToRemainingCandidates(PaperBundle.Origin.InitialAllocation, candidateStatuses)
       .flatMap { b =>
-        b.distributeToRemainingCandidates(PaperBundle.Origin.ElectedCandidate(Apple, transferValue, 1), candidateStatuses)
+        b.distributeToRemainingCandidates(
+          PaperBundle.Origin.ElectedCandidate(Apple, transferValue, Count(1)), candidateStatuses
+        )
       }
 
     val actualVoteCounts = VoteCounting.countVotes[Fruit](
       initialNumPapers = testPreferenceTree.numPapers,
-      quota = 2l,
+      quota = NumVotes(2),
       candidateStatuses = candidateStatuses,
       paperBundles = paperBundles,
     )
 
     val expectedVoteCounts = CandidateVoteCounts[Fruit](
       perCandidate = Map(
-        Apple -> VoteCount(numPapers = 0, numVotes = 2),
-        Banana -> VoteCount(numPapers = 2, numVotes = 1),
-        Pear -> VoteCount(numPapers = 1, numVotes = 0),
-        Strawberry -> VoteCount(numPapers = 2, numVotes = 1),
+        Apple -> VoteCount(NumPapers(0), NumVotes(2)),
+        Banana -> VoteCount(NumPapers(2), NumVotes(1)),
+        Pear -> VoteCount(NumPapers(1), NumVotes(0)),
+        Strawberry -> VoteCount(NumPapers(2), NumVotes(1)),
       ),
       exhausted = VoteCount.zero,
-      roundingError = VoteCount(numPapers = 0, numVotes = -1),
+      roundingError = VoteCount(NumPapers(0), NumVotes(-1)),
     )
 
     assert(actualVoteCounts === expectedVoteCounts)
@@ -90,7 +93,7 @@ class VoteCountingSpec extends ImprovedFlatSpec {
 
   it should "correctly count the votes when a candidate has been elected but its ballots haven't been transferred" in {
     val candidateStatuses = CandidateStatuses[Fruit](
-      Apple -> CandidateStatus.Elected(ordinalElected = 0, electedAtCount = 1),
+      Apple -> CandidateStatus.Elected(ordinalElected = 0, Count(1)),
       Banana -> CandidateStatus.Remaining,
       Pear -> CandidateStatus.Remaining,
       Strawberry -> CandidateStatus.Remaining,
@@ -101,20 +104,20 @@ class VoteCountingSpec extends ImprovedFlatSpec {
 
     val actualVoteCounts = VoteCounting.countVotes[Fruit](
       initialNumPapers = testPreferenceTree.numPapers,
-      quota = 2l,
+      quota = NumVotes(2),
       candidateStatuses = candidateStatuses,
       paperBundles = paperBundles,
     )
 
     val expectedVoteCounts = CandidateVoteCounts[Fruit](
       perCandidate = Map(
-        Apple -> VoteCount(numPapers = 3, numVotes = 3),
-        Banana -> VoteCount(numPapers = 1, numVotes = 1),
-        Pear -> VoteCount(numPapers = 0, numVotes = 0),
-        Strawberry -> VoteCount(numPapers = 1, numVotes = 1),
+        Apple -> VoteCount(3),
+        Banana -> VoteCount(1),
+        Pear -> VoteCount(0),
+        Strawberry -> VoteCount(1),
       ),
       exhausted = VoteCount.zero,
-      roundingError = VoteCount(numPapers = 0, numVotes = 0),
+      roundingError = VoteCount(0),
     )
 
     assert(actualVoteCounts === expectedVoteCounts)
@@ -122,56 +125,56 @@ class VoteCountingSpec extends ImprovedFlatSpec {
 
   it should "correctly count the votes when some ballots have exhausted" in {
     val candidateStatuses = CandidateStatuses[Fruit](
-      Apple -> CandidateStatus.Elected(ordinalElected = 0, electedAtCount = 1),
+      Apple -> CandidateStatus.Elected(ordinalElected = 0, Count(1)),
       Banana -> CandidateStatus.Remaining,
-      Pear -> CandidateStatus.Excluded(ordinalExcluded = 0, excludedAtCount = 2),
-      Strawberry -> CandidateStatus.Excluded(ordinalExcluded = 1, excludedAtCount = 3),
+      Pear -> CandidateStatus.Excluded(ordinalExcluded = 0, Count(2)),
+      Strawberry -> CandidateStatus.Excluded(ordinalExcluded = 1, Count(3)),
     )
 
     val paperBundles: Bag[PaperBundle[Fruit]] = Bag(
       AssignedPaperBundle(
-        transferValue = 0.666666666d,
+        transferValue = TransferValue(0.666666666d),
         preferenceTreeNode = testPreferenceTree.childFor(Apple, Pear, Banana).get,
-        origin = PaperBundle.Origin.ElectedCandidate(Apple, 0.666666666d, 2),
+        origin = PaperBundle.Origin.ElectedCandidate(Apple, TransferValueCoefficient(0.666666666d), Count(2)),
       ),
       AssignedPaperBundle(
-        transferValue = 0.666666666d,
+        transferValue = TransferValue(0.666666666d),
         preferenceTreeNode = testPreferenceTree.childFor(Apple, Banana).get,
-        origin = PaperBundle.Origin.ElectedCandidate(Apple, 0.666666666d, 2),
+        origin = PaperBundle.Origin.ElectedCandidate(Apple, TransferValueCoefficient(0.666666666d), Count(2)),
       ),
       AssignedPaperBundle(
-        transferValue = 1d,
+        transferValue = TransferValue(1d),
         preferenceTreeNode = testPreferenceTree.childFor(Banana).get,
         origin = PaperBundle.Origin.InitialAllocation,
       ),
       ExhaustedPaperBundle(
-        numPapers = 1l,
-        transferValue = 1d,
-        origin = PaperBundle.Origin.ExcludedCandidate(Strawberry, 2),
+        numPapers = NumPapers(1),
+        transferValue = TransferValue(1d),
+        origin = PaperBundle.Origin.ExcludedCandidate(Strawberry, Count(2)),
       ),
       ExhaustedPaperBundle(
-        numPapers = 1l,
-        transferValue = 0.666666666d,
-        origin = PaperBundle.Origin.ElectedCandidate(Apple, transferValue = 0.666666666d, 2)
+        numPapers = NumPapers(1),
+        transferValue = TransferValue(0.666666666d),
+        origin = PaperBundle.Origin.ElectedCandidate(Apple, TransferValueCoefficient(0.666666666d), Count(2))
       )
     )
 
     val actualVoteCounts = VoteCounting.countVotes[Fruit](
       initialNumPapers = testPreferenceTree.numPapers,
-      quota = 2l,
+      quota = NumVotes(2),
       candidateStatuses = candidateStatuses,
       paperBundles = paperBundles,
     )
 
     val expectedVoteCounts = CandidateVoteCounts[Fruit](
       perCandidate = Map(
-        Apple -> VoteCount(numPapers = 0, numVotes = 2),
-        Banana -> VoteCount(numPapers = 3, numVotes = 2),
-        Pear -> VoteCount(numPapers = 0, numVotes = 0),
-        Strawberry -> VoteCount(numPapers = 0, numVotes = 0),
+        Apple -> VoteCount(NumPapers(0), NumVotes(2)),
+        Banana -> VoteCount(NumPapers(3), NumVotes(2)),
+        Pear -> VoteCount(NumPapers(0), NumVotes(0)),
+        Strawberry -> VoteCount(NumPapers(0), NumVotes(0)),
       ),
-      exhausted = VoteCount(numPapers = 2, numVotes = 1),
-      roundingError = VoteCount(numPapers = 0, numVotes = 0),
+      exhausted = VoteCount(NumPapers(2), NumVotes(1)),
+      roundingError = VoteCount(NumPapers(0), NumVotes(0)),
     )
 
     assert(actualVoteCounts === expectedVoteCounts)
@@ -182,25 +185,25 @@ class VoteCountingSpec extends ImprovedFlatSpec {
       Apple -> CandidateStatus.Remaining,
       Banana -> CandidateStatus.Remaining,
       Pear -> CandidateStatus.Remaining,
-      Strawberry -> CandidateStatus.Excluded(0, 1),
+      Strawberry -> CandidateStatus.Excluded(0, Count(1)),
     )
 
     val paperBundles = PaperBundle.rootBundleFor(testPreferenceTree)
       .distributeToRemainingCandidates(PaperBundle.Origin.InitialAllocation, candidateStatuses)
       .flatMap { b =>
-        b.distributeToRemainingCandidates(PaperBundle.Origin.ExcludedCandidate(Strawberry, 2), candidateStatuses)
+        b.distributeToRemainingCandidates(PaperBundle.Origin.ExcludedCandidate(Strawberry, Count(2)), candidateStatuses)
       }
 
     val actualCount = VoteCounting.performSimpleCount(candidateStatuses.allCandidates, paperBundles)
 
     val expectedCount = CandidateVoteCounts(
       perCandidate = Map(
-        Apple -> VoteCount(3, 3),
-        Banana -> VoteCount(1, 1),
+        Apple -> VoteCount(3),
+        Banana -> VoteCount(1),
         Pear -> VoteCount.zero,
         Strawberry -> VoteCount.zero,
       ),
-      exhausted = VoteCount(1, 1),
+      exhausted = VoteCount(1),
       roundingError = VoteCount.zero,
     )
 

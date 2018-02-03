@@ -3,6 +3,7 @@ package au.id.tmm.countstv.counting
 import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
 import au.id.tmm.countstv.model.CandidateStatus._
+import au.id.tmm.countstv.model.values.Count
 import au.id.tmm.countstv.model.{CandidateStatuses, CandidateVoteCounts, ProbabilityMeasure, VoteCount}
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
@@ -14,7 +15,7 @@ class ExcludedCandidateComputationsSpec extends ImprovedFlatSpec {
                                             expectedExcluded: ProbabilityMeasure[Fruit],
                                           ): Unit = {
     val counts = CandidateVoteCounts[Fruit](
-      perCandidate = candidateVoteCounts.mapValues(votes => VoteCount(votes, votes)),
+      perCandidate = candidateVoteCounts.mapValues(votes => VoteCount(votes)),
       exhausted = VoteCount.zero,
       roundingError = VoteCount.zero,
     )
@@ -51,10 +52,10 @@ class ExcludedCandidateComputationsSpec extends ImprovedFlatSpec {
           Strawberry -> 10,
         ),
         candidateStatuses = CandidateStatuses(
-          Apple -> Elected(0, 1),
-          Banana -> Elected(1, 4),
-          Pear -> Excluded(0, 3),
-          Strawberry -> Excluded(1, 2),
+          Apple -> Elected(0, Count(1)),
+          Banana -> Elected(1, Count(4)),
+          Pear -> Excluded(0, Count(3)),
+          Strawberry -> Excluded(1, Count(2)),
         ),
         expectedExcluded = ProbabilityMeasure.always(Apple),
       )

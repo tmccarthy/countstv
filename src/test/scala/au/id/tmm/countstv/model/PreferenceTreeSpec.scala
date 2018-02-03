@@ -1,6 +1,7 @@
 package au.id.tmm.countstv.model
 
 import au.id.tmm.countstv.Fruit._
+import au.id.tmm.countstv.model.values.NumPapers
 import au.id.tmm.countstv.{Fruit, NormalisedBallot}
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
@@ -16,7 +17,7 @@ class PreferenceTreeSpec extends ImprovedFlatSpec {
   "an empty preference tree" should "have no papers" in {
     val emptyPreferenceTree = PreferenceTree.empty
 
-    assert(emptyPreferenceTree.numPapers === 0)
+    assert(emptyPreferenceTree.numPapers === NumPapers(0))
   }
 
   "a preference tree with a single ballot" should "have 1 paper" in {
@@ -24,7 +25,7 @@ class PreferenceTreeSpec extends ImprovedFlatSpec {
       ballotWith4Preferences
     ))
 
-    assert(preferenceTree.numPapers === 1)
+    assert(preferenceTree.numPapers === NumPapers(1))
   }
 
   it should "have a child for the first preference" in {
@@ -34,7 +35,7 @@ class PreferenceTreeSpec extends ImprovedFlatSpec {
 
     val childNode = preferenceTree.childFor(ballotWith4Preferences.head)
 
-    assert(childNode.exists(_.numPapers === 1))
+    assert(childNode.exists(_.numPapers === NumPapers(1)))
   }
 
   it should "have a child for the last preference" in {
@@ -50,7 +51,7 @@ class PreferenceTreeSpec extends ImprovedFlatSpec {
         ballotWith4Preferences(3),
       )
 
-    assert(lastChildNode.exists(_.numPapers === 1))
+    assert(lastChildNode.exists(_.numPapers === NumPapers(1)))
   }
 
   it should "have no child when preferences are exhausted" in {
@@ -97,7 +98,7 @@ class PreferenceTreeSpec extends ImprovedFlatSpec {
       Vector(Banana, Pear),
     )
 
-    assert(preferenceTree.toString === "PreferenceTree(numChildren=2, numPapers=3)")
+    assert(preferenceTree.toString === "PreferenceTree(numChildren=2, NumPapers(3))")
   }
 
   it should "reject empty ballots" in {
@@ -157,6 +158,6 @@ class PreferenceTreeSpec extends ImprovedFlatSpec {
 
     val childNode = preferenceTree.childFor(Apple, Pear, Banana).get
 
-    assert(childNode.toString === "PreferenceTreeNode(path=[Apple, Pear, Banana], numPapers=1)")
+    assert(childNode.toString === "PreferenceTreeNode(path=[Apple, Pear, Banana], NumPapers(1))")
   }
 }

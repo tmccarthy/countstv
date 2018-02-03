@@ -3,6 +3,7 @@ package au.id.tmm.countstv.model
 import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit.{Apple, Banana, Pear, Strawberry}
 import au.id.tmm.countstv.model.PaperBundle.Origin.IneligibleCandidate
+import au.id.tmm.countstv.model.values.{Count, NumPapers, TransferValue, TransferValueCoefficient}
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
 import scala.collection.immutable.{Bag, HashedBagConfiguration}
@@ -20,17 +21,17 @@ class PaperBundleSpec extends ImprovedFlatSpec {
 
   "a paper bundle" should "have a transfer value" in {
     val paperBundle = AssignedPaperBundle[Fruit](
-      transferValue = 0.5d,
+      transferValue = TransferValue(0.5d),
       preferenceTreeNode = testPreferenceTree.childFor(Fruit.Banana).get,
       origin = PaperBundle.Origin.InitialAllocation,
     )
 
-    assert(paperBundle.transferValue === 0.5d)
+    assert(paperBundle.transferValue === TransferValue(0.5d))
   }
 
   it should "refer to a PreferenceTreeNode" in {
     val paperBundle = AssignedPaperBundle[Fruit](
-      transferValue = 0.5d,
+      transferValue = TransferValue(0.5d),
       preferenceTreeNode = testPreferenceTree.childFor(Fruit.Banana).get,
       origin = PaperBundle.Origin.InitialAllocation,
     )
@@ -40,7 +41,7 @@ class PaperBundleSpec extends ImprovedFlatSpec {
 
   it should "have an origin" in {
     val paperBundle = AssignedPaperBundle[Fruit](
-      transferValue = 0.5d,
+      transferValue = TransferValue(0.5d),
       preferenceTreeNode = testPreferenceTree.childFor(Fruit.Banana).get,
       origin = PaperBundle.Origin.InitialAllocation,
     )
@@ -50,7 +51,7 @@ class PaperBundleSpec extends ImprovedFlatSpec {
 
   "a paper bundle" should "be assigned to a candidate" in {
     val paperBundle = AssignedPaperBundle[Fruit](
-      transferValue = 0.5d,
+      transferValue = TransferValue(0.5d),
       preferenceTreeNode = testPreferenceTree.childFor(Fruit.Banana).get,
       origin = PaperBundle.Origin.InitialAllocation,
     )
@@ -60,8 +61,8 @@ class PaperBundleSpec extends ImprovedFlatSpec {
 
   it can "not be assigned to a candidate" in {
     val paperBundle = ExhaustedPaperBundle[Fruit](
-      numPapers = 10,
-      transferValue = 0.5d,
+      numPapers = NumPapers(10),
+      transferValue = TransferValue(0.5d),
       origin = PaperBundle.Origin.InitialAllocation,
     )
 
@@ -74,7 +75,7 @@ class PaperBundleSpec extends ImprovedFlatSpec {
                                 bananaStatus: CandidateStatus = CandidateStatus.Remaining,
                                 pearStatus: CandidateStatus = CandidateStatus.Remaining,
                                 strawberryStatus: CandidateStatus = CandidateStatus.Remaining,
-                                originalTransferValue: Double = 1d,
+                                originalTransferValue: TransferValue = TransferValue(1d),
                                 expectedBundlesAfterDistribution: Bag[PaperBundle[Fruit]] = Bag.empty[PaperBundle[Fruit]],
                                 expectBundleUnchanged: Boolean = false,
                               ): Unit = {
@@ -116,7 +117,7 @@ class PaperBundleSpec extends ImprovedFlatSpec {
       bananaStatus = CandidateStatus.Ineligible,
       expectedBundlesAfterDistribution = Bag(
         AssignedPaperBundle[Fruit](
-          transferValue = 1d,
+          transferValue = TransferValue(1d),
           preferenceTreeNode = testPreferenceTree.childFor(Banana, Pear).get,
           origin = PaperBundle.Origin.IneligibleCandidate(Banana),
         )
@@ -130,12 +131,12 @@ class PaperBundleSpec extends ImprovedFlatSpec {
       appleStatus = CandidateStatus.Ineligible,
       expectedBundlesAfterDistribution = Bag(
         AssignedPaperBundle(
-          transferValue = 1d,
+          transferValue = TransferValue(1d),
           preferenceTreeNode = testPreferenceTree.childFor(Apple, Pear).get,
           origin = PaperBundle.Origin.IneligibleCandidate(Apple),
         ),
         AssignedPaperBundle(
-          transferValue = 1d,
+          transferValue = TransferValue(1d),
           preferenceTreeNode = testPreferenceTree.childFor(Apple, Banana).get,
           origin = PaperBundle.Origin.IneligibleCandidate(Apple),
         ),
@@ -150,12 +151,12 @@ class PaperBundleSpec extends ImprovedFlatSpec {
       bananaStatus = CandidateStatus.Ineligible,
       expectedBundlesAfterDistribution = Bag(
         AssignedPaperBundle(
-          transferValue = 1d,
+          transferValue = TransferValue(1d),
           preferenceTreeNode = testPreferenceTree.childFor(Apple, Pear).get,
           origin = PaperBundle.Origin.IneligibleCandidate(Apple),
         ),
         AssignedPaperBundle(
-          transferValue = 1d,
+          transferValue = TransferValue(1d),
           preferenceTreeNode = testPreferenceTree.childFor(Apple, Banana, Strawberry).get,
           origin = PaperBundle.Origin.IneligibleCandidate(Apple),
         ),
@@ -166,25 +167,25 @@ class PaperBundleSpec extends ImprovedFlatSpec {
   it can "be distributed until exhausted" in {
     val candidateStatuses = CandidateStatuses[Fruit](
       Fruit.Apple -> CandidateStatus.Remaining,
-      Fruit.Banana -> CandidateStatus.Excluded(ordinalExcluded = 0, excludedAtCount = 1),
-      Fruit.Pear -> CandidateStatus.Excluded(ordinalExcluded = 1, excludedAtCount = 2),
+      Fruit.Banana -> CandidateStatus.Excluded(ordinalExcluded = 0, excludedAtCount = Count(1)),
+      Fruit.Pear -> CandidateStatus.Excluded(ordinalExcluded = 1, excludedAtCount = Count(2)),
       Fruit.Strawberry -> CandidateStatus.Remaining,
     )
 
     val originalBundle = AssignedPaperBundle[Fruit](
-      transferValue = 1d,
+      transferValue = TransferValue(1d),
       preferenceTreeNode = testPreferenceTree.childFor(Banana).get,
       origin = PaperBundle.Origin.InitialAllocation,
     )
 
-    val origin = PaperBundle.Origin.ExcludedCandidate(Pear, 2)
+    val origin = PaperBundle.Origin.ExcludedCandidate(Pear, Count(2))
 
     val actualBundlesAfterDistribution = originalBundle.distributeToRemainingCandidates(origin, candidateStatuses)
 
     val expectedBundlesAfterDistribution = Bag[PaperBundle[Fruit]](
       ExhaustedPaperBundle[Fruit](
-        numPapers = 1,
-        transferValue = 1d,
+        numPapers = NumPapers(1),
+        transferValue = TransferValue(1d),
         origin = origin,
       ),
     )
@@ -194,30 +195,31 @@ class PaperBundleSpec extends ImprovedFlatSpec {
 
   it can "be distributed with a reduced transfer value" in {
     val candidateStatuses = CandidateStatuses[Fruit](
-      Fruit.Apple -> CandidateStatus.Elected(ordinalElected = 0, electedAtCount = 1),
+      Fruit.Apple -> CandidateStatus.Elected(ordinalElected = 0, electedAtCount = Count(1)),
       Fruit.Banana -> CandidateStatus.Remaining,
       Fruit.Pear -> CandidateStatus.Remaining,
       Fruit.Strawberry -> CandidateStatus.Remaining,
     )
 
     val originalBundle = AssignedPaperBundle[Fruit](
-      transferValue = 0.9,
+      transferValue = TransferValue(0.9),
       preferenceTreeNode = testPreferenceTree.childFor(Apple).get,
       origin = PaperBundle.Origin.InitialAllocation,
     )
 
-    val origin = PaperBundle.Origin.ElectedCandidate(Apple, 0.7d, 1)
+    val transferValueCoefficient = TransferValueCoefficient(0.7d)
+    val origin = PaperBundle.Origin.ElectedCandidate(Apple, transferValueCoefficient, Count(1))
 
     val actualBundlesAfterDistribution = originalBundle.distributeToRemainingCandidates(origin, candidateStatuses)
 
     val expectedBundlesAfterDistribution = Bag[PaperBundle[Fruit]](
       AssignedPaperBundle(
-        transferValue = 0.9d * 0.7d,
+        transferValue = transferValueCoefficient * TransferValue(0.9d),
         preferenceTreeNode = testPreferenceTree.childFor(Apple, Pear).get,
         origin = origin,
       ),
       AssignedPaperBundle(
-        transferValue = 0.9d * 0.7d,
+        transferValue = transferValueCoefficient * TransferValue(0.9d),
         preferenceTreeNode = testPreferenceTree.childFor(Apple, Banana).get,
         origin = origin
       ),
@@ -235,12 +237,13 @@ class PaperBundleSpec extends ImprovedFlatSpec {
     )
 
     val originalBundle = ExhaustedPaperBundle[Fruit](
-      numPapers = 1,
-      transferValue = 1d,
+      numPapers = NumPapers(1),
+      transferValue = TransferValue(1d),
       origin = IneligibleCandidate(Banana),
     )
 
-    val origin: PaperBundle.Origin[Fruit] = PaperBundle.Origin.ElectedCandidate(Apple, 0.7d, 1)
+    val origin: PaperBundle.Origin[Fruit] =
+      PaperBundle.Origin.ElectedCandidate(Apple, TransferValueCoefficient(0.7d), Count(1))
 
     val actualBundlesAfterDistribution = originalBundle.distributeToRemainingCandidates(origin, candidateStatuses)
 
@@ -272,7 +275,7 @@ class PaperBundleSpec extends ImprovedFlatSpec {
   }
 
   it should "have a transfer value of 1.0" in {
-    assert(PaperBundle.rootBundleFor(testPreferenceTree).transferValue === 1.0d)
+    assert(PaperBundle.rootBundleFor(testPreferenceTree).transferValue === TransferValue(1.0d))
   }
 
   it can "distribute its papers" in {
@@ -288,12 +291,12 @@ class PaperBundleSpec extends ImprovedFlatSpec {
 
     val expectedBundles = Bag[PaperBundle[Fruit]](
       AssignedPaperBundle(
-        transferValue = 1d,
+        transferValue = TransferValue(1d),
         preferenceTreeNode = testPreferenceTree.childFor(Apple).get,
         origin = PaperBundle.Origin.InitialAllocation,
       ),
       AssignedPaperBundle(
-        transferValue = 1d,
+        transferValue = TransferValue(1d),
         preferenceTreeNode = testPreferenceTree.childFor(Banana).get,
         origin = PaperBundle.Origin.InitialAllocation,
       )
@@ -308,12 +311,12 @@ class PaperBundleSpec extends ImprovedFlatSpec {
 
     val expectedBundles = Bag[PaperBundle[Fruit]](
       AssignedPaperBundle(
-        transferValue = 1d,
+        transferValue = TransferValue(1d),
         preferenceTreeNode = testPreferenceTree.childFor(Apple).get,
         origin = PaperBundle.Origin.InitialAllocation,
       ),
       AssignedPaperBundle(
-        transferValue = 1d,
+        transferValue = TransferValue(1d),
         preferenceTreeNode = testPreferenceTree.childFor(Banana).get,
         origin = PaperBundle.Origin.InitialAllocation,
       )

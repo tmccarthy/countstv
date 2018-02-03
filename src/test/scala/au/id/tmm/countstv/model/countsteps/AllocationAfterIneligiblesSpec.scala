@@ -3,6 +3,7 @@ package au.id.tmm.countstv.model.countsteps
 import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
 import au.id.tmm.countstv.model.CandidateStatus._
+import au.id.tmm.countstv.model.values.Count
 import au.id.tmm.countstv.model.{CandidateStatuses, CandidateVoteCounts, VoteCount}
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
@@ -17,10 +18,10 @@ class AllocationAfterIneligiblesSpec extends ImprovedFlatSpec {
     ),
     candidateVoteCounts = CandidateVoteCounts[Fruit](
       perCandidate = Map[Fruit, VoteCount](
-        Apple -> VoteCount(40, 40),
-        Banana -> VoteCount(30, 30),
-        Pear -> VoteCount(20, 20),
-        Strawberry -> VoteCount(10, 10),
+        Apple -> VoteCount(40),
+        Banana -> VoteCount(30),
+        Pear -> VoteCount(20),
+        Strawberry -> VoteCount(10),
       ),
       exhausted = VoteCount.zero,
       roundingError = VoteCount.zero,
@@ -29,6 +30,6 @@ class AllocationAfterIneligiblesSpec extends ImprovedFlatSpec {
   )
 
   "an allocation after ineligibles" should "have a count of '1'" in {
-    assert(testAllocationAfterIneligibles.count === 1)
+    assert(testAllocationAfterIneligibles.count === Count(1))
   }
 }

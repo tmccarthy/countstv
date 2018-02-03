@@ -1,8 +1,9 @@
 package au.id.tmm.countstv.model
 
+import au.id.tmm.countstv.PaperBundles
 import au.id.tmm.countstv.model.PaperBundle.Origin
 import au.id.tmm.countstv.model.PreferenceTree.PreferenceTreeNode
-import au.id.tmm.countstv.{Count, PaperBundles}
+import au.id.tmm.countstv.model.values.{Count, NumPapers, TransferValue, TransferValueCoefficient}
 
 import scala.collection.immutable.{Bag, HashedBagConfiguration}
 
@@ -18,9 +19,9 @@ sealed trait PaperBundle[C] {
                                      ): PaperBundles[C] =
     PaperBundle.distributeIfCandidateNotRemaining(this, origin, candidateStatuses)
 
-  def numPapers: Long
+  def numPapers: NumPapers
 
-  def transferValue: Double
+  def transferValue: TransferValue
 
 }
 
@@ -29,14 +30,14 @@ final case class RootPaperBundle[C](preferenceTree: PreferenceTree[C]) extends P
 
   override def origin: Origin[C] = PaperBundle.Origin.InitialAllocation
 
-  override def numPapers: Long = preferenceTree.numPapers
+  override def numPapers: NumPapers = preferenceTree.numPapers
 
-  override def transferValue: Double = 1.0d
+  override def transferValue: TransferValue = TransferValue(1.0d)
 
   def distribute: PaperBundles[C] = {
     val childBundles = preferenceTree.children.valuesIterator.map { childNode =>
       AssignedPaperBundle(
-        transferValue = 1.0d,
+        transferValue = TransferValue(1.0d),
         preferenceTreeNode = childNode,
         origin = PaperBundle.Origin.InitialAllocation,
       )
@@ -47,20 +48,20 @@ final case class RootPaperBundle[C](preferenceTree: PreferenceTree[C]) extends P
 }
 
 final case class AssignedPaperBundle[C](
-                                         transferValue: Double,
+                                         transferValue: TransferValue,
                                          preferenceTreeNode: PreferenceTreeNode[C],
                                          origin: PaperBundle.Origin[C]
                                        ) extends PaperBundle[C] {
 
   override def assignedCandidate: Option[C] = Some(preferenceTreeNode.associatedCandidate)
 
-  override def numPapers: Long = preferenceTreeNode.numPapers
+  override def numPapers: NumPapers = preferenceTreeNode.numPapers
 
 }
 
 final case class ExhaustedPaperBundle[C](
-                                          numPapers: Long,
-                                          transferValue: Double,
+                                          numPapers: NumPapers,
+                                          transferValue: TransferValue,
                                           origin: Origin[C],
                                         ) extends PaperBundle[C] {
   override def assignedCandidate: Option[C] = None
@@ -104,7 +105,7 @@ object PaperBundle {
 
     val distributedTransferValue = origin match {
       case PaperBundle.Origin.ElectedCandidate(_, appliedTransferValue, _) =>
-        bundle.transferValue * appliedTransferValue
+        appliedTransferValue * bundle.transferValue
       case _ => bundle.transferValue
     }
 
@@ -116,11 +117,11 @@ object PaperBundle {
       val numPapersDistributedToCandidates = bundlesDistributedToCandidates
         .toStream
         .map(_.numPapers)
-        .sum
+        .foldLeft(NumPapers(0))(_ + _)
 
       val numExhaustedPapers = bundle.numPapers - numPapersDistributedToCandidates
 
-      if (numExhaustedPapers > 0) {
+      if (numExhaustedPapers > NumPapers(0)) {
         Some(ExhaustedPaperBundle(
           numPapers = numExhaustedPapers,
           transferValue = distributedTransferValue,
@@ -153,14 +154,14 @@ object PaperBundle {
 
   object Origin {
     case object InitialAllocation extends Origin[Nothing] {
-      def count: Count = CountNumbers.initialAllocation
+      def count: Count = Count.ofInitialAllocation
     }
 
     final case class IneligibleCandidate[C](source: C) extends Origin[C] {
-      def count: Count = CountNumbers.distributionOfIneligibleCandidates
+      def count: Count = Count.ofIneligibleCandidateHandling
     }
 
-    final case class ElectedCandidate[C](source: C, transferValue: Double, count: Count) extends Origin[C]
+    final case class ElectedCandidate[C](source: C, transferValue: TransferValueCoefficient, count: Count) extends Origin[C]
 
     final case class ExcludedCandidate[C](source: C, count: Count) extends Origin[C]
 

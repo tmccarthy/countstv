@@ -1,6 +1,6 @@
 package au.id.tmm.countstv.model.countsteps
 
-import au.id.tmm.countstv.Count
+import au.id.tmm.countstv.model.values.{Count, TransferValue}
 import au.id.tmm.countstv.model.{CandidateDistributionReason, CandidateStatuses, CandidateVoteCounts}
 
 final case class DistributionCountStep[C] (
@@ -18,7 +18,7 @@ object DistributionCountStep {
                               candidate: C,
                               candidateDistributionReason: CandidateDistributionReason,
                               sourceCounts: Set[Count],
-                              transferValue: Double,
+                              transferValue: TransferValue,
                             )
 
 }

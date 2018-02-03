@@ -1,12 +1,13 @@
 package au.id.tmm.countstv.counting
 
+import au.id.tmm.countstv.model.values.{NumPapers, NumVotes}
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
 class QuotaComputationSpec extends ImprovedFlatSpec {
 
   private def testQuota(numVacancies: Int, numBallots: Long, expectedQuota: Long): Unit = {
     s"the quota with $numBallots ballots for $numVacancies vacancies" should s"be $expectedQuota" in {
-      assert(QuotaComputation.computeQuota(numVacancies, numBallots) === expectedQuota)
+      assert(QuotaComputation.computeQuota(numVacancies, NumPapers(numBallots)) === NumVotes(expectedQuota))
     }
   }
 

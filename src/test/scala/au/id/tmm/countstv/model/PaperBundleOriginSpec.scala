@@ -2,6 +2,7 @@ package au.id.tmm.countstv.model
 
 import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit.{Apple, Banana, Pear, Strawberry}
+import au.id.tmm.countstv.model.values.{Count, TransferValue, TransferValueCoefficient}
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
 class PaperBundleOriginSpec extends ImprovedFlatSpec {
@@ -14,7 +15,7 @@ class PaperBundleOriginSpec extends ImprovedFlatSpec {
 
   "a paper bundle's origin" can "be the initial allocation" in {
     val paperBundle = AssignedPaperBundle[Fruit](
-      transferValue = 0.5d,
+      transferValue = TransferValue(0.5d),
       preferenceTreeNode = testPreferenceTree.childFor(Fruit.Banana).get,
       origin = PaperBundle.Origin.InitialAllocation,
     )
@@ -32,8 +33,8 @@ class PaperBundleOriginSpec extends ImprovedFlatSpec {
 
   it can "be distribution from an elected candidate" in {
     val electedCandidate = Fruit.Apple
-    val transferValue = 0.7d
-    val count = 4
+    val transferValue = TransferValueCoefficient(0.7d)
+    val count = Count(4)
 
     val origin = PaperBundle.Origin.ElectedCandidate[Fruit](electedCandidate, transferValue, count)
 
@@ -44,7 +45,7 @@ class PaperBundleOriginSpec extends ImprovedFlatSpec {
 
   it can "be distribution from an excluded candidate" in {
     val excludedCandidate = Fruit.Apple
-    val count = 4
+    val count = Count(4)
 
     val origin = PaperBundle.Origin.ExcludedCandidate[Fruit](excludedCandidate, count)
 
@@ -53,11 +54,11 @@ class PaperBundleOriginSpec extends ImprovedFlatSpec {
   }
 
   "a paper bundle originating at the initial allocation" should "originate from the count 0" in {
-    assert(PaperBundle.Origin.InitialAllocation.count === 0)
+    assert(PaperBundle.Origin.InitialAllocation.count === Count(0))
   }
 
   "a paper bundle originating after ineligible candidates have been handled" should "originate from the count 1" in {
-    assert(PaperBundle.Origin.IneligibleCandidate(Apple).count === 1)
+    assert(PaperBundle.Origin.IneligibleCandidate(Apple).count === Count(1))
   }
 
 

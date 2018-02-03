@@ -1,6 +1,6 @@
 package au.id.tmm.countstv.model.countsteps
 
-import au.id.tmm.countstv.Count
+import au.id.tmm.countstv.model.values.Count
 import au.id.tmm.countstv.model.{CandidateStatus, CandidateStatuses, CandidateVoteCounts}
 
 final case class InitialAllocation[C](
@@ -15,5 +15,5 @@ final case class InitialAllocation[C](
     }
   }
 
-  override def count: Count = 0
+  override def count: Count = Count.ofInitialAllocation
 }

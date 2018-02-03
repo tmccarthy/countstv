@@ -5,6 +5,7 @@ import au.id.tmm.countstv.Fruit._
 import au.id.tmm.countstv.counting.QuotaComputation
 import au.id.tmm.countstv.model.CandidateStatus._
 import au.id.tmm.countstv.model._
+import au.id.tmm.countstv.model.values.{Count, NumPapers, TransferValue, TransferValueCoefficient}
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
 import scala.collection.immutable.{Bag, HashedBagConfiguration, Queue}
@@ -15,7 +16,7 @@ class CountContextSpec extends ImprovedFlatSpec {
     PaperBundle.bagConfiguration.asInstanceOf[HashedBagConfiguration[A]]
 
   private val testContext = CountContext(
-    numFormalPapers = 40,
+    numFormalPapers = NumPapers(40),
     numVacancies = 2,
     paperBundles = Bag.empty[PaperBundle[Fruit]],
     mostRecentCountStep = AllocationAfterIneligibles(
@@ -27,10 +28,10 @@ class CountContextSpec extends ImprovedFlatSpec {
       ),
       candidateVoteCounts = CandidateVoteCounts(
         perCandidate = Map[Fruit, VoteCount](
-          Apple -> VoteCount(20, 20),
-          Banana -> VoteCount(10, 10),
-          Pear -> VoteCount(6, 6),
-          Strawberry -> VoteCount(4, 4),
+          Apple -> VoteCount(20),
+          Banana -> VoteCount(10),
+          Pear -> VoteCount(6),
+          Strawberry -> VoteCount(4),
         ),
         exhausted = VoteCount.zero,
         roundingError = VoteCount.zero,
@@ -47,7 +48,7 @@ class CountContextSpec extends ImprovedFlatSpec {
   )
 
   private val testBundle = AssignedPaperBundle(
-    transferValue = 1.0d,
+    transferValue = TransferValue(1.0d),
     testPreferenceTree.childFor(Apple).get,
     PaperBundle.Origin.InitialAllocation,
   )
@@ -58,8 +59,8 @@ class CountContextSpec extends ImprovedFlatSpec {
       .asInstanceOf[AllocationAfterIneligibles[Fruit]]
       .copy(
         candidateStatuses = CandidateStatuses[Fruit](
-          Apple -> Elected(0, 1),
-          Banana -> Elected(1, 1),
+          Apple -> Elected(0, Count(1)),
+          Banana -> Elected(1, Count(1)),
           Pear -> Remaining,
           Strawberry -> Remaining,
         ),
@@ -67,7 +68,7 @@ class CountContextSpec extends ImprovedFlatSpec {
 
     val localTestContext = testContext.copy(mostRecentCountStep = mostRecentCountStep)
 
-    assert(localTestContext.electedCandidatesToBeDistributed === Queue(Apple, Banana))
+    assert(localTestContext.electedCandidatesWaitingToBeDistributed === Queue(Apple, Banana))
   }
 
   it should "not indicate a candidate needs to be distributed if they're currently being distributed" in {
@@ -76,8 +77,8 @@ class CountContextSpec extends ImprovedFlatSpec {
       .asInstanceOf[AllocationAfterIneligibles[Fruit]]
       .copy(
         candidateStatuses = CandidateStatuses[Fruit](
-          Apple -> Elected(0, 1),
-          Banana -> Elected(1, 1),
+          Apple -> Elected(0, Count(1)),
+          Banana -> Elected(1, Count(1)),
           Pear -> Remaining,
           Strawberry -> Remaining,
         ),
@@ -90,11 +91,12 @@ class CountContextSpec extends ImprovedFlatSpec {
           Apple,
           CandidateDistributionReason.Election,
           Queue(Bag[AssignedPaperBundle[Fruit]](testBundle)),
+          transferValueCoefficient = TransferValueCoefficient(1.0d),
         )
       )
     )
 
-    assert(localTestContext.electedCandidatesToBeDistributed === Queue(Banana))
+    assert(localTestContext.electedCandidatesWaitingToBeDistributed === Queue(Banana))
   }
 
   it should "have the right quota" in {
@@ -105,7 +107,8 @@ class CountContextSpec extends ImprovedFlatSpec {
     val currentDistribution = CountContext.CurrentDistribution(
       Apple,
       CandidateDistributionReason.Election,
-      Queue(Bag[AssignedPaperBundle[Fruit]](testBundle))
+      Queue(Bag[AssignedPaperBundle[Fruit]](testBundle)),
+      transferValueCoefficient = TransferValueCoefficient(1.0d),
     )
 
     assert(currentDistribution.candidateBeingDistributed === Apple)
@@ -115,7 +118,8 @@ class CountContextSpec extends ImprovedFlatSpec {
     val currentDistribution = CountContext.CurrentDistribution(
       Apple,
       CandidateDistributionReason.Exclusion,
-      Queue(Bag[AssignedPaperBundle[Fruit]](testBundle))
+      Queue(Bag[AssignedPaperBundle[Fruit]](testBundle)),
+      transferValueCoefficient = TransferValueCoefficient(1.0d),
     )
 
     assert(currentDistribution.candidateBeingDistributed === Apple)
@@ -126,7 +130,8 @@ class CountContextSpec extends ImprovedFlatSpec {
       CountContext.CurrentDistribution(
         Apple,
         CandidateDistributionReason.Exclusion,
-        Queue.empty
+        Queue.empty,
+        transferValueCoefficient = TransferValueCoefficient(1.0d),
       )
     }
   }

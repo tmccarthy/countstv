@@ -46,7 +46,7 @@ class ProbabilityMeasureSpec extends ImprovedFlatSpec {
   }
 
   it can "map a possibility to another ProbabilityMeasure" in {
-    val pMeasure = ProbabilityMeasure(
+    val pMeasure: ProbabilityMeasure[Fruit] = ProbabilityMeasure(
       Apple -> Rational(1, 3),
       Banana -> Rational(2, 3),
     )

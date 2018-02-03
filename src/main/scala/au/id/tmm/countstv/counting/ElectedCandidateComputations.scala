@@ -1,5 +1,6 @@
 package au.id.tmm.countstv.counting
 
+import au.id.tmm.countstv.model.values.NumVotes
 import au.id.tmm.countstv.model.{CandidateStatuses, CandidateVoteCounts, ProbabilityMeasure}
 import au.id.tmm.utilities.collection.DupelessSeq
 
@@ -9,7 +10,7 @@ object ElectedCandidateComputations {
                               counts: CandidateVoteCounts[C],
                               candidateStatuses: CandidateStatuses[C],
                               numVacancies: Int,
-                              quota: Long,
+                              quota: NumVotes,
                             ): ProbabilityMeasure[DupelessSeq[C]] = {
     val alreadyElected = candidateStatuses
       .electedCandidates

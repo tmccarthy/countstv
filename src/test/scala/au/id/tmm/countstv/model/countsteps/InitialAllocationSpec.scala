@@ -2,6 +2,7 @@ package au.id.tmm.countstv.model.countsteps
 
 import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
+import au.id.tmm.countstv.model.values.{Count, NumPapers, NumVotes}
 import au.id.tmm.countstv.model.{CandidateStatus, CandidateStatuses, CandidateVoteCounts, VoteCount}
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
@@ -16,13 +17,13 @@ class InitialAllocationSpec extends ImprovedFlatSpec {
     ),
     candidateVoteCounts = CandidateVoteCounts[Fruit](
       perCandidate = Map(
-        Apple -> VoteCount(32, 42d),
-        Banana -> VoteCount(32, 42d),
-        Pear -> VoteCount(32, 42d),
-        Strawberry -> VoteCount(32, 42d),
+        Apple -> VoteCount(NumPapers(32), NumVotes(42d)),
+        Banana -> VoteCount(NumPapers(32), NumVotes(42d)),
+        Pear -> VoteCount(NumPapers(32), NumVotes(42d)),
+        Strawberry -> VoteCount(NumPapers(32), NumVotes(42d)),
       ),
-      exhausted = VoteCount(0, 0d),
-      roundingError = VoteCount(0, 0d),
+      exhausted = VoteCount(NumPapers(0), NumVotes(0d)),
+      roundingError = VoteCount(NumPapers(0), NumVotes(0d)),
     )
   )
 
@@ -37,7 +38,7 @@ class InitialAllocationSpec extends ImprovedFlatSpec {
           Apple -> CandidateStatus.Remaining,
           Banana -> CandidateStatus.Ineligible,
           Pear -> CandidateStatus.Remaining,
-          Strawberry -> CandidateStatus.Elected(ordinalElected = 0, electedAtCount = 1),
+          Strawberry -> CandidateStatus.Elected(ordinalElected = 0, electedAtCount = Count(1)),
         ),
       )
     }
@@ -48,6 +49,6 @@ class InitialAllocationSpec extends ImprovedFlatSpec {
   }
 
   it should "have a count of '0'" in {
-    assert(testInitialAllocation.count === 0)
+    assert(testInitialAllocation.count === Count(0))
   }
 }

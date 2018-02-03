@@ -1,6 +1,7 @@
 package au.id.tmm.countstv.model
 
 import au.id.tmm.countstv.model.PreferenceTree.PreferenceTreeNode
+import au.id.tmm.countstv.model.values.NumPapers
 import au.id.tmm.countstv.{CandidateIndex, NormalisedBallot}
 
 import scala.annotation.tailrec
@@ -10,7 +11,7 @@ sealed class PreferenceTree[C] (val parent: Option[PreferenceTree[C]] = None) {
 
   private var internalNumPapers: Long = 0
 
-  def numPapers: Long = internalNumPapers
+  def numPapers: NumPapers = NumPapers(internalNumPapers)
 
   private val internalChildren: mutable.Map[C, PreferenceTreeNode[C]] = mutable.Map()
 
@@ -44,7 +45,7 @@ sealed class PreferenceTree[C] (val parent: Option[PreferenceTree[C]] = None) {
     }
   }
 
-  override def toString: String = s"${getClass.getSimpleName}(numChildren=${children.size}, numPapers=$numPapers)"
+  override def toString: String = s"${getClass.getSimpleName}(numChildren=${children.size}, $numPapers)"
 }
 
 object PreferenceTree {
@@ -96,7 +97,7 @@ object PreferenceTree {
         }
         .mkString(", ")
 
-      s"${getClass.getSimpleName}(path=[$candidatePath], numPapers=$numPapers)"
+      s"${getClass.getSimpleName}(path=[$candidatePath], $numPapers)"
     }
   }
 

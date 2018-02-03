@@ -2,17 +2,18 @@ package au.id.tmm.countstv.counting
 
 import au.id.tmm.countstv.PaperBundles
 import au.id.tmm.countstv.model._
+import au.id.tmm.countstv.model.values.{NumPapers, NumVotes}
 
 import scala.collection.mutable
 
 object VoteCounting {
   def countVotes[C](
-                     initialNumPapers: Long,
-                     quota: Long,
+                     initialNumPapers: NumPapers,
+                     quota: NumVotes,
                      candidateStatuses: CandidateStatuses[C],
                      paperBundles: PaperBundles[C],
                    ): CandidateVoteCounts[C] = {
-    val initialVoteCount = VoteCount(numPapers = initialNumPapers, numVotes = initialNumPapers)
+    val initialVoteCount = VoteCount(initialNumPapers.asLong)
 
     val simpleCount = performSimpleCount(candidateStatuses.allCandidates, paperBundles)
 
@@ -23,7 +24,7 @@ object VoteCounting {
 
         val voteCountForCandidate = {
           if (candidateStatus.isInstanceOf[CandidateStatus.Elected] && voteCountFromSimpleCount == VoteCount.zero) {
-            voteCountFromSimpleCount + VoteCount(numPapers = 0, numVotes = quota)
+            voteCountFromSimpleCount + VoteCount(NumPapers(0), quota)
           } else {
             voteCountFromSimpleCount
           }
@@ -61,8 +62,8 @@ object VoteCounting {
         val numVotes = b.transferValue * b.numPapers
 
         val voteCount = VoteCount(
-          numPapers = b.numPapers,
-          numVotes = numVotes,
+          b.numPapers,
+          numVotes,
         )
 
         b.assignedCandidate match {
@@ -84,5 +85,5 @@ object VoteCounting {
     )
   }
 
-  private def roundVotes(voteCount: VoteCount): VoteCount = voteCount.copy(numVotes = Math.floor(voteCount.numVotes))
+  private def roundVotes(voteCount: VoteCount): VoteCount = voteCount.copy(numVotes = voteCount.numVotes.roundedDown)
 }

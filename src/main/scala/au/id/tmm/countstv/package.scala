@@ -15,10 +15,4 @@ package object countstv {
     * Zero indexed ordinal
     */
   type Ordinal = Int
-
-  /**
-    * 1 indexed
-    */
-  type Count = Int
-
 }

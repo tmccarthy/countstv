@@ -3,6 +3,7 @@ package au.id.tmm.countstv.counting.countsteps
 import au.id.tmm.countstv.counting.{ElectedCandidateComputations, VoteCounting}
 import au.id.tmm.countstv.model._
 import au.id.tmm.countstv.model.countsteps.{AllocationAfterIneligibles, CountContext}
+import au.id.tmm.countstv.model.values.{Count, NumVotes}
 
 object IneligibleHandling {
 
@@ -65,7 +66,7 @@ object IneligibleHandling {
 
   private def computeCandidateStatusPossibilities[C](
                                                       oldCandidateStatuses: CandidateStatuses[C],
-                                                      quota: Long,
+                                                      quota: NumVotes,
                                                       numVacancies: Int,
                                                       oldVoteCounts: CandidateVoteCounts[C],
                                                     ) = {
@@ -81,7 +82,7 @@ object IneligibleHandling {
         .toStream
         .zipWithIndex
         .map { case (candidate, ordinalElected) =>
-          candidate -> CandidateStatus.Elected(ordinalElected, CountNumbers.distributionOfIneligibleCandidates)
+          candidate -> CandidateStatus.Elected(ordinalElected, Count.ofIneligibleCandidateHandling)
         }
         .toMap
 
