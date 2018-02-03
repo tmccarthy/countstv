@@ -1,5 +1,7 @@
-package au.id.tmm.countstv.model
+package au.id.tmm.countstv.model.countsteps
+
 import au.id.tmm.countstv.Count
+import au.id.tmm.countstv.model.{CandidateStatus, CandidateStatuses, CandidateVoteCounts}
 
 final case class InitialAllocation[C](
                                        candidateStatuses: CandidateStatuses[C],

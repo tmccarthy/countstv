@@ -1,9 +1,10 @@
-package au.id.tmm.countstv.model
+package au.id.tmm.countstv.model.countsteps
 
 import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
 import au.id.tmm.countstv.counting.QuotaComputation
 import au.id.tmm.countstv.model.CandidateStatus._
+import au.id.tmm.countstv.model._
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
 import scala.collection.immutable.{Bag, HashedBagConfiguration, Queue}
@@ -85,9 +86,10 @@ class CountContextSpec extends ImprovedFlatSpec {
     val localTestContext = testContext.copy(
       mostRecentCountStep = mostRecentCountStep,
       currentDistribution = Some(
-        CountContext.CurrentDistribution.ElectedCandidate(
+        CountContext.CurrentDistribution(
           Apple,
-          Queue(Bag[AssignedPaperBundle[Fruit]](testBundle))
+          CandidateDistributionReason.Election,
+          Queue(Bag[AssignedPaperBundle[Fruit]](testBundle)),
         )
       )
     )
@@ -100,8 +102,9 @@ class CountContextSpec extends ImprovedFlatSpec {
   }
 
   "a current distribution" can "be for an elected candidate" in {
-    val currentDistribution = CountContext.CurrentDistribution.ElectedCandidate(
+    val currentDistribution = CountContext.CurrentDistribution(
       Apple,
+      CandidateDistributionReason.Election,
       Queue(Bag[AssignedPaperBundle[Fruit]](testBundle))
     )
 
@@ -109,8 +112,9 @@ class CountContextSpec extends ImprovedFlatSpec {
   }
 
   it can "be for an excluded candidate" in {
-    val currentDistribution = CountContext.CurrentDistribution.ExcludedCandidate(
+    val currentDistribution = CountContext.CurrentDistribution(
       Apple,
+      CandidateDistributionReason.Exclusion,
       Queue(Bag[AssignedPaperBundle[Fruit]](testBundle))
     )
 
@@ -119,8 +123,9 @@ class CountContextSpec extends ImprovedFlatSpec {
 
   it must "not have an empty queue of bundles to distribute" in {
     intercept[IllegalArgumentException] {
-      CountContext.CurrentDistribution.ExcludedCandidate(
+      CountContext.CurrentDistribution(
         Apple,
+        CandidateDistributionReason.Exclusion,
         Queue.empty
       )
     }

@@ -1,8 +1,9 @@
-package au.id.tmm.countstv.model
+package au.id.tmm.countstv.model.countsteps
 
 import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
 import au.id.tmm.countstv.model.CandidateStatus._
+import au.id.tmm.countstv.model.{CandidateStatuses, CandidateVoteCounts, VoteCount}
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
 class AllocationAfterIneligiblesSpec extends ImprovedFlatSpec {

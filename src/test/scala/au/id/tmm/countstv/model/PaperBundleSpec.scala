@@ -48,42 +48,6 @@ class PaperBundleSpec extends ImprovedFlatSpec {
     assert(paperBundle.origin === PaperBundle.Origin.InitialAllocation)
   }
 
-  "a paper bundle's origin" can "be the initial allocation" in {
-    val paperBundle = AssignedPaperBundle[Fruit](
-      transferValue = 0.5d,
-      preferenceTreeNode = testPreferenceTree.childFor(Fruit.Banana).get,
-      origin = PaperBundle.Origin.InitialAllocation,
-    )
-
-    assert(paperBundle.origin === PaperBundle.Origin.InitialAllocation)
-  }
-
-  it can "be distribution from an ineligible candidate" in {
-    val ineligibleCandidate = Fruit.Apple
-
-    val origin = PaperBundle.Origin.IneligibleCandidate[Fruit](ineligibleCandidate)
-
-    assert(origin.source === ineligibleCandidate)
-  }
-
-  it can "be distribution from an elected candidate" in {
-    val electedCandidate = Fruit.Apple
-    val transferValue = 0.7d
-
-    val origin = PaperBundle.Origin.ElectedCandidate[Fruit](electedCandidate, transferValue)
-
-    assert(origin.source === electedCandidate)
-    assert(origin.transferValue === transferValue)
-  }
-
-  it can "be distribution from an excluded candidate" in {
-    val excludedCandidate = Fruit.Apple
-
-    val origin = PaperBundle.Origin.ExcludedCandidate[Fruit](excludedCandidate)
-
-    assert(origin.source === excludedCandidate)
-  }
-
   "a paper bundle" should "be assigned to a candidate" in {
     val paperBundle = AssignedPaperBundle[Fruit](
       transferValue = 0.5d,
@@ -213,7 +177,7 @@ class PaperBundleSpec extends ImprovedFlatSpec {
       origin = PaperBundle.Origin.InitialAllocation,
     )
 
-    val origin = PaperBundle.Origin.ExcludedCandidate(Pear)
+    val origin = PaperBundle.Origin.ExcludedCandidate(Pear, 2)
 
     val actualBundlesAfterDistribution = originalBundle.distributeToRemainingCandidates(origin, candidateStatuses)
 
@@ -242,7 +206,7 @@ class PaperBundleSpec extends ImprovedFlatSpec {
       origin = PaperBundle.Origin.InitialAllocation,
     )
 
-    val origin = PaperBundle.Origin.ElectedCandidate(Apple, 0.7d)
+    val origin = PaperBundle.Origin.ElectedCandidate(Apple, 0.7d, 1)
 
     val actualBundlesAfterDistribution = originalBundle.distributeToRemainingCandidates(origin, candidateStatuses)
 
@@ -276,7 +240,7 @@ class PaperBundleSpec extends ImprovedFlatSpec {
       origin = IneligibleCandidate(Banana),
     )
 
-    val origin: PaperBundle.Origin[Fruit] = PaperBundle.Origin.ElectedCandidate(Apple, 0.7d)
+    val origin: PaperBundle.Origin[Fruit] = PaperBundle.Origin.ElectedCandidate(Apple, 0.7d, 1)
 
     val actualBundlesAfterDistribution = originalBundle.distributeToRemainingCandidates(origin, candidateStatuses)
 

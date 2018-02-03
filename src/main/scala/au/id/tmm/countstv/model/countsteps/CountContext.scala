@@ -1,8 +1,9 @@
-package au.id.tmm.countstv.model
+package au.id.tmm.countstv.model.countsteps
 
 import au.id.tmm.countstv.PaperBundles
 import au.id.tmm.countstv.counting.QuotaComputation
-import au.id.tmm.countstv.model.CountContext.CurrentDistribution
+import au.id.tmm.countstv.model.countsteps.CountContext.CurrentDistribution
+import au.id.tmm.countstv.model.{AssignedPaperBundle, CandidateDistributionReason}
 
 import scala.collection.immutable.{Bag, Queue}
 
@@ -19,7 +20,8 @@ final case class CountContext[C] (
 
   def electedCandidatesToBeDistributed: Queue[C] = {
     val electedCandidateCurrentlyBeingDistributed = currentDistribution match {
-      case Some(CurrentDistribution.ElectedCandidate(candidateBeingDistributed, _)) => Some(candidateBeingDistributed)
+      case Some(CurrentDistribution(candidateBeingDistributed, CandidateDistributionReason.Election, _)) =>
+        Some(candidateBeingDistributed)
       case _ => None
     }
 
@@ -34,23 +36,12 @@ final case class CountContext[C] (
 
 object CountContext {
 
-  sealed trait CurrentDistribution[C] {
-    def candidateBeingDistributed: C
-    def bundlesToDistribute: Queue[Bag[AssignedPaperBundle[C]]]
-
-    require(bundlesToDistribute.nonEmpty)
-  }
-
-  object CurrentDistribution {
-    final case class ExcludedCandidate[C](
+  final case class CurrentDistribution[C](
                                            candidateBeingDistributed: C,
+                                           distributionReason: CandidateDistributionReason,
                                            bundlesToDistribute: Queue[Bag[AssignedPaperBundle[C]]],
-                                         ) extends CurrentDistribution[C]
-
-    final case class ElectedCandidate[C](
-                                          candidateBeingDistributed: C,
-                                          bundlesToDistribute: Queue[Bag[AssignedPaperBundle[C]]],
-                                        ) extends CurrentDistribution[C]
+                                         ) {
+    require(bundlesToDistribute.nonEmpty)
   }
 
 }

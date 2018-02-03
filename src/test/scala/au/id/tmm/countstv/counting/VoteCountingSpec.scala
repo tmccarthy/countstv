@@ -64,7 +64,7 @@ class VoteCountingSpec extends ImprovedFlatSpec {
     val paperBundles = PaperBundle.rootBundleFor(testPreferenceTree)
       .distributeToRemainingCandidates(PaperBundle.Origin.InitialAllocation, candidateStatuses)
       .flatMap { b =>
-        b.distributeToRemainingCandidates(PaperBundle.Origin.ElectedCandidate(Apple, transferValue), candidateStatuses)
+        b.distributeToRemainingCandidates(PaperBundle.Origin.ElectedCandidate(Apple, transferValue, 1), candidateStatuses)
       }
 
     val actualVoteCounts = VoteCounting.countVotes[Fruit](
@@ -132,12 +132,12 @@ class VoteCountingSpec extends ImprovedFlatSpec {
       AssignedPaperBundle(
         transferValue = 0.666666666d,
         preferenceTreeNode = testPreferenceTree.childFor(Apple, Pear, Banana).get,
-        origin = PaperBundle.Origin.ElectedCandidate(Apple, 0.666666666d),
+        origin = PaperBundle.Origin.ElectedCandidate(Apple, 0.666666666d, 2),
       ),
       AssignedPaperBundle(
         transferValue = 0.666666666d,
         preferenceTreeNode = testPreferenceTree.childFor(Apple, Banana).get,
-        origin = PaperBundle.Origin.ElectedCandidate(Apple, 0.666666666d),
+        origin = PaperBundle.Origin.ElectedCandidate(Apple, 0.666666666d, 2),
       ),
       AssignedPaperBundle(
         transferValue = 1d,
@@ -147,12 +147,12 @@ class VoteCountingSpec extends ImprovedFlatSpec {
       ExhaustedPaperBundle(
         numPapers = 1l,
         transferValue = 1d,
-        origin = PaperBundle.Origin.ExcludedCandidate(Strawberry),
+        origin = PaperBundle.Origin.ExcludedCandidate(Strawberry, 2),
       ),
       ExhaustedPaperBundle(
         numPapers = 1l,
         transferValue = 0.666666666d,
-        origin = PaperBundle.Origin.ElectedCandidate(Apple, transferValue = 0.666666666d)
+        origin = PaperBundle.Origin.ElectedCandidate(Apple, transferValue = 0.666666666d, 2)
       )
     )
 
@@ -188,7 +188,7 @@ class VoteCountingSpec extends ImprovedFlatSpec {
     val paperBundles = PaperBundle.rootBundleFor(testPreferenceTree)
       .distributeToRemainingCandidates(PaperBundle.Origin.InitialAllocation, candidateStatuses)
       .flatMap { b =>
-        b.distributeToRemainingCandidates(PaperBundle.Origin.ExcludedCandidate(Strawberry), candidateStatuses)
+        b.distributeToRemainingCandidates(PaperBundle.Origin.ExcludedCandidate(Strawberry, 2), candidateStatuses)
       }
 
     val actualCount = VoteCounting.performSimpleCount(candidateStatuses.allCandidates, paperBundles)

@@ -1,8 +1,8 @@
 package au.id.tmm.countstv.model
 
-import au.id.tmm.countstv.PaperBundles
 import au.id.tmm.countstv.model.PaperBundle.Origin
 import au.id.tmm.countstv.model.PreferenceTree.PreferenceTreeNode
+import au.id.tmm.countstv.{Count, PaperBundles}
 
 import scala.collection.immutable.{Bag, HashedBagConfiguration}
 
@@ -103,7 +103,7 @@ object PaperBundle {
                                                 ): PaperBundles[C] = {
 
     val distributedTransferValue = origin match {
-      case PaperBundle.Origin.ElectedCandidate(_, appliedTransferValue) =>
+      case PaperBundle.Origin.ElectedCandidate(_, appliedTransferValue, _) =>
         bundle.transferValue * appliedTransferValue
       case _ => bundle.transferValue
     }
@@ -147,13 +147,23 @@ object PaperBundle {
     }
   }
 
-  sealed trait Origin[+C]
+  sealed trait Origin[+C] {
+    def count: Count
+  }
 
   object Origin {
-    case object InitialAllocation extends Origin[Nothing]
-    final case class IneligibleCandidate[C](source: C) extends Origin[C]
-    final case class ElectedCandidate[C](source: C, transferValue: Double) extends Origin[C]
-    final case class ExcludedCandidate[C](source: C) extends Origin[C]
+    case object InitialAllocation extends Origin[Nothing] {
+      def count: Count = CountNumbers.initialAllocation
+    }
+
+    final case class IneligibleCandidate[C](source: C) extends Origin[C] {
+      def count: Count = CountNumbers.distributionOfIneligibleCandidates
+    }
+
+    final case class ElectedCandidate[C](source: C, transferValue: Double, count: Count) extends Origin[C]
+
+    final case class ExcludedCandidate[C](source: C, count: Count) extends Origin[C]
+
   }
 
 }

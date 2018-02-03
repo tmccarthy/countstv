@@ -31,6 +31,19 @@ final case class CandidateStatuses[C](asMap: Map[C, CandidateStatus]) {
 
   val ineligibleForPreferenceFlows: Set[C] = allCandidates -- remainingCandidates
 
+  def update(candidate: C, newStatus: CandidateStatus): CandidateStatuses[C] =
+    CandidateStatuses(asMap.updated(candidate, newStatus))
+
+  def updateFrom(newStatuses: Map[C, CandidateStatus]): CandidateStatuses[C] = {
+    CandidateStatuses(asMap ++ newStatuses)
+//
+//    CandidateStatuses(
+//      asMap.map { case (candidate, oldStatus) =>
+//        candidate -> newStatuses.getOrElse(candidate, oldStatus)
+//      }
+//    )
+  }
+
 }
 
 object CandidateStatuses {
