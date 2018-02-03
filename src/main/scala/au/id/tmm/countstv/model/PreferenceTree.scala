@@ -1,8 +1,8 @@
 package au.id.tmm.countstv.model
 
+import au.id.tmm.countstv.NormalisedBallot
 import au.id.tmm.countstv.model.PreferenceTree.PreferenceTreeNode
 import au.id.tmm.countstv.model.values.NumPapers
-import au.id.tmm.countstv.{CandidateIndex, NormalisedBallot}
 
 import scala.annotation.tailrec
 import scala.collection.mutable
@@ -70,7 +70,7 @@ object PreferenceTree {
   private def incrementPaperCount[C](
                                       preferenceTreeToIncrement: PreferenceTree[C],
                                       ballot: NormalisedBallot[C],
-                                      incrementFromIndex: CandidateIndex = 0,
+                                      incrementFromIndex: Int = 0,
                                     ): Unit = {
     preferenceTreeToIncrement.internalNumPapers = preferenceTreeToIncrement.internalNumPapers + 1
 

@@ -6,7 +6,6 @@ import scala.collection.immutable.Bag
 
 package object countstv {
 
-  type CandidateIndex = Int
   type NormalisedBallot[C] = IndexedSeq[C]
 
   type PaperBundles[C] = Bag[PaperBundle[C]]
@@ -14,5 +13,5 @@ package object countstv {
   /**
     * Zero indexed ordinal
     */
-  type Ordinal = Int
+  type Ordinal = Int // TODO make this a value class
 }
