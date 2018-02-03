@@ -36,10 +36,10 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
     Vector(Pear, Strawberry, Banana, Apple),
     Vector(Pear, Strawberry, Banana, Apple),
     Vector(Strawberry),
-    Vector(Strawberry, Apple, Pear),
-    Vector(Strawberry, Apple, Pear, Banana),
     Vector(Strawberry, Banana, Apple, Pear),
     Vector(Strawberry, Pear, Apple, Banana),
+    Vector(Strawberry, Pear),
+    Vector(Strawberry, Pear),
   )
 
   private val candidateStatuses = CandidateStatuses[Fruit](
@@ -94,11 +94,6 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
         ),
         AssignedPaperBundle(
           TransferValue(1d),
-          testPreferenceTree.childFor(Strawberry, Apple).get,
-          PaperBundle.Origin.ExcludedCandidate(Strawberry, Count(2)),
-        ),
-        AssignedPaperBundle(
-          TransferValue(1d),
           testPreferenceTree.childFor(Strawberry, Banana).get,
           PaperBundle.Origin.ExcludedCandidate(Strawberry, Count(2)),
         ),
@@ -118,9 +113,9 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
         ),
         candidateVoteCounts = CandidateVoteCounts[Fruit](
           perCandidate = Map(
-            Apple -> VoteCount(8),
+            Apple -> VoteCount(6),
             Banana -> VoteCount(7),
-            Pear -> VoteCount(9),
+            Pear -> VoteCount(11),
             Strawberry -> VoteCount.zero,
           ),
           exhausted = VoteCount(1),
@@ -155,6 +150,11 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
           TransferValue(1d),
           PaperBundle.Origin.ExcludedCandidate(Strawberry, Count(2)),
         ),
+        ExhaustedPaperBundle[Fruit](
+          NumPapers(2),
+          TransferValue(2d / 11d),
+          PaperBundle.Origin.ElectedCandidate(Pear, TransferValueCoefficient(2d / 11d), Count(3))
+        ),
         AssignedPaperBundle(
           TransferValue(1d),
           testPreferenceTree.childFor(Apple).get,
@@ -166,24 +166,19 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
           PaperBundle.Origin.InitialAllocation,
         ),
         AssignedPaperBundle(
-          TransferValue(0d),
+          TransferValue(2d / 11d),
           testPreferenceTree.childFor(Pear, Apple).get,
-          PaperBundle.Origin.ElectedCandidate(Pear, TransferValueCoefficient(0d), Count(3)),
+          PaperBundle.Origin.ElectedCandidate(Pear, TransferValueCoefficient(2d / 11d), Count(3)),
         ),
         AssignedPaperBundle(
-          TransferValue(0d),
+          TransferValue(2d / 11d),
           testPreferenceTree.childFor(Pear, Banana).get,
-          PaperBundle.Origin.ElectedCandidate(Pear, TransferValueCoefficient(0d), Count(3)),
+          PaperBundle.Origin.ElectedCandidate(Pear, TransferValueCoefficient(2d / 11d), Count(3)),
         ),
         AssignedPaperBundle(
-          TransferValue(0d),
+          TransferValue(2d / 11d),
           testPreferenceTree.childFor(Pear, Strawberry, Banana).get,
-          PaperBundle.Origin.ElectedCandidate(Pear, TransferValueCoefficient(0d), Count(3)),
-        ),
-        AssignedPaperBundle(
-          TransferValue(1d),
-          testPreferenceTree.childFor(Strawberry, Apple).get,
-          PaperBundle.Origin.ExcludedCandidate(Strawberry, Count(2)),
+          PaperBundle.Origin.ElectedCandidate(Pear, TransferValueCoefficient(2d / 11d), Count(3)),
         ),
         AssignedPaperBundle(
           TransferValue(1d),
@@ -191,9 +186,9 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
           PaperBundle.Origin.ExcludedCandidate(Strawberry, Count(2)),
         ),
         AssignedPaperBundle(
-          TransferValue(0d),
+          TransferValue(2d / 11d),
           testPreferenceTree.childFor(Strawberry, Pear, Apple).get,
-          PaperBundle.Origin.ElectedCandidate(Pear, TransferValueCoefficient(0d), Count(3)),
+          PaperBundle.Origin.ElectedCandidate(Pear, TransferValueCoefficient(2d / 11d), Count(3)),
         ),
       ),
       mostRecentCountStep = DistributionCountStep(
@@ -206,19 +201,19 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
         ),
         candidateVoteCounts = CandidateVoteCounts[Fruit](
           perCandidate = Map(
-            Apple -> VoteCount(NumPapers(12), NumVotes(8.0)),
+            Apple -> VoteCount(NumPapers(10), NumVotes(6.0)),
             Banana -> VoteCount(NumPapers(12), NumVotes(7.0)),
             Pear -> VoteCount(NumPapers(0), NumVotes(9.0)),
             Strawberry -> VoteCount.zero,
           ),
-          exhausted = VoteCount(NumPapers(1), NumVotes(1d)),
-          roundingError = VoteCount.zero,
+          exhausted = VoteCount(NumPapers(3), NumVotes(1d)),
+          roundingError = VoteCount(NumPapers(0), NumVotes(-2.0)),
         ),
         distributionSource = DistributionCountStep.Source(
           Pear,
           CandidateDistributionReason.Election,
           sourceCounts = Set(Count(0), Count(2)),
-          transferValue = TransferValue(0),
+          transferValue = TransferValue(2d / 11d),
         )
       ),
       currentDistribution = None,
