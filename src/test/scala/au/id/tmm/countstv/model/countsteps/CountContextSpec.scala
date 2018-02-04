@@ -5,7 +5,7 @@ import au.id.tmm.countstv.Fruit._
 import au.id.tmm.countstv.counting.QuotaComputation
 import au.id.tmm.countstv.model.CandidateStatus._
 import au.id.tmm.countstv.model._
-import au.id.tmm.countstv.model.values.{Count, NumPapers, TransferValue, TransferValueCoefficient}
+import au.id.tmm.countstv.model.values._
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
 import scala.collection.immutable.{Bag, HashedBagConfiguration, Queue}
@@ -97,6 +97,34 @@ class CountContextSpec extends ImprovedFlatSpec {
     )
 
     assert(localTestContext.electedCandidatesWaitingToBeDistributed === Queue(Banana))
+  }
+
+  it should "not indicate a candidate needs to be distributed if they've already been distributed" in {
+    val mostRecentCountStep = testContext
+      .mostRecentCountStep
+      .asInstanceOf[AllocationAfterIneligibles[Fruit]]
+      .copy(
+        candidateStatuses = CandidateStatuses[Fruit](
+          Apple -> Elected(0, Count(1)),
+          Banana -> Remaining,
+          Pear -> Remaining,
+          Strawberry -> Remaining,
+        ),
+        candidateVoteCounts = CandidateVoteCounts[Fruit](
+          perCandidate = Map[Fruit, VoteCount](
+            Apple -> VoteCount(NumPapers(0), NumVotes(14)),
+            Banana -> VoteCount(NumPapers(12), NumVotes(10)),
+            Pear -> VoteCount(NumPapers(16), NumVotes(6)),
+            Strawberry -> VoteCount(NumPapers(12), NumVotes(10)),
+          ),
+          exhausted = VoteCount.zero,
+          roundingError = VoteCount.zero,
+        )
+      )
+
+    val localTestContext = testContext.copy(mostRecentCountStep = mostRecentCountStep)
+
+    assert(localTestContext.electedCandidatesWaitingToBeDistributed === Queue())
   }
 
   it should "have the right quota" in {

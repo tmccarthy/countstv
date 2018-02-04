@@ -148,6 +148,7 @@ object DistributiveCountStepComputation {
       .toStream
       .sortBy { case (transferValue, bundles) => transferValue }
       .map { case (transferValue, bundles) => bundles.to[Bag](Bag.canBuildFrom(HashedBagConfiguration.compact)) }
+      .reverse
       .to[Queue]
 
     CountContext.CurrentDistribution[C](

@@ -30,7 +30,10 @@ final case class CountContext[C] (
       .candidateStatuses
       .electedCandidates
       .toStream
-      .filterNot(electedCandidateCurrentlyBeingDistributed.contains)
+      .filter { c =>
+        !electedCandidateCurrentlyBeingDistributed.contains(c) &&
+          mostRecentCountStep.candidateVoteCounts.perCandidate(c).numPapers > NumPapers(0)
+      }
       .to[Queue]
   }
 }
