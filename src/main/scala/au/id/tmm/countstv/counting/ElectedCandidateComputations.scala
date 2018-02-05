@@ -4,6 +4,7 @@ import au.id.tmm.countstv.model.values.NumVotes
 import au.id.tmm.countstv.model.{CandidateStatuses, CandidateVoteCounts, ProbabilityMeasure}
 import au.id.tmm.utilities.collection.DupelessSeq
 
+@deprecated(message = "This is not right")
 object ElectedCandidateComputations {
 
   def computeNewlyElected[C](

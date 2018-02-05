@@ -560,4 +560,7 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
     assert(actualContext.mostRecentCountStep === expectedCountStep)
   }
 
+  // TODO should indicate when counting is finished
+  // TODO should reject a context that is marked as finished
+  // TODO should check for terminal election conditions
 }

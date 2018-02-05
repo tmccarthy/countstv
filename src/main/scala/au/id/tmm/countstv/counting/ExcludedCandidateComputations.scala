@@ -2,6 +2,7 @@ package au.id.tmm.countstv.counting
 
 import au.id.tmm.countstv.model.{CandidateStatuses, CandidateVoteCounts, ProbabilityMeasure}
 
+@deprecated(message = "This is not right")
 object ExcludedCandidateComputations {
   def computeExcluded[C](
                           counts: CandidateVoteCounts[C],

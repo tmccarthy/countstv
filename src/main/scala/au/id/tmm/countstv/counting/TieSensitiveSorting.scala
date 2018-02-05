@@ -5,6 +5,7 @@ import au.id.tmm.utilities.collection.DupelessSeq
 
 import scala.collection.mutable
 
+@deprecated(message = "To be replaced")
 object TieSensitiveSorting {
 
   def minBy[A, B](iterable: Iterable[A])
