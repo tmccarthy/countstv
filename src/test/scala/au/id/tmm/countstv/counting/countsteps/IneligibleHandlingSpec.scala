@@ -65,7 +65,7 @@ class IneligibleHandlingSpec extends ImprovedFlatSpec {
     val actualContextAfterIneligibles = IneligibleHandling.computeContextAfterIneligibles[Fruit](initialContext)
 
     val expectedContextAfterIneligibles = initialContext.copy(
-      mostRecentCountStep =
+      previousCountSteps = initialContext.previousCountSteps :+
         AllocationAfterIneligibles(
           candidateStatuses = CandidateStatuses[Fruit](
             Apple -> Elected(0, Count(1)),
@@ -76,10 +76,9 @@ class IneligibleHandlingSpec extends ImprovedFlatSpec {
           candidateVoteCounts = initialContext.mostRecentCountStep.candidateVoteCounts,
           transfersDueToIneligibles = Map.empty[Fruit, CandidateVoteCounts[Fruit]],
         )
-
     )
 
-    assert(actualContextAfterIneligibles === ProbabilityMeasure.Always(expectedContextAfterIneligibles))
+    assert(actualContextAfterIneligibles === ProbabilityMeasure.always(expectedContextAfterIneligibles))
   }
 
   it should "distribute away from ineligible candidates" in {
@@ -103,7 +102,7 @@ class IneligibleHandlingSpec extends ImprovedFlatSpec {
     val actualContextAfterIneligibles = IneligibleHandling.computeContextAfterIneligibles[Fruit](initialContext)
 
     val expectedContextAfterIneligibles = initialContext.copy(
-      mostRecentCountStep =
+      previousCountSteps = initialContext.previousCountSteps :+
         AllocationAfterIneligibles(
           candidateStatuses = CandidateStatuses[Fruit](
             Apple -> Elected(0, Count(1)),

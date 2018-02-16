@@ -1,20 +1,19 @@
 package au.id.tmm.countstv.counting
 
 import au.id.tmm.countstv.model.ProbabilityMeasure
-import au.id.tmm.utilities.collection.DupelessSeq
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 import spire.math.Rational
 
-class TieSensitiveSortingSpec extends ImprovedFlatSpec {
+class NewTieSensitiveSortingSpec extends ImprovedFlatSpec {
 
   "the minimum of an empty set" should "be nothing" in {
-    assert(TieSensitiveSorting.minBy(Set[Int]())(x => x) === None)
+    assert(NewTieSensitiveSorting.min(Set[Int]()) === None)
   }
 
   "the minimum of a list with no duplicates" should "be the minimum" in {
     val list = List(1, 2, 3)
 
-    assert(TieSensitiveSorting.minBy(list)(x => x) === Some(ProbabilityMeasure.always(1)))
+    assert(NewTieSensitiveSorting.min(list) === Some(ProbabilityMeasure.always(1)))
   }
 
   "the minimum of a list with some duplicates" should "be an evenly distributed probability across all the minimums" in {
@@ -32,7 +31,7 @@ class TieSensitiveSortingSpec extends ImprovedFlatSpec {
       "dog" -> Rational(1, 2),
     )
 
-    val actualMin = TieSensitiveSorting.minBy(list)(scoreFn)
+    val actualMin = NewTieSensitiveSorting.min(list)(Ordering.by(scoreFn))
 
     assert(actualMin === Some(expectedMin))
   }
@@ -40,7 +39,7 @@ class TieSensitiveSortingSpec extends ImprovedFlatSpec {
   "a set with no tied elements" should "have only one outcome" in {
     val set = Set(4, 2, 1, 5, 3)
 
-    val actualResult: ProbabilityMeasure[DupelessSeq[Int]] = TieSensitiveSorting.sortBy(set)(x => x)
+    val actualResult: ProbabilityMeasure[List[Int]] = NewTieSensitiveSorting.sort(set)
 
     val expectedResult = ProbabilityMeasure.always(List(1, 2, 3, 4, 5))
 
@@ -55,7 +54,7 @@ class TieSensitiveSortingSpec extends ImprovedFlatSpec {
       "D" -> 3,
     )
 
-    val actualResult: ProbabilityMeasure[DupelessSeq[String]] = TieSensitiveSorting.sortBy(scores.keySet)(scores)
+    val actualResult: ProbabilityMeasure[List[String]] = NewTieSensitiveSorting.sort(scores.keySet)(Ordering.by(scores))
 
     val expectedResult = ProbabilityMeasure.evenly(
       List("A", "B", "C", "D"),
@@ -77,7 +76,7 @@ class TieSensitiveSortingSpec extends ImprovedFlatSpec {
       "G" -> 5,
     )
 
-    val actualResult = TieSensitiveSorting.sortBy(scores.keySet)(scores)
+    val actualResult = NewTieSensitiveSorting.sort(scores.keySet)(Ordering.by(scores))
 
     val expectedResult = ProbabilityMeasure(
       List("A", "B", "C", "D", "E", "F", "G") -> Rational(1, 12),
@@ -96,4 +95,5 @@ class TieSensitiveSortingSpec extends ImprovedFlatSpec {
 
     assert(actualResult === expectedResult)
   }
+
 }

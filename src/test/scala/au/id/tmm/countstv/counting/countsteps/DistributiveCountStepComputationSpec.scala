@@ -3,7 +3,6 @@ package au.id.tmm.countstv.counting.countsteps
 import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
 import au.id.tmm.countstv.model.CandidateStatus._
-import au.id.tmm.countstv.model.ProbabilityMeasure.Always
 import au.id.tmm.countstv.model._
 import au.id.tmm.countstv.model.countsteps.{CountContext, DistributionCountStep}
 import au.id.tmm.countstv.model.values._
@@ -90,18 +89,18 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
 
   private val contextAfterIneligibles = IneligibleHandling.computeContextAfterIneligibles(
     initialContext,
-  ).asInstanceOf[ProbabilityMeasure.Always[CountContext[Fruit]]].outcome
+  ).anyOutcome
 
   "count step 2, when Watermelon is excluded" should "have the correct number of formal papers" in {
     val actualContext = DistributiveCountStepComputation.computeNextContext(contextAfterIneligibles)
 
-    assert(actualContext.map(_.numFormalPapers) === Always(rootBundle.numPapers))
+    assert(actualContext.map(_.numFormalPapers) === ProbabilityMeasure.always(rootBundle.numPapers))
   }
 
   it should "have the correct number of vacancies" in {
     val actualContext = DistributiveCountStepComputation.computeNextContext(contextAfterIneligibles)
 
-    assert(actualContext.map(_.numVacancies) === Always(numVacancies))
+    assert(actualContext.map(_.numVacancies) === ProbabilityMeasure.always(numVacancies))
   }
 
   it should "have the correct paper bundles" in {
@@ -155,7 +154,7 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
       ),
     )
 
-    assert(actualContext.map(_.paperBundles) === Always(expectedPaperBundles))
+    assert(actualContext.map(_.paperBundles) === ProbabilityMeasure.always(expectedPaperBundles))
   }
 
   it should "have produced the correct distribution step" in {
@@ -193,13 +192,13 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
       )
     )
 
-    assert(actualContext.map(_.mostRecentCountStep) === Always(expectedCountStep))
+    assert(actualContext.map(_.mostRecentCountStep) === ProbabilityMeasure.always(expectedCountStep))
   }
 
   it should "have no current distribution" in {
     val actualContext = DistributiveCountStepComputation.computeNextContext(contextAfterIneligibles)
 
-    assert(actualContext.map(_.currentDistribution) === Always(None))
+    assert(actualContext.map(_.currentDistribution) === ProbabilityMeasure.always(None))
   }
 
   "count step 3, when Strawberry is excluded" should "have the correct paper bundles" in {
@@ -271,7 +270,7 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
       ),
     )
 
-    assert(actualContext.map(_.paperBundles) === Always(expectedPaperBundles))
+    assert(actualContext.map(_.paperBundles) === ProbabilityMeasure.always(expectedPaperBundles))
   }
 
   it should "have produced the correct count step" in {
@@ -312,7 +311,7 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
       )
     )
 
-    assert(actualContext.map(_.mostRecentCountStep) === Always(expectedCountStep))
+    assert(actualContext.map(_.mostRecentCountStep) === ProbabilityMeasure.always(expectedCountStep))
   }
 
   it should "have no current distribution" in {
@@ -321,7 +320,7 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
 
     val actualContext = DistributiveCountStepComputation.computeNextContext(contextAfterFirstDistribution)
 
-    assert(actualContext.map(_.currentDistribution) === Always(None))
+    assert(actualContext.map(_.currentDistribution) === ProbabilityMeasure.always(None))
   }
 
   "count 4, where Apple is elected" should "have produced the correct count step" in {
@@ -331,7 +330,7 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
         contextAfterCount3 <- DistributiveCountStepComputation.computeNextContext(contextAfterCount2)
         contextAfterCount4 <- DistributiveCountStepComputation.computeNextContext(contextAfterCount3)
       } yield contextAfterCount4
-      ) match { case ProbabilityMeasure.Always(c) => c }
+      ).anyOutcome
 
     val expectedCountStep = DistributionCountStep[Fruit](
       count = Count(4),
@@ -376,7 +375,7 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
         contextAfterCount4 <- DistributiveCountStepComputation.computeNextContext(contextAfterCount3)
         contextAfterCount5 <- DistributiveCountStepComputation.computeNextContext(contextAfterCount4)
       } yield contextAfterCount5
-      ) match { case ProbabilityMeasure.Always(c) => c }
+      ).anyOutcome
 
     val expectedCountStep = DistributionCountStep[Fruit](
       count = Count(5),
@@ -422,7 +421,7 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
         contextAfterCount5 <- DistributiveCountStepComputation.computeNextContext(contextAfterCount4)
         contextAfterCount6 <- DistributiveCountStepComputation.computeNextContext(contextAfterCount5)
       } yield contextAfterCount6
-      ) match { case ProbabilityMeasure.Always(c) => c }
+      ).anyOutcome
 
     val expectedCountStep = DistributionCountStep[Fruit](
       count = Count(6),
@@ -468,7 +467,7 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
         contextAfterCount5 <- DistributiveCountStepComputation.computeNextContext(contextAfterCount4)
         contextAfterCount6 <- DistributiveCountStepComputation.computeNextContext(contextAfterCount5)
       } yield contextAfterCount6
-      ) match { case ProbabilityMeasure.Always(c) => c }
+      ).anyOutcome
 
 
     val expectedCurrentDistribution = CountContext.CurrentDistribution[Fruit](
@@ -523,7 +522,7 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
         contextAfterCount6 <- DistributiveCountStepComputation.computeNextContext(contextAfterCount5)
         contextAfterCount7 <- DistributiveCountStepComputation.computeNextContext(contextAfterCount6)
       } yield contextAfterCount7
-      ) match { case ProbabilityMeasure.Always(c) => c }
+      ).anyOutcome
 
     val expectedCountStep = DistributionCountStep[Fruit](
       count = Count(7),
@@ -560,4 +559,7 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
     assert(actualContext.mostRecentCountStep === expectedCountStep)
   }
 
+  // TODO should indicate when counting is finished
+  // TODO should reject a context that is marked as finished
+  // TODO should check for terminal election conditions
 }

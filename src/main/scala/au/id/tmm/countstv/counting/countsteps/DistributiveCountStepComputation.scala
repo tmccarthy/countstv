@@ -1,11 +1,11 @@
 package au.id.tmm.countstv.counting.countsteps
 
 import au.id.tmm.countstv.PaperBundles
-import au.id.tmm.countstv.counting.{ElectedCandidateComputations, ExcludedCandidateComputations, VoteCounting}
+import au.id.tmm.countstv.counting._
 import au.id.tmm.countstv.model.CandidateDistributionReason._
 import au.id.tmm.countstv.model._
 import au.id.tmm.countstv.model.countsteps.{CountContext, DistributionCountStep}
-import au.id.tmm.countstv.model.values.{Count, NumPapers, NumVotes, TransferValueCoefficient}
+import au.id.tmm.countstv.model.values.{Count, TransferValueCoefficient}
 
 import scala.collection.immutable.{Bag, HashedBagConfiguration, Queue}
 
@@ -13,125 +13,73 @@ object DistributiveCountStepComputation {
 
   def computeNextContext[C](countContext: CountContext[C]): ProbabilityMeasure[CountContext[C]] = {
     val count = countContext.mostRecentCountStep.count.increment
-    val numFormalPapers = countContext.numFormalPapers
-    val numVacancies = countContext.numVacancies
-    val quota = countContext.quota
-    val candidateStatuses = countContext.mostRecentCountStep.candidateStatuses
-    val candidateVoteCounts = countContext.mostRecentCountStep.candidateVoteCounts
-    val paperBundles = countContext.paperBundles
-    val electedCandidatesWaitingToBeDistributed = countContext.electedCandidatesWaitingToBeDistributed
-    val possibleCurrentDistribution = countContext.currentDistribution
 
-    possibleCurrentDistribution match {
-      case Some(currentDistribution) =>
+    countContext.currentDistribution match {
+      case Some(currentDistribution) => {
         contextAfterApplyingDistribution(
           count,
-          numFormalPapers,
-          numVacancies,
-          quota,
-          candidateStatuses,
-          paperBundles,
+          countContext,
           currentDistribution,
         )
-
-      case None =>
-        if (electedCandidatesWaitingToBeDistributed.nonEmpty) {
-          contextAfterDistributingElectedCandidate(
-            count,
-            numFormalPapers,
-            numVacancies,
-            quota,
-            candidateStatuses,
-            candidateVoteCounts,
-            paperBundles,
-            candidateToElect = electedCandidatesWaitingToBeDistributed.front,
-          )
+      }
+      case None => {
+        if (countContext.electedCandidatesWaitingToBeDistributed.nonEmpty) {
+          contextAfterDistributingElectedCandidate(countContext)
         } else {
-          contextAfterDistributingExcludedCandidate(
-            count,
-            numFormalPapers,
-            numVacancies,
-            quota,
-            candidateStatuses,
-            candidateVoteCounts,
-            paperBundles,
-          )
+          contextAfterDistributingExcludedCandidate(count, countContext)
         }
+      }
     }
   }
 
-  private def contextAfterDistributingElectedCandidate[C](
-                                                           count: Count,
-                                                           numFormalPapers: NumPapers,
-                                                           numVacancies: Int,
-                                                           quota: NumVotes,
-                                                           oldCandidateStatuses: CandidateStatuses[C],
-                                                           oldCandidateVoteCounts: CandidateVoteCounts[C],
-                                                           oldPaperBundles: PaperBundles[C],
-                                                           candidateToElect: C,
-                                                         ) = {
+  private def contextAfterDistributingElectedCandidate[C](countContext: CountContext[C]) = {
+    val candidateToElect = countContext.electedCandidatesWaitingToBeDistributed.front
+
     val distributionTransferValue =
-      TransferValueCoefficient.compute(oldCandidateVoteCounts.perCandidate(candidateToElect).numVotes, quota)
+      TransferValueCoefficient.compute(countContext.mostRecentCountStep.candidateVoteCounts.perCandidate(candidateToElect).numVotes, countContext.quota)
 
     val newCurrentDistribution =
       buildNewCurrentDistribution(
         candidateToElect,
         Election,
         distributionTransferValue,
-        oldPaperBundles,
+        countContext.paperBundles,
       )
 
-    contextAfterApplyingDistribution(
-      count,
-      numFormalPapers,
-      numVacancies,
-      quota,
-      oldCandidateStatuses,
-      oldPaperBundles,
-      newCurrentDistribution,
-    )
+    computeNextContext(countContext.copy(currentDistribution = Some(newCurrentDistribution)))
   }
 
-  private def contextAfterDistributingExcludedCandidate[C](
-                                                            count: Count,
-                                                            numFormalPapers: NumPapers,
-                                                            numVacancies: Int,
-                                                            quota: NumVotes,
-                                                            oldCandidateStatuses: CandidateStatuses[C],
-                                                            oldCandidateVoteCounts: CandidateVoteCounts[C],
-                                                            oldPaperBundles: PaperBundles[C],
-                                                          ) = {
-    ExcludedCandidateComputations.computeExcluded(oldCandidateVoteCounts, oldCandidateStatuses)
+  private def contextAfterDistributingExcludedCandidate[C](count: Count, countContext: CountContext[C]) = {
+    NewExcludedCandidateComputations.computeExcluded(
+      currentCandidateVoteCounts = countContext.previousCandidateVoteCounts.last,
+      previousCandidateVoteCountsAscending = countContext.previousCandidateVoteCounts.init,
+      candidateStatuses = countContext.candidateStatuses,
+    )
       .flatMap { candidateToExclude =>
-
         val newCurrentDistribution =
           buildNewCurrentDistribution(
             candidateToExclude,
             Exclusion,
             distributionTransferValue = TransferValueCoefficient(1.0d),
-            oldPaperBundles,
+            countContext.paperBundles,
           )
 
         val statusForNewlyExcludedCandidate: CandidateStatus = {
-          val ordinalExcluded = oldCandidateStatuses.excludedCandidates.size
+          val ordinalExcluded = countContext.candidateStatuses.excludedCandidates.size
 
           CandidateStatus.Excluded(ordinalExcluded, count)
         }
 
         val newCandidateStatuses =
-          oldCandidateStatuses.update(candidateToExclude, statusForNewlyExcludedCandidate)
+          countContext.candidateStatuses.update(candidateToExclude, statusForNewlyExcludedCandidate)
 
-        contextAfterApplyingDistribution(
-          count,
-          numFormalPapers,
-          numVacancies,
-          quota,
-          newCandidateStatuses,
-          oldPaperBundles,
-          newCurrentDistribution,
-        )
+        computeNextContext(countContext.copy(
+          candidateStatuses = newCandidateStatuses,
+          currentDistribution = Some(newCurrentDistribution),
+        ))
       }
   }
+
 
   private def buildNewCurrentDistribution[C](
                                               candidateToDistribute: C,
@@ -161,16 +109,12 @@ object DistributiveCountStepComputation {
 
   private def contextAfterApplyingDistribution[C](
                                                    count: Count,
-                                                   numFormalPapers: NumPapers,
-                                                   numVacancies: Int,
-                                                   quota: NumVotes,
-                                                   oldCandidateStatuses: CandidateStatuses[C],
-                                                   oldPaperBundles: PaperBundles[C],
-                                                   oldCurrentDistribution: CountContext.CurrentDistribution[C],
+                                                   countContext: CountContext[C],
+                                                   currentDistribution: CountContext.CurrentDistribution[C],
                                                  ): ProbabilityMeasure[CountContext[C]] = {
-    val candidateBeingDistributed = oldCurrentDistribution.candidateBeingDistributed
-    val bundlesToDistribute = oldCurrentDistribution.bundlesToDistribute
-    val distributionReason = oldCurrentDistribution.distributionReason
+    val candidateBeingDistributed = currentDistribution.candidateBeingDistributed
+    val bundlesToDistribute = currentDistribution.bundlesToDistribute
+    val distributionReason = currentDistribution.distributionReason
 
     val (bundlesToDistributeNow, remainingToDistributeForCurrentDistribution) =
       bundlesToDistribute.dequeue
@@ -180,24 +124,24 @@ object DistributiveCountStepComputation {
         case Exclusion =>
           PaperBundle.Origin.ExcludedCandidate(candidateBeingDistributed, count)
         case Election =>
-          PaperBundle.Origin.ElectedCandidate(candidateBeingDistributed, oldCurrentDistribution.transferValueCoefficient, count)
+          PaperBundle.Origin.ElectedCandidate(candidateBeingDistributed, currentDistribution.transferValueCoefficient, count)
       }
 
       val newlyCreatedBundles = bundlesToDistributeNow
         .flatMap { bundle =>
           bundle.distributeToRemainingCandidates(
             distributionOrigin,
-            oldCandidateStatuses,
+            countContext.candidateStatuses,
           )
         }
 
-      (oldPaperBundles -- bundlesToDistributeNow) ++ newlyCreatedBundles
+      (countContext.paperBundles -- bundlesToDistributeNow) ++ newlyCreatedBundles
     }
 
     val newCurrentDistribution = {
       if (remainingToDistributeForCurrentDistribution.nonEmpty) {
         Some(
-          oldCurrentDistribution.copy(
+          currentDistribution.copy(
             bundlesToDistribute = remainingToDistributeForCurrentDistribution
           )
         )
@@ -207,9 +151,9 @@ object DistributiveCountStepComputation {
     }
 
     val newCandidateVoteCounts = VoteCounting.countVotes(
-      numFormalPapers,
-      quota,
-      oldCandidateStatuses,
+      countContext.numFormalPapers,
+      countContext.quota,
+      countContext.candidateStatuses,
       newPaperBundles,
     )
 
@@ -219,17 +163,18 @@ object DistributiveCountStepComputation {
       sourceCounts = bundlesToDistributeNow
         .map(_.origin.count)
         .toSet,
-      transferValue = oldCurrentDistribution.transferValueCoefficient * bundlesToDistributeNow.head.transferValue,
+      transferValue = currentDistribution.transferValueCoefficient * bundlesToDistributeNow.head.transferValue,
     )
 
-    ElectedCandidateComputations.computeNewlyElected(
+    NewElectedCandidateComputations.newlyExceedingQuota(
       newCandidateVoteCounts,
-      oldCandidateStatuses,
-      numVacancies,
-      quota,
+      countContext.previousCandidateVoteCounts,
+      countContext.candidateStatuses,
+      countContext.numVacancies,
+      countContext.quota,
     )
       .map { newlyElectedCandidates =>
-        val numCandidatesPreviouslyElected = oldCandidateStatuses.electedCandidates.size
+        val numCandidatesPreviouslyElected = countContext.candidateStatuses.electedCandidates.size
 
         val statusesForNewlyElectedCandidates = newlyElectedCandidates
           .zipWithIndex
@@ -241,7 +186,7 @@ object DistributiveCountStepComputation {
           }
           .toMap
 
-        val newCandidateStatuses = oldCandidateStatuses.updateFrom(statusesForNewlyElectedCandidates)
+        val newCandidateStatuses = countContext.candidateStatuses.updateFrom(statusesForNewlyElectedCandidates)
 
         val newCountStep = DistributionCountStep(
           count,
@@ -250,12 +195,12 @@ object DistributiveCountStepComputation {
           newDistributionCountStepSource,
         )
 
-        CountContext(
-          numFormalPapers,
-          numVacancies,
-          newPaperBundles,
-          newCountStep,
-          newCurrentDistribution,
+        countContext.copy(
+          paperBundles = newPaperBundles,
+          previousCountSteps = countContext.previousCountSteps :+ newCountStep,
+          candidateStatuses = newCandidateStatuses,
+          currentDistribution = newCurrentDistribution,
+
         )
       }
   }
