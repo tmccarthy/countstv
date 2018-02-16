@@ -78,7 +78,7 @@ class IneligibleHandlingSpec extends ImprovedFlatSpec {
         )
     )
 
-    assert(actualContextAfterIneligibles === ProbabilityMeasure.Always(expectedContextAfterIneligibles))
+    assert(actualContextAfterIneligibles === ProbabilityMeasure.always(expectedContextAfterIneligibles))
   }
 
   it should "distribute away from ineligible candidates" in {

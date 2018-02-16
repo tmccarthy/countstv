@@ -51,7 +51,7 @@ class ProbabilityMeasureSpec extends ImprovedFlatSpec {
       Banana -> Rational(2, 3),
     )
 
-    val f: Fruit => ProbabilityMeasure[(Fruit, Fruit)] = {
+    val f: Fruit => ProbabilityMeasure[(Fruit, Fruit)] = (_: Fruit @unchecked) match {
       case Apple => ProbabilityMeasure(
         (Apple, Pear) -> Rational(3, 4),
         (Apple, Strawberry) -> Rational(1, 4),
@@ -86,12 +86,56 @@ class ProbabilityMeasureSpec extends ImprovedFlatSpec {
     assert(actualResult === expectedResult)
   }
 
+  it can "return any of the possibilities" in {
+    val probabilityMeasure = ProbabilityMeasure.evenly(Apple, Pear, Strawberry)
+
+    assert(Set(Apple, Pear, Stream) contains probabilityMeasure.anyOutcome)
+  }
+
+  it should "have a sensible toString" in {
+    val probabilityMeasure = ProbabilityMeasure.evenly(Apple, Pear, Strawberry)
+    val expected = "ProbabilityMeasure(Apple -> 1/3, Pear -> 1/3, Strawberry -> 1/3)"
+
+    assert(probabilityMeasure.toString === expected)
+  }
+
+  it should "be equal to itself" in {
+    assert(ProbabilityMeasure.evenly(Apple, Pear, Strawberry) === ProbabilityMeasure.evenly(Apple, Strawberry, Pear))
+  }
+
+  it should "not be equal to another probability measure" in {
+    assert(ProbabilityMeasure.evenly(Apple, Pear, Strawberry) !== ProbabilityMeasure.always(Apple, Pear))
+  }
+
+  it should "not be equal to an object of another type" in {
+    assert(ProbabilityMeasure.evenly(Apple, Pear, Strawberry) !== Unit)
+  }
+
   "a probability measure with a single possibility" should "have a probability of 1" in {
     assert(ProbabilityMeasure.always(Apple).chanceOf(Apple) === Rational.one)
   }
 
   it should "have no probability of another outcome" in {
     assert(ProbabilityMeasure.always[Fruit](Apple).chanceOf(Banana) === Rational.zero)
+  }
+
+  it can "return its only possibility" in {
+    assert(ProbabilityMeasure.always(Apple).anyOutcome === Apple)
+  }
+
+  it should "have a sensible toString" in {
+    val probabilityMeasure = ProbabilityMeasure.always(Apple)
+    val expected = "ProbabilityMeasure(Apple -> always)"
+
+    assert(probabilityMeasure.toString === expected)
+  }
+
+  it should "be equal to itself" in {
+    assert(ProbabilityMeasure.always(Apple) === ProbabilityMeasure.always(Apple))
+  }
+
+  it should "not be equal to another possibility" in {
+    assert(ProbabilityMeasure.always(Apple) !== ProbabilityMeasure.always(Banana))
   }
 
   "a possibility" must "have a positive probability" in {

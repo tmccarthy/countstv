@@ -47,7 +47,7 @@ object NewElectedCandidateComputations {
         .map(_.reverse.to[DupelessSeq])
 
     } else {
-      ProbabilityMeasure.Always(DupelessSeq.empty)
+      ProbabilityMeasure.always(DupelessSeq.empty)
 
     }
   }
