@@ -3,7 +3,7 @@ package au.id.tmm.countstv.model
 import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit.{Apple, Banana, Pear, Strawberry}
 import au.id.tmm.countstv.model.PaperBundle.Origin.IneligibleCandidate
-import au.id.tmm.countstv.model.values.{Count, NumPapers, TransferValue, TransferValueCoefficient}
+import au.id.tmm.countstv.model.values._
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
 import scala.collection.immutable.{Bag, HashedBagConfiguration}
@@ -167,8 +167,8 @@ class PaperBundleSpec extends ImprovedFlatSpec {
   it can "be distributed until exhausted" in {
     val candidateStatuses = CandidateStatuses[Fruit](
       Fruit.Apple -> CandidateStatus.Remaining,
-      Fruit.Banana -> CandidateStatus.Excluded(ordinalExcluded = 0, excludedAtCount = Count(1)),
-      Fruit.Pear -> CandidateStatus.Excluded(ordinalExcluded = 1, excludedAtCount = Count(2)),
+      Fruit.Banana -> CandidateStatus.Excluded(Ordinal.first, excludedAtCount = Count(1)),
+      Fruit.Pear -> CandidateStatus.Excluded(Ordinal.second, excludedAtCount = Count(2)),
       Fruit.Strawberry -> CandidateStatus.Remaining,
     )
 
@@ -195,7 +195,7 @@ class PaperBundleSpec extends ImprovedFlatSpec {
 
   it can "be distributed with a reduced transfer value" in {
     val candidateStatuses = CandidateStatuses[Fruit](
-      Fruit.Apple -> CandidateStatus.Elected(ordinalElected = 0, electedAtCount = Count(1)),
+      Fruit.Apple -> CandidateStatus.Elected(Ordinal.first, electedAtCount = Count(1)),
       Fruit.Banana -> CandidateStatus.Remaining,
       Fruit.Pear -> CandidateStatus.Remaining,
       Fruit.Strawberry -> CandidateStatus.Remaining,

@@ -3,24 +3,24 @@ package au.id.tmm.countstv.model
 import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
 import au.id.tmm.countstv.model.CandidateStatus.{Elected, Excluded, Ineligible, Remaining}
-import au.id.tmm.countstv.model.values.Count
+import au.id.tmm.countstv.model.values.{Count, Ordinal}
 import au.id.tmm.utilities.collection.DupelessSeq
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
 class CandidateStatusesSpec extends ImprovedFlatSpec {
 
   private val testCandidateStatuses: CandidateStatuses[Fruit] = CandidateStatuses(
-    Apple -> Elected(ordinalElected = 0, electedAtCount = Count(1)),
+    Apple -> Elected(Ordinal.first, electedAtCount = Count(1)),
     Banana -> Remaining,
     Pear -> Ineligible,
-    Strawberry -> Excluded(ordinalExcluded = 0, excludedAtCount = Count(1)),
+    Strawberry -> Excluded(Ordinal.first, excludedAtCount = Count(1)),
   )
 
   "a collection of candidate statuses" should "indicate the status of each candidate" in {
-    assert(testCandidateStatuses.asMap(Apple) === Elected(ordinalElected = 0, electedAtCount = Count(1)))
+    assert(testCandidateStatuses.asMap(Apple) === Elected(Ordinal.first, electedAtCount = Count(1)))
     assert(testCandidateStatuses.asMap(Banana) === Remaining)
     assert(testCandidateStatuses.asMap(Pear) === Ineligible)
-    assert(testCandidateStatuses.asMap(Strawberry) === Excluded(ordinalExcluded = 0, excludedAtCount = Count(1)))
+    assert(testCandidateStatuses.asMap(Strawberry) === Excluded(Ordinal.first, excludedAtCount = Count(1)))
   }
 
   it should "have each candidate" in {
@@ -33,10 +33,10 @@ class CandidateStatusesSpec extends ImprovedFlatSpec {
 
   it should "indicate elected candidates in order" in {
     val testCandidateStatuses: CandidateStatuses[Fruit] = CandidateStatuses(
-      Apple -> Elected(ordinalElected = 2, electedAtCount = Count(1)),
-      Banana -> Elected(ordinalElected = 1, electedAtCount = Count(1)),
+      Apple -> Elected(Ordinal.third, electedAtCount = Count(1)),
+      Banana -> Elected(Ordinal.second, electedAtCount = Count(1)),
       Pear -> Ineligible,
-      Strawberry -> Excluded(ordinalExcluded = 0, excludedAtCount = Count(1)),
+      Strawberry -> Excluded(Ordinal.first, excludedAtCount = Count(1)),
     )
 
     assert(testCandidateStatuses.electedCandidates.toList === List(Banana, Apple))
@@ -62,10 +62,10 @@ class CandidateStatusesSpec extends ImprovedFlatSpec {
     val actualCandidateStatuses = testCandidateStatuses.update(Banana, Ineligible)
 
     val expectedCandidateStatuses = CandidateStatuses(
-      Apple -> Elected(ordinalElected = 0, electedAtCount = Count(1)),
+      Apple -> Elected(Ordinal.first, electedAtCount = Count(1)),
       Banana -> Ineligible,
       Pear -> Ineligible,
-      Strawberry -> Excluded(ordinalExcluded = 0, excludedAtCount = Count(1)),
+      Strawberry -> Excluded(Ordinal.first, excludedAtCount = Count(1)),
     )
 
     assert(actualCandidateStatuses === expectedCandidateStatuses)
@@ -74,16 +74,16 @@ class CandidateStatusesSpec extends ImprovedFlatSpec {
   it can "update the statuses of many candidates" in {
     val actualCandidateStatuses = testCandidateStatuses.updateFrom(
       Map(
-        Banana -> Excluded(ordinalExcluded = 1, excludedAtCount = Count(2)),
-        Pear -> Elected(ordinalElected = 1, electedAtCount = Count(3)),
+        Banana -> Excluded(Ordinal.second, excludedAtCount = Count(2)),
+        Pear -> Elected(Ordinal.second, electedAtCount = Count(3)),
       )
     )
 
     val expectedCandidateStatuses = CandidateStatuses(
-      Apple -> Elected(ordinalElected = 0, electedAtCount = Count(1)),
-      Banana -> Excluded(ordinalExcluded = 1, excludedAtCount = Count(2)),
-      Pear -> Elected(ordinalElected = 1, electedAtCount = Count(3)),
-      Strawberry -> Excluded(ordinalExcluded = 0, excludedAtCount = Count(1)),
+      Apple -> Elected(Ordinal.first, electedAtCount = Count(1)),
+      Banana -> Excluded(Ordinal.second, excludedAtCount = Count(2)),
+      Pear -> Elected(Ordinal.second, electedAtCount = Count(3)),
+      Strawberry -> Excluded(Ordinal.first, excludedAtCount = Count(1)),
     )
 
     assert(actualCandidateStatuses === expectedCandidateStatuses)

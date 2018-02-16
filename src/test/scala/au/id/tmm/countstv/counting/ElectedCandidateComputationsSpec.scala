@@ -3,7 +3,7 @@ package au.id.tmm.countstv.counting
 import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
 import au.id.tmm.countstv.model.CandidateStatus._
-import au.id.tmm.countstv.model.values.{Count, NumPapers}
+import au.id.tmm.countstv.model.values.{Count, NumPapers, Ordinal}
 import au.id.tmm.countstv.model.{CandidateStatuses, CandidateVoteCounts, ProbabilityMeasure, VoteCount}
 import au.id.tmm.utilities.collection.DupelessSeq
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
@@ -105,7 +105,7 @@ class ElectedCandidateComputationsSpec extends ImprovedFlatSpec {
   it should "return nothing when some candidates exceed quota, but none that are not already elected" in {
     testNewlyExceedingQuota(
       candidateStatuses = CandidateStatuses[Fruit](
-        Apple -> Elected(0, Count(1)),
+        Apple -> Elected(Ordinal.first, Count(1)),
         Banana -> Remaining,
         Mango -> Remaining,
         Pear -> Remaining,
@@ -165,7 +165,7 @@ class ElectedCandidateComputationsSpec extends ImprovedFlatSpec {
   it should "return unelected candidates that exceed quota in order of the number of votes" in {
     testNewlyExceedingQuota(
       candidateStatuses = CandidateStatuses[Fruit](
-        Apple -> Elected(0, Count(1)),
+        Apple -> Elected(Ordinal.first, Count(1)),
         Banana -> Remaining,
         Mango -> Remaining,
         Pear -> Remaining,
@@ -186,7 +186,7 @@ class ElectedCandidateComputationsSpec extends ImprovedFlatSpec {
   it should "return all possibilities of candidate orders if there is a tie" in {
     testNewlyExceedingQuota(
       candidateStatuses = CandidateStatuses[Fruit](
-        Apple -> Elected(0, Count(1)),
+        Apple -> Elected(Ordinal.first, Count(1)),
         Banana -> Remaining,
         Mango -> Remaining,
         Pear -> Remaining,
@@ -207,7 +207,7 @@ class ElectedCandidateComputationsSpec extends ImprovedFlatSpec {
   it should "break ties with previous counts if there are any" in {
     testNewlyExceedingQuota(
       candidateStatuses = CandidateStatuses[Fruit](
-        Apple -> Elected(0, Count(1)),
+        Apple -> Elected(Ordinal.first, Count(1)),
         Banana -> Remaining,
         Mango -> Remaining,
         Pear -> Remaining,
@@ -272,11 +272,11 @@ class ElectedCandidateComputationsSpec extends ImprovedFlatSpec {
   it should "elect the higher candidate when 2 remain and there is 1 remaining vacancy" in {
     testFinallyElected(
       candidateStatuses = CandidateStatuses[Fruit](
-        Apple -> Elected(0, Count(1)),
+        Apple -> Elected(Ordinal.first, Count(1)),
         Banana -> Remaining,
         Mango -> Remaining,
-        Pear -> Excluded(0, Count(2)),
-        Raspberry -> Excluded(1, Count(3)),
+        Pear -> Excluded(Ordinal.first, Count(2)),
+        Raspberry -> Excluded(Ordinal.second, Count(3)),
       ),
       currentCandidateVoteCounts = Map(
         Apple -> 4,
@@ -293,11 +293,11 @@ class ElectedCandidateComputationsSpec extends ImprovedFlatSpec {
     "1 vacancy remaining" in {
     testFinallyElected(
       candidateStatuses = CandidateStatuses[Fruit](
-        Apple -> Elected(0, Count(1)),
+        Apple -> Elected(Ordinal.first, Count(1)),
         Banana -> Remaining,
         Mango -> Remaining,
-        Pear -> Excluded(0, Count(2)),
-        Raspberry -> Excluded(1, Count(3)),
+        Pear -> Excluded(Ordinal.first, Count(2)),
+        Raspberry -> Excluded(Ordinal.second, Count(3)),
       ),
       currentCandidateVoteCounts = Map(
         Apple -> 4,
@@ -313,11 +313,11 @@ class ElectedCandidateComputationsSpec extends ImprovedFlatSpec {
   it should "break ties between 2 remaining candidates using previous counts" in {
     testFinallyElected(
       candidateStatuses = CandidateStatuses[Fruit](
-        Apple -> Elected(0, Count(1)),
+        Apple -> Elected(Ordinal.first, Count(1)),
         Banana -> Remaining,
         Mango -> Remaining,
-        Pear -> Excluded(0, Count(2)),
-        Raspberry -> Excluded(1, Count(3)),
+        Pear -> Excluded(Ordinal.first, Count(2)),
+        Raspberry -> Excluded(Ordinal.second, Count(3)),
       ),
       currentCandidateVoteCounts = Map(
         Apple -> 4,
@@ -359,11 +359,11 @@ class ElectedCandidateComputationsSpec extends ImprovedFlatSpec {
     "of unfilled vacancies" in {
     testFinallyElected(
       candidateStatuses = CandidateStatuses[Fruit](
-        Apple -> Elected(0, Count(1)),
+        Apple -> Elected(Ordinal.first, Count(1)),
         Banana -> Remaining,
         Mango -> Remaining,
-        Pear -> Excluded(1, Count(3)),
-        Raspberry -> Excluded(0, Count(2)),
+        Pear -> Excluded(Ordinal.second, Count(3)),
+        Raspberry -> Excluded(Ordinal.first, Count(2)),
       ),
       currentCandidateVoteCounts = Map(
         Apple -> 10,
@@ -381,11 +381,11 @@ class ElectedCandidateComputationsSpec extends ImprovedFlatSpec {
     "equals the number of unfilled vacancies" in {
     testFinallyElected(
       candidateStatuses = CandidateStatuses[Fruit](
-        Apple -> Elected(0, Count(1)),
+        Apple -> Elected(Ordinal.first, Count(1)),
         Banana -> Remaining,
         Mango -> Remaining,
-        Pear -> Excluded(1, Count(3)),
-        Raspberry -> Excluded(0, Count(2)),
+        Pear -> Excluded(Ordinal.second, Count(3)),
+        Raspberry -> Excluded(Ordinal.first, Count(2)),
       ),
       currentCandidateVoteCounts = Map(
         Apple -> 10,
@@ -403,11 +403,11 @@ class ElectedCandidateComputationsSpec extends ImprovedFlatSpec {
     "number of unfilled vacancies" in {
     testFinallyElected(
       candidateStatuses = CandidateStatuses[Fruit](
-        Apple -> Elected(0, Count(1)),
+        Apple -> Elected(Ordinal.first, Count(1)),
         Banana -> Remaining,
         Mango -> Remaining,
-        Pear -> Excluded(1, Count(3)),
-        Raspberry -> Excluded(0, Count(2)),
+        Pear -> Excluded(Ordinal.second, Count(3)),
+        Raspberry -> Excluded(Ordinal.first, Count(2)),
       ),
       currentCandidateVoteCounts = Map(
         Apple -> 10,

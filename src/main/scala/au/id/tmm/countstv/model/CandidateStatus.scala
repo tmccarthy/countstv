@@ -1,7 +1,6 @@
 package au.id.tmm.countstv.model
 
-import au.id.tmm.countstv.Ordinal
-import au.id.tmm.countstv.model.values.Count
+import au.id.tmm.countstv.model.values.{Count, Ordinal}
 
 sealed trait CandidateStatus
 

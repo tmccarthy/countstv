@@ -3,7 +3,7 @@ package au.id.tmm.countstv.counting
 import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
 import au.id.tmm.countstv.model.CandidateStatus._
-import au.id.tmm.countstv.model.values.{Count, NumPapers}
+import au.id.tmm.countstv.model.values.{Count, NumPapers, Ordinal}
 import au.id.tmm.countstv.model.{CandidateStatuses, CandidateVoteCounts, ProbabilityMeasure, VoteCount}
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
@@ -44,11 +44,11 @@ class ExcludedCandidateComputationsSpec extends ImprovedFlatSpec {
     intercept[IllegalArgumentException] {
       testComputeExcluded(
         candidateStatuses = CandidateStatuses[Fruit](
-          Apple -> Elected(0, Count(1)),
+          Apple -> Elected(Ordinal.first, Count(1)),
           Banana -> Ineligible,
           Mango -> Ineligible,
           Pear -> Ineligible,
-          Raspberry -> Excluded(0, Count(2)),
+          Raspberry -> Excluded(Ordinal.first, Count(2)),
         ),
         currentCandidateVoteCounts = Map(
           Apple -> 8,
@@ -65,11 +65,11 @@ class ExcludedCandidateComputationsSpec extends ImprovedFlatSpec {
   it should "return the remaining candidate with the least votes" in {
     testComputeExcluded(
       candidateStatuses = CandidateStatuses[Fruit](
-        Apple -> Elected(0, Count(1)),
+        Apple -> Elected(Ordinal.first, Count(1)),
         Banana -> Remaining,
         Mango -> Remaining,
         Pear -> Remaining,
-        Raspberry -> Excluded(0, Count(2)),
+        Raspberry -> Excluded(Ordinal.first, Count(2)),
       ),
       currentCandidateVoteCounts = Map(
         Apple -> 8,
@@ -85,11 +85,11 @@ class ExcludedCandidateComputationsSpec extends ImprovedFlatSpec {
   it should "return all remaining candidates if there is a tie" in {
     testComputeExcluded(
       candidateStatuses = CandidateStatuses[Fruit](
-        Apple -> Elected(0, Count(1)),
+        Apple -> Elected(Ordinal.first, Count(1)),
         Banana -> Remaining,
         Mango -> Remaining,
         Pear -> Remaining,
-        Raspberry -> Excluded(0, Count(2)),
+        Raspberry -> Excluded(Ordinal.first, Count(2)),
       ),
       currentCandidateVoteCounts = Map(
         Apple -> 8,
@@ -105,11 +105,11 @@ class ExcludedCandidateComputationsSpec extends ImprovedFlatSpec {
   it should "break ties using previous counts" in {
     testComputeExcluded(
       candidateStatuses = CandidateStatuses[Fruit](
-        Apple -> Elected(0, Count(1)),
+        Apple -> Elected(Ordinal.first, Count(1)),
         Banana -> Remaining,
         Mango -> Remaining,
         Pear -> Remaining,
-        Raspberry -> Excluded(0, Count(2)),
+        Raspberry -> Excluded(Ordinal.first, Count(2)),
       ),
       currentCandidateVoteCounts = Map(
         Apple -> 8,

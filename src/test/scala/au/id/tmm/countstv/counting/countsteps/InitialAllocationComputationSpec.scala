@@ -4,7 +4,7 @@ import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
 import au.id.tmm.countstv.model.CandidateStatus._
 import au.id.tmm.countstv.model.countsteps.{CountContext, InitialAllocation}
-import au.id.tmm.countstv.model.values.{Count, NumPapers}
+import au.id.tmm.countstv.model.values.{Count, NumPapers, Ordinal}
 import au.id.tmm.countstv.model.{PaperBundle, _}
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
@@ -52,7 +52,7 @@ class InitialAllocationComputationSpec extends ImprovedFlatSpec {
   "an initial allocation" can "not be computed if a candidate is elected" in {
     val candidateStatuses = CandidateStatuses[Fruit](
       Apple -> Ineligible,
-      Banana -> Elected(ordinalElected = 0, electedAtCount = Count(1)),
+      Banana -> Elected(Ordinal.first, electedAtCount = Count(1)),
       Pear -> Remaining,
       Strawberry -> Remaining,
     )
@@ -69,7 +69,7 @@ class InitialAllocationComputationSpec extends ImprovedFlatSpec {
   it can "not be computed if a candidate is excluded" in {
     val candidateStatuses = CandidateStatuses[Fruit](
       Apple -> Ineligible,
-      Banana -> Excluded(ordinalExcluded = 0, excludedAtCount = Count(1)),
+      Banana -> Excluded(Ordinal.first, excludedAtCount = Count(1)),
       Pear -> Remaining,
       Strawberry -> Remaining,
     )

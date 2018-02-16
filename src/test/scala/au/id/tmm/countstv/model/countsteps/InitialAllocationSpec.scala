@@ -2,7 +2,7 @@ package au.id.tmm.countstv.model.countsteps
 
 import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
-import au.id.tmm.countstv.model.values.{Count, NumPapers, NumVotes}
+import au.id.tmm.countstv.model.values.{Count, NumPapers, NumVotes, Ordinal}
 import au.id.tmm.countstv.model.{CandidateStatus, CandidateStatuses, CandidateVoteCounts, VoteCount}
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
@@ -38,7 +38,7 @@ class InitialAllocationSpec extends ImprovedFlatSpec {
           Apple -> CandidateStatus.Remaining,
           Banana -> CandidateStatus.Ineligible,
           Pear -> CandidateStatus.Remaining,
-          Strawberry -> CandidateStatus.Elected(ordinalElected = 0, electedAtCount = Count(1)),
+          Strawberry -> CandidateStatus.Elected(Ordinal.first, electedAtCount = Count(1)),
         ),
       )
     }

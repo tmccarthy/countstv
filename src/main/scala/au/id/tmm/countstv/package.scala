@@ -10,8 +10,4 @@ package object countstv {
 
   type PaperBundles[C] = Bag[PaperBundle[C]]
 
-  /**
-    * Zero indexed ordinal
-    */
-  type Ordinal = Int // TODO make this a value class
 }

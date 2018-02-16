@@ -6,7 +6,7 @@ import au.id.tmm.countstv.counting.QuotaComputation
 import au.id.tmm.countstv.model.CandidateStatus.{Remaining, _}
 import au.id.tmm.countstv.model._
 import au.id.tmm.countstv.model.countsteps.AllocationAfterIneligibles
-import au.id.tmm.countstv.model.values.{Count, NumPapers, TransferValue}
+import au.id.tmm.countstv.model.values.{Count, NumPapers, Ordinal, TransferValue}
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
 import scala.collection.immutable.Bag
@@ -68,7 +68,7 @@ class IneligibleHandlingSpec extends ImprovedFlatSpec {
       previousCountSteps = initialContext.previousCountSteps :+
         AllocationAfterIneligibles(
           candidateStatuses = CandidateStatuses[Fruit](
-            Apple -> Elected(0, Count(1)),
+            Apple -> Elected(Ordinal.first, Count(1)),
             Banana -> Remaining,
             Pear -> Remaining,
             Strawberry -> Remaining,
@@ -105,7 +105,7 @@ class IneligibleHandlingSpec extends ImprovedFlatSpec {
       previousCountSteps = initialContext.previousCountSteps :+
         AllocationAfterIneligibles(
           candidateStatuses = CandidateStatuses[Fruit](
-            Apple -> Elected(0, Count(1)),
+            Apple -> Elected(Ordinal.first, Count(1)),
             Banana -> Remaining,
             Pear -> Remaining,
             Strawberry -> CandidateStatus.Ineligible,

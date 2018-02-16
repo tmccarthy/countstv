@@ -54,7 +54,7 @@ class VoteCountingSpec extends ImprovedFlatSpec {
 
   it should "correctly count the votes when a candidate has been elected" in {
     val candidateStatuses = CandidateStatuses[Fruit](
-      Apple -> CandidateStatus.Elected(ordinalElected = 0, Count(1)),
+      Apple -> CandidateStatus.Elected(Ordinal.first, Count(1)),
       Banana -> CandidateStatus.Remaining,
       Pear -> CandidateStatus.Remaining,
       Strawberry -> CandidateStatus.Remaining,
@@ -93,7 +93,7 @@ class VoteCountingSpec extends ImprovedFlatSpec {
 
   it should "correctly count the votes when a candidate has been elected but its ballots haven't been transferred" in {
     val candidateStatuses = CandidateStatuses[Fruit](
-      Apple -> CandidateStatus.Elected(ordinalElected = 0, Count(1)),
+      Apple -> CandidateStatus.Elected(Ordinal.first, Count(1)),
       Banana -> CandidateStatus.Remaining,
       Pear -> CandidateStatus.Remaining,
       Strawberry -> CandidateStatus.Remaining,
@@ -125,10 +125,10 @@ class VoteCountingSpec extends ImprovedFlatSpec {
 
   it should "correctly count the votes when some ballots have exhausted" in {
     val candidateStatuses = CandidateStatuses[Fruit](
-      Apple -> CandidateStatus.Elected(ordinalElected = 0, Count(1)),
+      Apple -> CandidateStatus.Elected(Ordinal.first, Count(1)),
       Banana -> CandidateStatus.Remaining,
-      Pear -> CandidateStatus.Excluded(ordinalExcluded = 0, Count(2)),
-      Strawberry -> CandidateStatus.Excluded(ordinalExcluded = 1, Count(3)),
+      Pear -> CandidateStatus.Excluded(Ordinal.first, Count(2)),
+      Strawberry -> CandidateStatus.Excluded(Ordinal.second, Count(3)),
     )
 
     val paperBundles: Bag[PaperBundle[Fruit]] = Bag(
@@ -185,7 +185,7 @@ class VoteCountingSpec extends ImprovedFlatSpec {
       Apple -> CandidateStatus.Remaining,
       Banana -> CandidateStatus.Remaining,
       Pear -> CandidateStatus.Remaining,
-      Strawberry -> CandidateStatus.Excluded(0, Count(1)),
+      Strawberry -> CandidateStatus.Excluded(Ordinal.first, Count(1)),
     )
 
     val paperBundles = PaperBundle.rootBundleFor(testPreferenceTree)

@@ -5,7 +5,7 @@ import au.id.tmm.countstv.counting._
 import au.id.tmm.countstv.model.CandidateDistributionReason._
 import au.id.tmm.countstv.model._
 import au.id.tmm.countstv.model.countsteps.{CountContext, DistributionCountStep}
-import au.id.tmm.countstv.model.values.{Count, TransferValueCoefficient}
+import au.id.tmm.countstv.model.values.{Count, Ordinal, TransferValueCoefficient}
 import au.id.tmm.utilities.collection.DupelessSeq
 
 import scala.collection.immutable.{Bag, HashedBagConfiguration, Queue}
@@ -105,7 +105,7 @@ object DistributiveCountStepComputation {
           )
 
         val statusForNewlyExcludedCandidate: CandidateStatus = {
-          val ordinalExcluded = countContext.candidateStatuses.excludedCandidates.size
+          val ordinalExcluded = Ordinal(countContext.candidateStatuses.excludedCandidates.size)
 
           CandidateStatus.Excluded(ordinalExcluded, count)
         }
@@ -222,7 +222,7 @@ object DistributiveCountStepComputation {
             newlyElectedCandidate -> (numCandidatesPreviouslyElected + indexElectedThisStep)
           }
           .map { case (newlyElectedCandidate, ordinalElected) =>
-            newlyElectedCandidate -> CandidateStatus.Elected(ordinalElected, count)
+            newlyElectedCandidate -> CandidateStatus.Elected(Ordinal(ordinalElected), count)
           }
           .toMap
 
@@ -257,7 +257,7 @@ object DistributiveCountStepComputation {
         newlyElectedCandidate -> (numCandidatesPreviouslyElected + indexElectedThisStep)
       }
       .map { case (newlyElectedCandidate, ordinalElected) =>
-        newlyElectedCandidate -> CandidateStatus.Elected(ordinalElected, count)
+        newlyElectedCandidate -> CandidateStatus.Elected(Ordinal(ordinalElected), count)
       }
       .toMap
 

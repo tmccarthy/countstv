@@ -187,7 +187,7 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
         Pear -> Remaining,
         Raspberry -> Remaining,
         Strawberry -> Remaining,
-        Watermelon -> Excluded(0, Count(2)),
+        Watermelon -> Excluded(Ordinal.first, Count(2)),
       ),
       candidateVoteCounts = CandidateVoteCounts(
         perCandidate = Map(
@@ -299,8 +299,8 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
         Mango -> Remaining,
         Pear -> Remaining,
         Raspberry -> Remaining,
-        Strawberry -> Excluded(1,Count(3)),
-        Watermelon -> Excluded(0,Count(2)),
+        Strawberry -> Excluded(Ordinal.second,Count(3)),
+        Watermelon -> Excluded(Ordinal.first,Count(2)),
       ),
       candidateVoteCounts = CandidateVoteCounts[Fruit](
         perCandidate = Map(
@@ -341,13 +341,13 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
     val expectedCountStep = DistributionCountStep[Fruit](
       count = Count(4),
       candidateStatuses = CandidateStatuses[Fruit](
-        Apple -> Elected(0,Count(4)),
-        Banana -> Excluded(2,Count(4)),
+        Apple -> Elected(Ordinal.first,Count(4)),
+        Banana -> Excluded(Ordinal.third,Count(4)),
         Mango -> Remaining,
         Pear -> Remaining,
         Raspberry -> Remaining,
-        Strawberry -> Excluded(1,Count(3)),
-        Watermelon -> Excluded(0,Count(2)),
+        Strawberry -> Excluded(Ordinal.second,Count(3)),
+        Watermelon -> Excluded(Ordinal.first,Count(2)),
       ),
       candidateVoteCounts = CandidateVoteCounts[Fruit](
         perCandidate = Map(
@@ -379,13 +379,13 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
     val expectedCountStep = DistributionCountStep[Fruit](
       count = Count(5),
       candidateStatuses = CandidateStatuses[Fruit](
-        Apple -> Elected(0,Count(4)),
-        Banana -> Excluded(2,Count(4)),
+        Apple -> Elected(Ordinal.first,Count(4)),
+        Banana -> Excluded(Ordinal.third,Count(4)),
         Mango -> Remaining,
         Pear -> Remaining,
         Raspberry -> Remaining,
-        Strawberry -> Excluded(1,Count(3)),
-        Watermelon -> Excluded(0,Count(2)),
+        Strawberry -> Excluded(Ordinal.second,Count(3)),
+        Watermelon -> Excluded(Ordinal.first,Count(2)),
       ),
       candidateVoteCounts = CandidateVoteCounts[Fruit](
         perCandidate = Map(
@@ -417,13 +417,13 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
     val expectedCountStep = DistributionCountStep[Fruit](
       count = Count(6),
       candidateStatuses = CandidateStatuses[Fruit](
-        Apple -> Elected(0,Count(4)),
-        Banana -> Excluded(2,Count(4)),
+        Apple -> Elected(Ordinal.first,Count(4)),
+        Banana -> Excluded(Ordinal.third,Count(4)),
         Mango -> Remaining,
         Pear -> Remaining,
-        Raspberry -> Excluded(3,Count(6)),
-        Strawberry -> Excluded(1,Count(3)),
-        Watermelon -> Excluded(0,Count(2)),
+        Raspberry -> Excluded(Ordinal.fourth,Count(6)),
+        Strawberry -> Excluded(Ordinal.second,Count(3)),
+        Watermelon -> Excluded(Ordinal.first,Count(2)),
       ),
       candidateVoteCounts = CandidateVoteCounts[Fruit](
         perCandidate = Map(
@@ -500,13 +500,13 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
     val expectedCountStep = DistributionCountStep[Fruit](
       count = Count(7),
       candidateStatuses = CandidateStatuses[Fruit](
-        Apple -> Elected(0,Count(4)),
-        Banana -> Excluded(2,Count(4)),
+        Apple -> Elected(Ordinal.first,Count(4)),
+        Banana -> Excluded(Ordinal.third,Count(4)),
         Mango -> Remaining,
         Pear -> Remaining,
-        Raspberry -> Excluded(3,Count(6)),
-        Strawberry -> Excluded(1,Count(3)),
-        Watermelon -> Excluded(0,Count(2)),
+        Raspberry -> Excluded(Ordinal.fourth,Count(6)),
+        Strawberry -> Excluded(Ordinal.second,Count(3)),
+        Watermelon -> Excluded(Ordinal.first,Count(2)),
       ),
       candidateVoteCounts = CandidateVoteCounts[Fruit](
         perCandidate = Map(
@@ -538,13 +538,13 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
     val expectedCountStep = DistributionCountStep[Fruit](
       count = Count(8),
       candidateStatuses = CandidateStatuses[Fruit](
-        Apple -> Elected(0,Count(4)),
-        Banana -> Excluded(2,Count(4)),
+        Apple -> Elected(Ordinal.first,Count(4)),
+        Banana -> Excluded(Ordinal.third,Count(4)),
         Mango -> Remaining,
-        Pear -> Elected(1,Count(8)),
-        Raspberry -> Excluded(3,Count(6)),
-        Strawberry -> Excluded(1,Count(3)),
-        Watermelon -> Excluded(0,Count(2)),
+        Pear -> Elected(Ordinal.second,Count(8)),
+        Raspberry -> Excluded(Ordinal.fourth,Count(6)),
+        Strawberry -> Excluded(Ordinal.second,Count(3)),
+        Watermelon -> Excluded(Ordinal.first,Count(2)),
       ),
       candidateVoteCounts = CandidateVoteCounts[Fruit](
         perCandidate = Map(
