@@ -6,12 +6,15 @@ import au.id.tmm.countstv.model.CandidateDistributionReason._
 import au.id.tmm.countstv.model._
 import au.id.tmm.countstv.model.countsteps.{CountContext, DistributionCountStep}
 import au.id.tmm.countstv.model.values.{Count, TransferValueCoefficient}
+import au.id.tmm.utilities.collection.DupelessSeq
 
 import scala.collection.immutable.{Bag, HashedBagConfiguration, Queue}
 
 object DistributiveCountStepComputation {
 
   def computeNextContext[C](countContext: CountContext[C]): ProbabilityMeasure[CountContext[C]] = {
+    require(!countContext.allVacanciesNowFilled)
+
     val count = countContext.mostRecentCountStep.count.increment
 
     countContext.currentDistribution match {
@@ -26,7 +29,19 @@ object DistributiveCountStepComputation {
         if (countContext.electedCandidatesWaitingToBeDistributed.nonEmpty) {
           contextAfterDistributingElectedCandidate(countContext)
         } else {
-          contextAfterDistributingExcludedCandidate(count, countContext)
+          NewElectedCandidateComputations.finallyElected(
+            countContext.previousCandidateVoteCounts.last,
+            countContext.previousCandidateVoteCounts.init,
+            countContext.candidateStatuses,
+            countContext.numVacancies,
+            countContext.quota,
+          ).flatMap { finallyElected =>
+            if (finallyElected.nonEmpty) {
+              contextAfterFinalElectionOf(count, countContext, finallyElected)
+            } else {
+              contextAfterDistributingExcludedCandidate(count, countContext)
+            }
+          }
         }
       }
     }
@@ -49,7 +64,30 @@ object DistributiveCountStepComputation {
     computeNextContext(countContext.copy(currentDistribution = Some(newCurrentDistribution)))
   }
 
-  private def contextAfterDistributingExcludedCandidate[C](count: Count, countContext: CountContext[C]) = {
+  private def contextAfterFinalElectionOf[C](
+                                              count: Count,
+                                              countContext: CountContext[C],
+                                              finallyElected: DupelessSeq[C],
+                                            ): ProbabilityMeasure[CountContext[C]] = {
+    val newCandidateStatuses = newCandidateStatusesAfterElectionOf(finallyElected, count, countContext)
+
+    val newCountStep = DistributionCountStep(
+      count,
+      newCandidateStatuses,
+      countContext.mostRecentCountStep.candidateVoteCounts,
+      distributionSource = None,
+    )
+
+    ProbabilityMeasure.always(
+      countContext.copy(
+        candidateStatuses = newCandidateStatuses,
+        previousCountSteps = countContext.previousCountSteps :+ newCountStep,
+        currentDistribution = None,
+      )
+    )
+  }
+
+  private def contextAfterDistributingExcludedCandidate[C](count: Count, countContext: CountContext[C]): ProbabilityMeasure[CountContext[C]] = {
     NewExcludedCandidateComputations.computeExcluded(
       currentCandidateVoteCounts = countContext.previousCandidateVoteCounts.last,
       previousCandidateVoteCountsAscending = countContext.previousCandidateVoteCounts.init,
@@ -192,7 +230,7 @@ object DistributiveCountStepComputation {
           count,
           newCandidateStatuses,
           newCandidateVoteCounts,
-          newDistributionCountStepSource,
+          Some(newDistributionCountStepSource),
         )
 
         countContext.copy(
@@ -200,8 +238,27 @@ object DistributiveCountStepComputation {
           previousCountSteps = countContext.previousCountSteps :+ newCountStep,
           candidateStatuses = newCandidateStatuses,
           currentDistribution = newCurrentDistribution,
-
         )
       }
+  }
+
+  private def newCandidateStatusesAfterElectionOf[C](
+                                                      newlyElectedCandidates: DupelessSeq[C],
+                                                      count: Count,
+                                                      countContext: CountContext[C],
+                                                    ): CandidateStatuses[C] = {
+    val numCandidatesPreviouslyElected = countContext.candidateStatuses.electedCandidates.size
+
+    val statusesForNewlyElectedCandidates = newlyElectedCandidates
+      .zipWithIndex
+      .map { case (newlyElectedCandidate, indexElectedThisStep) =>
+        newlyElectedCandidate -> (numCandidatesPreviouslyElected + indexElectedThisStep)
+      }
+      .map { case (newlyElectedCandidate, ordinalElected) =>
+        newlyElectedCandidate -> CandidateStatus.Elected(ordinalElected, count)
+      }
+      .toMap
+
+    countContext.candidateStatuses.updateFrom(statusesForNewlyElectedCandidates)
   }
 }

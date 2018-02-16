@@ -8,6 +8,7 @@ import au.id.tmm.countstv.model.countsteps.{CountContext, DistributionCountStep}
 import au.id.tmm.countstv.model.values._
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
+import scala.annotation.tailrec
 import scala.collection.immutable.{Bag, HashedBagConfiguration, Queue}
 
 class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
@@ -90,6 +91,23 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
   private val contextAfterIneligibles = IneligibleHandling.computeContextAfterIneligibles(
     initialContext,
   ).anyOutcome
+
+  private def actualContextAfterCount(count: Int): CountContext[Fruit] = {
+    require(count > 1)
+
+    @tailrec
+    def actualContextAfterCount(upToCount: Int, previousContext: CountContext[Fruit]): CountContext[Fruit] = {
+      if (upToCount == count) {
+        previousContext
+      } else {
+        val thisContext = DistributiveCountStepComputation.computeNextContext(previousContext).anyOutcome
+
+        actualContextAfterCount(upToCount + 1, thisContext)
+      }
+    }
+
+    actualContextAfterCount(upToCount = 1, previousContext = contextAfterIneligibles)
+  }
 
   "count step 2, when Watermelon is excluded" should "have the correct number of formal papers" in {
     val actualContext = DistributiveCountStepComputation.computeNextContext(contextAfterIneligibles)
@@ -184,12 +202,12 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
         exhausted = VoteCount.zero,
         roundingError = VoteCount.zero,
       ),
-      distributionSource = DistributionCountStep.Source(
+      distributionSource = Some(DistributionCountStep.Source(
         Watermelon,
         CandidateDistributionReason.Exclusion,
         sourceCounts = Set(Count(0)),
         transferValue = TransferValue(1),
-      )
+      ))
     )
 
     assert(actualContext.map(_.mostRecentCountStep) === ProbabilityMeasure.always(expectedCountStep))
@@ -202,10 +220,7 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
   }
 
   "count step 3, when Strawberry is excluded" should "have the correct paper bundles" in {
-    val contextAfterFirstDistribution = DistributiveCountStepComputation.computeNextContext(contextAfterIneligibles)
-      .asMap.keys.head
-
-    val actualContext = DistributiveCountStepComputation.computeNextContext(contextAfterFirstDistribution)
+    val actualContext = actualContextAfterCount(3)
 
     val expectedPaperBundles = Bag[PaperBundle[Fruit]](
       AssignedPaperBundle[Fruit](
@@ -270,14 +285,11 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
       ),
     )
 
-    assert(actualContext.map(_.paperBundles) === ProbabilityMeasure.always(expectedPaperBundles))
+    assert(actualContext.paperBundles === expectedPaperBundles)
   }
 
   it should "have produced the correct count step" in {
-    val contextAfterFirstDistribution = DistributiveCountStepComputation.computeNextContext(contextAfterIneligibles)
-      .asMap.keys.head
-
-    val actualContext = DistributiveCountStepComputation.computeNextContext(contextAfterFirstDistribution)
+    val actualContext = actualContextAfterCount(3)
 
     val expectedCountStep = DistributionCountStep[Fruit](
       count = Count(3),
@@ -303,15 +315,15 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
         exhausted = VoteCount.zero,
         roundingError = VoteCount.zero,
       ),
-      distributionSource = DistributionCountStep.Source(
+      distributionSource = Some(DistributionCountStep.Source(
         Strawberry,
         CandidateDistributionReason.Exclusion,
         sourceCounts = Set(Count(0)),
         transferValue = TransferValue(1),
-      )
+      ))
     )
 
-    assert(actualContext.map(_.mostRecentCountStep) === ProbabilityMeasure.always(expectedCountStep))
+    assert(actualContext.mostRecentCountStep === expectedCountStep)
   }
 
   it should "have no current distribution" in {
@@ -324,13 +336,7 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
   }
 
   "count 4, where Apple is elected" should "have produced the correct count step" in {
-    val actualContext = (
-      for {
-        contextAfterCount2 <- DistributiveCountStepComputation.computeNextContext(contextAfterIneligibles)
-        contextAfterCount3 <- DistributiveCountStepComputation.computeNextContext(contextAfterCount2)
-        contextAfterCount4 <- DistributiveCountStepComputation.computeNextContext(contextAfterCount3)
-      } yield contextAfterCount4
-      ).anyOutcome
+    val actualContext = actualContextAfterCount(4)
 
     val expectedCountStep = DistributionCountStep[Fruit](
       count = Count(4),
@@ -356,26 +362,19 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
         exhausted = VoteCount.zero,
         roundingError = VoteCount(NumPapers(0), NumVotes(0.0))
       ),
-      distributionSource = DistributionCountStep.Source(
+      distributionSource = Some(DistributionCountStep.Source(
         Banana,
         CandidateDistributionReason.Exclusion,
         sourceCounts = Set(Count(0), Count(3)),
         transferValue = TransferValue(1),
-      )
+      ))
     )
 
     assert(actualContext.mostRecentCountStep === expectedCountStep)
   }
 
   "count 5, where Apple is being distributed" should "have produced the correct count step" in {
-    val actualContext = (
-      for {
-        contextAfterCount2 <- DistributiveCountStepComputation.computeNextContext(contextAfterIneligibles)
-        contextAfterCount3 <- DistributiveCountStepComputation.computeNextContext(contextAfterCount2)
-        contextAfterCount4 <- DistributiveCountStepComputation.computeNextContext(contextAfterCount3)
-        contextAfterCount5 <- DistributiveCountStepComputation.computeNextContext(contextAfterCount4)
-      } yield contextAfterCount5
-      ).anyOutcome
+    val actualContext = actualContextAfterCount(5)
 
     val expectedCountStep = DistributionCountStep[Fruit](
       count = Count(5),
@@ -401,27 +400,19 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
         exhausted = VoteCount.zero,
         roundingError = VoteCount(NumPapers(0), NumVotes(-1.0))
       ),
-      distributionSource = DistributionCountStep.Source(
+      distributionSource = Some(DistributionCountStep.Source(
         Apple,
         CandidateDistributionReason.Election,
         sourceCounts = Set(Count(0), Count(2), Count(3), Count(4)),
         transferValue = TransferValue(1d / 18d),
-      )
+      ))
     )
 
     assert(actualContext.mostRecentCountStep === expectedCountStep)
   }
 
   "count 6, where Raspberry is excluded" should "have produced the correct count step" in {
-    val actualContext = (
-      for {
-        contextAfterCount2 <- DistributiveCountStepComputation.computeNextContext(contextAfterIneligibles)
-        contextAfterCount3 <- DistributiveCountStepComputation.computeNextContext(contextAfterCount2)
-        contextAfterCount4 <- DistributiveCountStepComputation.computeNextContext(contextAfterCount3)
-        contextAfterCount5 <- DistributiveCountStepComputation.computeNextContext(contextAfterCount4)
-        contextAfterCount6 <- DistributiveCountStepComputation.computeNextContext(contextAfterCount5)
-      } yield contextAfterCount6
-      ).anyOutcome
+    val actualContext = actualContextAfterCount(6)
 
     val expectedCountStep = DistributionCountStep[Fruit](
       count = Count(6),
@@ -447,28 +438,19 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
         exhausted = VoteCount.zero,
         roundingError = VoteCount(NumPapers(0), NumVotes(-1.0))
       ),
-      distributionSource = DistributionCountStep.Source(
+      distributionSource = Some(DistributionCountStep.Source(
         Raspberry,
         CandidateDistributionReason.Exclusion,
         sourceCounts = Set(Count(0), Count(3), Count(4)),
         transferValue = TransferValue(1),
-      )
+      ))
     )
 
     assert(actualContext.mostRecentCountStep === expectedCountStep)
   }
 
   it should "still have 1 more set of bundles to distribute from Raspberry" in {
-    val actualContext = (
-      for {
-        contextAfterCount2 <- DistributiveCountStepComputation.computeNextContext(contextAfterIneligibles)
-        contextAfterCount3 <- DistributiveCountStepComputation.computeNextContext(contextAfterCount2)
-        contextAfterCount4 <- DistributiveCountStepComputation.computeNextContext(contextAfterCount3)
-        contextAfterCount5 <- DistributiveCountStepComputation.computeNextContext(contextAfterCount4)
-        contextAfterCount6 <- DistributiveCountStepComputation.computeNextContext(contextAfterCount5)
-      } yield contextAfterCount6
-      ).anyOutcome
-
+    val actualContext = actualContextAfterCount(6)
 
     val expectedCurrentDistribution = CountContext.CurrentDistribution[Fruit](
       candidateBeingDistributed = Raspberry,
@@ -513,16 +495,7 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
   }
 
   "count 7, where Raspberry's ballots are still being distributed" should "have produced the correct count step" in {
-    val actualContext = (
-      for {
-        contextAfterCount2 <- DistributiveCountStepComputation.computeNextContext(contextAfterIneligibles)
-        contextAfterCount3 <- DistributiveCountStepComputation.computeNextContext(contextAfterCount2)
-        contextAfterCount4 <- DistributiveCountStepComputation.computeNextContext(contextAfterCount3)
-        contextAfterCount5 <- DistributiveCountStepComputation.computeNextContext(contextAfterCount4)
-        contextAfterCount6 <- DistributiveCountStepComputation.computeNextContext(contextAfterCount5)
-        contextAfterCount7 <- DistributiveCountStepComputation.computeNextContext(contextAfterCount6)
-      } yield contextAfterCount7
-      ).anyOutcome
+    val actualContext = actualContextAfterCount(7)
 
     val expectedCountStep = DistributionCountStep[Fruit](
       count = Count(7),
@@ -548,18 +521,59 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
         exhausted = VoteCount.zero,
         roundingError = VoteCount(NumPapers(0), NumVotes(-1.0))
       ),
-      distributionSource = DistributionCountStep.Source(
+      distributionSource = Some(DistributionCountStep.Source(
         Raspberry,
         CandidateDistributionReason.Exclusion,
         sourceCounts = Set(Count(5)),
         transferValue = TransferValue(1d / 18d),
-      )
+      ))
     )
 
     assert(actualContext.mostRecentCountStep === expectedCountStep)
   }
 
-  // TODO should indicate when counting is finished
-  // TODO should reject a context that is marked as finished
-  // TODO should check for terminal election conditions
+  "count 8, where Pear is elected to the remaining vacancy" should "have produced the correct count step" in {
+    val actualContext = actualContextAfterCount(8)
+
+    val expectedCountStep = DistributionCountStep[Fruit](
+      count = Count(8),
+      candidateStatuses = CandidateStatuses[Fruit](
+        Apple -> Elected(0,Count(4)),
+        Banana -> Excluded(2,Count(4)),
+        Mango -> Remaining,
+        Pear -> Elected(1,Count(8)),
+        Raspberry -> Excluded(3,Count(6)),
+        Strawberry -> Excluded(1,Count(3)),
+        Watermelon -> Excluded(0,Count(2)),
+      ),
+      candidateVoteCounts = CandidateVoteCounts[Fruit](
+        perCandidate = Map(
+          Apple -> VoteCount(NumPapers(0), NumVotes(17.0)),
+          Banana -> VoteCount(NumPapers(0), NumVotes(0.0)),
+          Mango -> VoteCount(NumPapers(25), NumVotes(16.0)),
+          Pear -> VoteCount(NumPapers(25), NumVotes(16.0)),
+          Raspberry -> VoteCount(NumPapers(0), NumVotes(0.0)),
+          Strawberry -> VoteCount(NumPapers(0), NumVotes(0.0)),
+          Watermelon -> VoteCount(NumPapers(0), NumVotes(0.0)),
+        ),
+        exhausted = VoteCount.zero,
+        roundingError = VoteCount(NumPapers(0), NumVotes(-1.0))
+      ),
+      distributionSource = None,
+    )
+
+    assert(actualContext.mostRecentCountStep === expectedCountStep)
+  }
+
+  it should "be marked as complete" in {
+    assert(actualContextAfterCount(8).allVacanciesNowFilled === true)
+  }
+
+  "distribution step computation" should "reject a context that is marked as complete" in {
+    val completeContext = actualContextAfterCount(8)
+
+    intercept[IllegalArgumentException] {
+      DistributiveCountStepComputation.computeNextContext(completeContext)
+    }
+  }
 }

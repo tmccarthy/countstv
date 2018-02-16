@@ -7,7 +7,7 @@ final case class DistributionCountStep[C] (
                                             count: Count,
                                             candidateStatuses: CandidateStatuses[C],
                                             candidateVoteCounts: CandidateVoteCounts[C],
-                                            distributionSource: DistributionCountStep.Source[C],
+                                            distributionSource: Option[DistributionCountStep.Source[C]],
                                           ) extends CountStep[C] {
 
 }

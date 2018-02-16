@@ -165,6 +165,56 @@ class CountContextSpec extends ImprovedFlatSpec {
     }
   }
 
+  it should "indicate if all vacancies are filled" in {
+    val candidateStatuses = CandidateStatuses[Fruit](
+      Apple -> Elected(0, Count(1)),
+      Banana -> Elected(1, Count(1)),
+      Pear -> Remaining,
+      Strawberry -> Remaining,
+    )
+
+    val contextWithAllVacanciesFilled = testContext
+      .copy(
+        previousCountSteps = List(
+          initialAllocation,
+          allocationAfterIneligibles.copy(
+            candidateStatuses = candidateStatuses,
+          ),
+        ),
+        candidateStatuses = candidateStatuses,
+      )
+
+    assert(contextWithAllVacanciesFilled.allVacanciesNowFilled === true)
+  }
+
+  it should "indicate if all vacancies are not filled" in {
+    assert(testContext.allVacanciesNowFilled === false)
+  }
+
+  it should "indicate that all vacancies are filled if all candidates have been elected even if there are " +
+    "unfilled vacancies" in {
+    val candidateStatuses = CandidateStatuses[Fruit](
+      Apple -> Elected(0, Count(1)),
+      Banana -> Elected(1, Count(1)),
+      Pear -> Elected(2, Count(1)),
+      Strawberry -> Elected(3, Count(1)),
+    )
+
+    val contextWithAllVacanciesFilled = testContext
+      .copy(
+        numVacancies = 5,
+        previousCountSteps = List(
+          initialAllocation,
+          allocationAfterIneligibles.copy(
+            candidateStatuses = candidateStatuses,
+          ),
+        ),
+        candidateStatuses = candidateStatuses,
+      )
+
+    assert(contextWithAllVacanciesFilled.allVacanciesNowFilled === true)
+  }
+
   "a current distribution" can "be for an elected candidate" in {
     val currentDistribution = CountContext.CurrentDistribution(
       Apple,
