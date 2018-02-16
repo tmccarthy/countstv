@@ -58,6 +58,10 @@ class CandidateStatusesSpec extends ImprovedFlatSpec {
     assert(testCandidateStatuses.ineligibleForPreferenceFlows === Set(Apple, Pear, Strawberry))
   }
 
+  it should "indicate eligible candidates" in {
+    assert(testCandidateStatuses.eligibleCandidates === Set(Apple, Banana, Strawberry))
+  }
+
   it can "update the status of a single candidate" in {
     val actualCandidateStatuses = testCandidateStatuses.update(Banana, Ineligible)
 

@@ -197,12 +197,12 @@ class CountContextSpec extends ImprovedFlatSpec {
       Apple -> Elected(Ordinal.first, Count(1)),
       Banana -> Elected(Ordinal.second, Count(1)),
       Pear -> Elected(Ordinal.third, Count(1)),
-      Strawberry -> Elected(Ordinal.fourth, Count(1)),
+      Strawberry -> Ineligible,
     )
 
     val contextWithAllVacanciesFilled = testContext
       .copy(
-        numVacancies = 5,
+        numVacancies = 4,
         previousCountSteps = List(
           initialAllocation,
           allocationAfterIneligibles.copy(

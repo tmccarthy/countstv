@@ -46,7 +46,7 @@ final case class CountContext[C] (
   lazy val previousCandidateVoteCounts: List[CandidateVoteCounts[C]] = previousCountSteps.map(_.candidateVoteCounts)
 
   def allVacanciesNowFilled: Boolean = candidateStatuses.electedCandidates.size == numVacancies || (
-    numVacancies > candidateStatuses.allCandidates.size && candidateStatuses.electedCandidates.size == candidateStatuses.allCandidates.size
+    numVacancies > candidateStatuses.eligibleCandidates.size && candidateStatuses.electedCandidates.size == candidateStatuses.eligibleCandidates.size
   )
 
 }
