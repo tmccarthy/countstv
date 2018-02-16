@@ -94,18 +94,20 @@ class InitialAllocationComputationSpec extends ImprovedFlatSpec {
       numFormalPapers = NumPapers(25),
       numVacancies = 2,
       paperBundles = rootBundle.distribute,
-      mostRecentCountStep = InitialAllocation(
-        candidateStatuses = candidateStatuses,
-        candidateVoteCounts = CandidateVoteCounts(
-          perCandidate = Map(
-            Apple -> VoteCount(6),
-            Banana -> VoteCount(6),
-            Pear -> VoteCount(8),
-            Strawberry -> VoteCount(5),
+      previousCountSteps = List(
+        InitialAllocation(
+          candidateStatuses = candidateStatuses,
+          candidateVoteCounts = CandidateVoteCounts[Fruit](
+            perCandidate = Map(
+              Apple -> VoteCount(6),
+              Banana -> VoteCount(6),
+              Pear -> VoteCount(8),
+              Strawberry -> VoteCount(5),
+            ),
+            exhausted = VoteCount.zero,
+            roundingError = VoteCount.zero
           ),
-          exhausted = VoteCount.zero,
-          roundingError = VoteCount.zero
-        ),
+        )
       ),
       currentDistribution = None,
     )

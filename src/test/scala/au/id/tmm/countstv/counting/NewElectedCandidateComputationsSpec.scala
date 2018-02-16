@@ -37,7 +37,7 @@ class NewElectedCandidateComputationsSpec extends ImprovedFlatSpec {
 
     val actualResult = NewElectedCandidateComputations.newlyExceedingQuota(
       parsedCurrentCandidateVoteCounts,
-      parsedPreviousCandidateVoteCounts.toStream,
+      parsedPreviousCandidateVoteCounts,
       candidateStatuses,
       numVacancies,
       quota,
@@ -73,7 +73,7 @@ class NewElectedCandidateComputationsSpec extends ImprovedFlatSpec {
 
     val actualResult = NewElectedCandidateComputations.finallyElected(
       parsedCurrentCandidateVoteCounts,
-      parsedPreviousCandidateVoteCounts.toStream,
+      parsedPreviousCandidateVoteCounts,
       candidateStatuses,
       numVacancies,
       quota,
@@ -137,6 +137,26 @@ class NewElectedCandidateComputationsSpec extends ImprovedFlatSpec {
         Mango -> 4,
         Pear -> 4,
         Raspberry -> 4,
+      ),
+      expectedResult = ProbabilityMeasure.Always(DupelessSeq(Apple)),
+    )
+  }
+
+  it should "return an unelected candidate whose vote count equals the quota" in {
+    testNewlyExceedingQuota(
+      candidateStatuses = CandidateStatuses[Fruit](
+        Apple -> Remaining,
+        Banana -> Remaining,
+        Mango -> Remaining,
+        Pear -> Remaining,
+        Raspberry -> Remaining,
+      ),
+      currentCandidateVoteCounts = Map(
+        Apple -> 3,
+        Banana -> 1,
+        Mango -> 1,
+        Pear -> 1,
+        Raspberry -> 1,
       ),
       expectedResult = ProbabilityMeasure.Always(DupelessSeq(Apple)),
     )
@@ -224,7 +244,7 @@ class NewElectedCandidateComputationsSpec extends ImprovedFlatSpec {
         ),
       ),
       numVacancies = 3,
-      expectedResult = ProbabilityMeasure.Always(DupelessSeq(Banana, Mango)),
+      expectedResult = ProbabilityMeasure.Always(DupelessSeq(Mango, Banana)),
     )
   }
 
@@ -329,7 +349,7 @@ class NewElectedCandidateComputationsSpec extends ImprovedFlatSpec {
           Raspberry -> 0,
         ),
       ),
-      expectedResult = ProbabilityMeasure.Always(DupelessSeq(Banana)),
+      expectedResult = ProbabilityMeasure.Always(DupelessSeq(Mango)),
     )
   }
 
@@ -400,7 +420,7 @@ class NewElectedCandidateComputationsSpec extends ImprovedFlatSpec {
         Map(
           Apple -> 10,
           Banana -> 8,
-          Mango -> 8,
+          Mango -> 9,
           Pear -> 7,
           Raspberry -> 6,
         ),

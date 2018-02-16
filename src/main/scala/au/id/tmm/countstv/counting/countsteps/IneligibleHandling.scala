@@ -1,6 +1,6 @@
 package au.id.tmm.countstv.counting.countsteps
 
-import au.id.tmm.countstv.counting.{ElectedCandidateComputations, VoteCounting}
+import au.id.tmm.countstv.counting.{NewElectedCandidateComputations, VoteCounting}
 import au.id.tmm.countstv.model._
 import au.id.tmm.countstv.model.countsteps.{AllocationAfterIneligibles, CountContext}
 import au.id.tmm.countstv.model.values.{Count, NumVotes}
@@ -53,13 +53,15 @@ object IneligibleHandling {
     )
 
     newCandidateStatusPossibilities.map { newCandidateStatuses =>
+      val newCountStep = AllocationAfterIneligibles(
+        candidateStatuses = newCandidateStatuses,
+        candidateVoteCounts = newVoteCount,
+        transfersDueToIneligibles = transfersDueToIneligibles,
+      )
+
       previousContext.copy(
         paperBundles = newPaperBundles,
-        mostRecentCountStep = AllocationAfterIneligibles(
-          candidateStatuses = newCandidateStatuses,
-          candidateVoteCounts = newVoteCount,
-          transfersDueToIneligibles = transfersDueToIneligibles,
-        ),
+        previousCountSteps = previousContext.previousCountSteps :+ newCountStep,
       )
     }
   }
@@ -70,8 +72,9 @@ object IneligibleHandling {
                                                       numVacancies: Int,
                                                       oldVoteCounts: CandidateVoteCounts[C],
                                                     ) = {
-    val electedCandidatePossibilities = ElectedCandidateComputations.computeNewlyElected(
+    val electedCandidatePossibilities = NewElectedCandidateComputations.newlyExceedingQuota(
       oldVoteCounts,
+      previousCandidateVoteCountsAscending = List.empty,
       oldCandidateStatuses,
       numVacancies,
       quota,

@@ -56,6 +56,7 @@ object ProbabilityMeasure {
     override def asMap: Map[A, Rational] = Map(outcome -> Rational.one)
   }
 
+  // TODO these probably shouldn't be case classes as it's not safe to pattern match
   final case class Varied[A](asMap: Map[A, Rational]) extends ProbabilityMeasure[A] {
     require(asMap.valuesIterator.foldLeft(Rational.zero)(_ + _) == Rational.one)
     require(asMap.valuesIterator.forall(_ >= Rational.zero))

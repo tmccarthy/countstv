@@ -8,7 +8,7 @@ object NewElectedCandidateComputations {
 
   def newlyExceedingQuota[C](
                               currentCandidateVoteCounts: CandidateVoteCounts[C],
-                              previousCandidateVoteCounts: Stream[CandidateVoteCounts[C]],
+                              previousCandidateVoteCountsAscending: List[CandidateVoteCounts[C]],
                               candidateStatuses: CandidateStatuses[C],
                               numVacancies: Int,
                               quota: NumVotes,
@@ -17,10 +17,10 @@ object NewElectedCandidateComputations {
     val unelectedCandidatesExceedingQuota = candidateStatuses.remainingCandidates
       .toStream
       .filter { candidate =>
-        currentCandidateVoteCounts.perCandidate(candidate).numVotes > quota
+        currentCandidateVoteCounts.perCandidate(candidate).numVotes >= quota
       }
 
-    val ordering = new CandidateVoteCountOrdering[C](currentCandidateVoteCounts, previousCandidateVoteCounts)
+    val ordering = new CandidateVoteCountOrdering[C](currentCandidateVoteCounts, previousCandidateVoteCountsAscending)
 
     NewTieSensitiveSorting.sort[C](unelectedCandidatesExceedingQuota)(ordering)
       .map(_.reverse.to[DupelessSeq])
@@ -28,7 +28,7 @@ object NewElectedCandidateComputations {
 
   def finallyElected[C](
                          currentCandidateVoteCounts: CandidateVoteCounts[C],
-                         previousCandidateVoteCounts: Stream[CandidateVoteCounts[C]],
+                         previousCandidateVoteCountsAscending: List[CandidateVoteCounts[C]],
                          candidateStatuses: CandidateStatuses[C],
                          numVacancies: Int,
                          quota: NumVotes,
@@ -36,7 +36,7 @@ object NewElectedCandidateComputations {
 
     val numUnfilledVacancies = numVacancies - candidateStatuses.electedCandidates.size
 
-    val ordering = new CandidateVoteCountOrdering[C](currentCandidateVoteCounts, previousCandidateVoteCounts)
+    val ordering = new CandidateVoteCountOrdering[C](currentCandidateVoteCounts, previousCandidateVoteCountsAscending)
 
     if (numUnfilledVacancies == 1 && candidateStatuses.remainingCandidates.size == 2) {
       NewTieSensitiveSorting.sort(candidateStatuses.remainingCandidates)(ordering)

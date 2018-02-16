@@ -15,29 +15,36 @@ class CountContextSpec extends ImprovedFlatSpec {
   private implicit def bagConfiguration[A]: HashedBagConfiguration[A] =
     PaperBundle.bagConfiguration.asInstanceOf[HashedBagConfiguration[A]]
 
+  private val initialAllocation = InitialAllocation[Fruit](
+    candidateStatuses = CandidateStatuses[Fruit](
+      Apple -> Remaining,
+      Banana -> Remaining,
+      Pear -> Remaining,
+      Strawberry -> Remaining,
+    ),
+    candidateVoteCounts = CandidateVoteCounts(
+      perCandidate = Map[Fruit, VoteCount](
+        Apple -> VoteCount(20),
+        Banana -> VoteCount(10),
+        Pear -> VoteCount(6),
+        Strawberry -> VoteCount(4),
+      ),
+      exhausted = VoteCount.zero,
+      roundingError = VoteCount.zero,
+    ),
+  )
+
+  private val allocationAfterIneligibles = AllocationAfterIneligibles[Fruit](
+    candidateStatuses = initialAllocation.candidateStatuses,
+    candidateVoteCounts = initialAllocation.candidateVoteCounts,
+    transfersDueToIneligibles = Map.empty[Fruit, CandidateVoteCounts[Fruit]],
+  )
+
   private val testContext = CountContext(
     numFormalPapers = NumPapers(40),
     numVacancies = 2,
     paperBundles = Bag.empty[PaperBundle[Fruit]],
-    mostRecentCountStep = AllocationAfterIneligibles(
-      candidateStatuses = CandidateStatuses[Fruit](
-        Apple -> Remaining,
-        Banana -> Remaining,
-        Pear -> Remaining,
-        Strawberry -> Remaining,
-      ),
-      candidateVoteCounts = CandidateVoteCounts(
-        perCandidate = Map[Fruit, VoteCount](
-          Apple -> VoteCount(20),
-          Banana -> VoteCount(10),
-          Pear -> VoteCount(6),
-          Strawberry -> VoteCount(4),
-        ),
-        exhausted = VoteCount.zero,
-        roundingError = VoteCount.zero,
-      ),
-      transfersDueToIneligibles = Map.empty[Fruit, CandidateVoteCounts[Fruit]],
-    ),
+    previousCountSteps = List(initialAllocation, allocationAfterIneligibles),
     currentDistribution = None,
   )
 
@@ -66,7 +73,7 @@ class CountContextSpec extends ImprovedFlatSpec {
         ),
       )
 
-    val localTestContext = testContext.copy(mostRecentCountStep = mostRecentCountStep)
+    val localTestContext = testContext.copy(previousCountSteps = List(mostRecentCountStep))
 
     assert(localTestContext.electedCandidatesWaitingToBeDistributed === Queue(Apple, Banana))
   }
@@ -85,7 +92,7 @@ class CountContextSpec extends ImprovedFlatSpec {
       )
 
     val localTestContext = testContext.copy(
-      mostRecentCountStep = mostRecentCountStep,
+      previousCountSteps = List(mostRecentCountStep),
       currentDistribution = Some(
         CountContext.CurrentDistribution(
           Apple,
@@ -122,13 +129,40 @@ class CountContextSpec extends ImprovedFlatSpec {
         )
       )
 
-    val localTestContext = testContext.copy(mostRecentCountStep = mostRecentCountStep)
+    val localTestContext = testContext.copy(previousCountSteps = List(mostRecentCountStep))
 
     assert(localTestContext.electedCandidatesWaitingToBeDistributed === Queue())
   }
 
   it should "have the right quota" in {
     assert(testContext.quota === QuotaComputation.computeQuota(testContext.numVacancies, testContext.numFormalPapers))
+  }
+
+  it should "have the previous vote counts" in {
+    val expectedCandidateVoteCounts = List(
+      initialAllocation.candidateVoteCounts,
+      allocationAfterIneligibles.candidateVoteCounts,
+    )
+
+    assert(testContext.previousCandidateVoteCounts === expectedCandidateVoteCounts)
+  }
+
+  it can "not have no previous count steps" in {
+    intercept[IllegalArgumentException] {
+      testContext.copy(previousCountSteps = List.empty)
+    }
+  }
+
+  it can "not have no previous count steps when using the convenience constructor" in {
+    intercept[IllegalArgumentException] {
+      CountContext(
+        numFormalPapers = NumPapers(40),
+        numVacancies = 2,
+        paperBundles = Bag.empty[PaperBundle[Fruit]],
+        previousCountSteps = List.empty,
+        currentDistribution = None,
+      )
+    }
   }
 
   "a current distribution" can "be for an elected candidate" in {

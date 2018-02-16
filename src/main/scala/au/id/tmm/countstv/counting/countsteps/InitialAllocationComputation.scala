@@ -23,13 +23,15 @@ object InitialAllocationComputation {
       numFormalPapers = numFormalPapers,
       numVacancies = numVacancies,
       paperBundles = firstSetOfPaperBundles,
-      mostRecentCountStep = InitialAllocation(
-        candidateStatuses = initialCandidateStatuses,
-        candidateVoteCounts = VoteCounting.countVotes(
-          initialNumPapers = rootPaperBundle.numPapers,
-          quota = quota,
+      previousCountSteps = List(
+        InitialAllocation(
           candidateStatuses = initialCandidateStatuses,
-          paperBundles = firstSetOfPaperBundles,
+          candidateVoteCounts = VoteCounting.countVotes(
+            initialNumPapers = rootPaperBundle.numPapers,
+            quota = quota,
+            candidateStatuses = initialCandidateStatuses,
+            paperBundles = firstSetOfPaperBundles,
+          )
         )
       ),
       currentDistribution = None,

@@ -4,7 +4,7 @@ import au.id.tmm.countstv.PaperBundles
 import au.id.tmm.countstv.counting.QuotaComputation
 import au.id.tmm.countstv.model.countsteps.CountContext.CurrentDistribution
 import au.id.tmm.countstv.model.values.{NumPapers, NumVotes, TransferValueCoefficient}
-import au.id.tmm.countstv.model.{AssignedPaperBundle, CandidateDistributionReason}
+import au.id.tmm.countstv.model.{AssignedPaperBundle, CandidateDistributionReason, CandidateStatuses, CandidateVoteCounts}
 
 import scala.collection.immutable.{Bag, Queue}
 
@@ -13,11 +13,17 @@ final case class CountContext[C] (
                                    numVacancies: Int,
 
                                    paperBundles: PaperBundles[C],
-                                   mostRecentCountStep: CountStep[C],
+                                   candidateStatuses: CandidateStatuses[C],
+                                   previousCountSteps: List[CountStep[C]],
 
                                    currentDistribution: Option[CurrentDistribution[C]],
                                  ) {
+
+  require(previousCountSteps.nonEmpty)
+
   val quota: NumVotes = QuotaComputation.computeQuota(numVacancies, numFormalPapers)
+
+  def mostRecentCountStep: CountStep[C] = previousCountSteps.last
 
   def electedCandidatesWaitingToBeDistributed: Queue[C] = {
     val electedCandidateCurrentlyBeingDistributed = currentDistribution match {
@@ -36,9 +42,32 @@ final case class CountContext[C] (
       }
       .to[Queue]
   }
+
+  lazy val previousCandidateVoteCounts: List[CandidateVoteCounts[C]] = previousCountSteps.map(_.candidateVoteCounts)
 }
 
 object CountContext {
+
+  def apply[C](
+                numFormalPapers: NumPapers,
+                numVacancies: Int,
+
+                paperBundles: PaperBundles[C],
+                previousCountSteps: List[CountStep[C]],
+
+                currentDistribution: Option[CurrentDistribution[C]],
+              ): CountContext[C] = {
+    require(previousCountSteps.nonEmpty)
+
+    new CountContext(
+      numFormalPapers,
+      numVacancies,
+      paperBundles,
+      previousCountSteps.last.candidateStatuses,
+      previousCountSteps,
+      currentDistribution
+    )
+  }
 
   final case class CurrentDistribution[C](
                                            candidateBeingDistributed: C,

@@ -31,7 +31,11 @@ class NewExcludedCandidateComputationsSpec extends ImprovedFlatSpec {
 
     val numFormalPapers = NumPapers(currentCandidateVoteCounts.values.sum)
 
-    val actualResult = NewExcludedCandidateComputations.computeExcluded(parsedCurrentCandidateVoteCounts, parsedPreviousCandidateVoteCounts.toStream, candidateStatuses)
+    val actualResult = NewExcludedCandidateComputations.computeExcluded(
+      parsedCurrentCandidateVoteCounts,
+      parsedPreviousCandidateVoteCounts,
+      candidateStatuses,
+    )
 
     assert(actualResult === expectedResult)
   }
@@ -118,7 +122,7 @@ class NewExcludedCandidateComputationsSpec extends ImprovedFlatSpec {
         Map(
           Apple -> 8,
           Banana -> 6,
-          Mango -> 6,
+          Mango -> 5,
           Pear -> 6,
           Raspberry -> 4,
         ),
