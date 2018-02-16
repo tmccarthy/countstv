@@ -95,6 +95,27 @@ class FullCountComputationSpec extends ImprovedFlatSpec {
     assert(countSteps.last.candidateStatuses === expectedFinalOutcomes)
   }
 
+  it should "produce the correct outcome when we have ineligible candidates" in {
+    val countSteps = FullCountComputation.runCount[Fruit](
+      candidates,
+      ineligibleCandidates = Set[Fruit](Apple),
+      numVacancies,
+      testPreferenceTree,
+    ).anyOutcome
+
+    val expectedFinalOutcomes = CandidateStatuses[Fruit](
+      Apple -> Ineligible,
+      Banana -> Excluded(Ordinal.second, Count(3)),
+      Mango -> Remaining,
+      Pear -> Elected(Ordinal.first, Count(4)),
+      Raspberry -> Elected(Ordinal.second, Count(4)),
+      Strawberry -> Excluded(Ordinal.third, Count(4)),
+      Watermelon -> Excluded(Ordinal.first, Count(2)),
+    )
+
+    assert(countSteps.last.candidateStatuses === expectedFinalOutcomes)
+  }
+
   it can "not occur if the set of ineligible candidates is not a subset of the set of all candidates" in {
     intercept[IllegalArgumentException] {
       FullCountComputation.runCount[Fruit](
