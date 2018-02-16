@@ -10,6 +10,8 @@ import au.id.tmm.utilities.collection.DupelessSeq
 
 import scala.collection.immutable.{Bag, HashedBagConfiguration, Queue}
 
+// TODO the previous counts used for tie-breaking shouldn't include counts where we're continuing with a previous
+// distribution
 object DistributiveCountStepComputation {
 
   def computeNextContext[C](countContext: CountContext[C]): ProbabilityMeasure[CountContext[C]] = {
@@ -29,7 +31,7 @@ object DistributiveCountStepComputation {
         if (countContext.electedCandidatesWaitingToBeDistributed.nonEmpty) {
           contextAfterDistributingElectedCandidate(countContext)
         } else {
-          NewElectedCandidateComputations.finallyElected(
+          ElectedCandidateComputations.finallyElected(
             countContext.previousCandidateVoteCounts.last,
             countContext.previousCandidateVoteCounts.init,
             countContext.candidateStatuses,
@@ -88,7 +90,7 @@ object DistributiveCountStepComputation {
   }
 
   private def contextAfterDistributingExcludedCandidate[C](count: Count, countContext: CountContext[C]): ProbabilityMeasure[CountContext[C]] = {
-    NewExcludedCandidateComputations.computeExcluded(
+    ExcludedCandidateComputations.computeExcluded(
       currentCandidateVoteCounts = countContext.previousCandidateVoteCounts.last,
       previousCandidateVoteCountsAscending = countContext.previousCandidateVoteCounts.init,
       candidateStatuses = countContext.candidateStatuses,
@@ -204,7 +206,7 @@ object DistributiveCountStepComputation {
       transferValue = currentDistribution.transferValueCoefficient * bundlesToDistributeNow.head.transferValue,
     )
 
-    NewElectedCandidateComputations.newlyExceedingQuota(
+    ElectedCandidateComputations.newlyExceedingQuota(
       newCandidateVoteCounts,
       countContext.previousCandidateVoteCounts,
       countContext.candidateStatuses,

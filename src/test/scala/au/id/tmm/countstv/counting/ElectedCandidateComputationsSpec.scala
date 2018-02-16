@@ -8,7 +8,7 @@ import au.id.tmm.countstv.model.{CandidateStatuses, CandidateVoteCounts, Probabi
 import au.id.tmm.utilities.collection.DupelessSeq
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
-class NewElectedCandidateComputationsSpec extends ImprovedFlatSpec {
+class ElectedCandidateComputationsSpec extends ImprovedFlatSpec {
 
   private def testNewlyExceedingQuota(
                                        candidateStatuses: CandidateStatuses[Fruit],
@@ -35,7 +35,7 @@ class NewElectedCandidateComputationsSpec extends ImprovedFlatSpec {
 
     val quota = QuotaComputation.computeQuota(numVacancies, numFormalPapers)
 
-    val actualResult = NewElectedCandidateComputations.newlyExceedingQuota(
+    val actualResult = ElectedCandidateComputations.newlyExceedingQuota(
       parsedCurrentCandidateVoteCounts,
       parsedPreviousCandidateVoteCounts,
       candidateStatuses,
@@ -71,7 +71,7 @@ class NewElectedCandidateComputationsSpec extends ImprovedFlatSpec {
 
     val quota = QuotaComputation.computeQuota(numVacancies, numFormalPapers)
 
-    val actualResult = NewElectedCandidateComputations.finallyElected(
+    val actualResult = ElectedCandidateComputations.finallyElected(
       parsedCurrentCandidateVoteCounts,
       parsedPreviousCandidateVoteCounts,
       candidateStatuses,

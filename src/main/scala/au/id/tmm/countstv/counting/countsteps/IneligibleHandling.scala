@@ -1,6 +1,6 @@
 package au.id.tmm.countstv.counting.countsteps
 
-import au.id.tmm.countstv.counting.{NewElectedCandidateComputations, VoteCounting}
+import au.id.tmm.countstv.counting.{ElectedCandidateComputations, VoteCounting}
 import au.id.tmm.countstv.model._
 import au.id.tmm.countstv.model.countsteps.{AllocationAfterIneligibles, CountContext}
 import au.id.tmm.countstv.model.values.{Count, NumVotes}
@@ -72,7 +72,7 @@ object IneligibleHandling {
                                                       numVacancies: Int,
                                                       oldVoteCounts: CandidateVoteCounts[C],
                                                     ) = {
-    val electedCandidatePossibilities = NewElectedCandidateComputations.newlyExceedingQuota(
+    val electedCandidatePossibilities = ElectedCandidateComputations.newlyExceedingQuota(
       oldVoteCounts,
       previousCandidateVoteCountsAscending = List.empty,
       oldCandidateStatuses,

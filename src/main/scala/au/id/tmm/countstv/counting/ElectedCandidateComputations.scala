@@ -4,7 +4,7 @@ import au.id.tmm.countstv.model.values.NumVotes
 import au.id.tmm.countstv.model.{CandidateStatuses, CandidateVoteCounts, ProbabilityMeasure}
 import au.id.tmm.utilities.collection.DupelessSeq
 
-object NewElectedCandidateComputations {
+object ElectedCandidateComputations {
 
   def newlyExceedingQuota[C](
                               currentCandidateVoteCounts: CandidateVoteCounts[C],
@@ -22,7 +22,7 @@ object NewElectedCandidateComputations {
 
     val ordering = new CandidateVoteCountOrdering[C](currentCandidateVoteCounts, previousCandidateVoteCountsAscending)
 
-    NewTieSensitiveSorting.sort[C](unelectedCandidatesExceedingQuota)(ordering)
+    TieSensitiveSorting.sort[C](unelectedCandidatesExceedingQuota)(ordering)
       .map(_.reverse.to[DupelessSeq])
   }
 
@@ -39,11 +39,11 @@ object NewElectedCandidateComputations {
     val ordering = new CandidateVoteCountOrdering[C](currentCandidateVoteCounts, previousCandidateVoteCountsAscending)
 
     if (numUnfilledVacancies == 1 && candidateStatuses.remainingCandidates.size == 2) {
-      NewTieSensitiveSorting.sort(candidateStatuses.remainingCandidates)(ordering)
+      TieSensitiveSorting.sort(candidateStatuses.remainingCandidates)(ordering)
         .map(_.lastOption.to[DupelessSeq])
 
     } else if (numUnfilledVacancies == candidateStatuses.remainingCandidates.size) {
-      NewTieSensitiveSorting.sort(candidateStatuses.remainingCandidates)(ordering)
+      TieSensitiveSorting.sort(candidateStatuses.remainingCandidates)(ordering)
         .map(_.reverse.to[DupelessSeq])
 
     } else {

@@ -2,7 +2,7 @@ package au.id.tmm.countstv.counting
 
 import au.id.tmm.countstv.model.{CandidateStatuses, CandidateVoteCounts, ProbabilityMeasure}
 
-object NewExcludedCandidateComputations {
+object ExcludedCandidateComputations {
   def computeExcluded[C](
                           currentCandidateVoteCounts: CandidateVoteCounts[C],
                           previousCandidateVoteCountsAscending: List[CandidateVoteCounts[C]],
@@ -10,7 +10,7 @@ object NewExcludedCandidateComputations {
                         ): ProbabilityMeasure[C] = {
     val ordering = new CandidateVoteCountOrdering[C](currentCandidateVoteCounts, previousCandidateVoteCountsAscending)
 
-    NewTieSensitiveSorting.min(candidateStatuses.remainingCandidates)(ordering)
+    TieSensitiveSorting.min(candidateStatuses.remainingCandidates)(ordering)
       .getOrElse(throw new IllegalArgumentException("No remaining candidates"))
   }
 

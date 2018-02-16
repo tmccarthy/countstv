@@ -4,7 +4,7 @@ import au.id.tmm.countstv.model.ProbabilityMeasure
 
 import scala.collection.mutable
 
-object NewTieSensitiveSorting {
+object TieSensitiveSorting {
 
   def sort[A](iterable: Iterable[A])(implicit ordering: Ordering[A]): ProbabilityMeasure[List[A]] = {
     iterable

@@ -7,7 +7,7 @@ import au.id.tmm.countstv.model.values.{Count, NumPapers}
 import au.id.tmm.countstv.model.{CandidateStatuses, CandidateVoteCounts, ProbabilityMeasure, VoteCount}
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
-class NewExcludedCandidateComputationsSpec extends ImprovedFlatSpec {
+class ExcludedCandidateComputationsSpec extends ImprovedFlatSpec {
 
   private def testComputeExcluded(
                                    candidateStatuses: CandidateStatuses[Fruit],
@@ -31,7 +31,7 @@ class NewExcludedCandidateComputationsSpec extends ImprovedFlatSpec {
 
     val numFormalPapers = NumPapers(currentCandidateVoteCounts.values.sum)
 
-    val actualResult = NewExcludedCandidateComputations.computeExcluded(
+    val actualResult = ExcludedCandidateComputations.computeExcluded(
       parsedCurrentCandidateVoteCounts,
       parsedPreviousCandidateVoteCounts,
       candidateStatuses,
