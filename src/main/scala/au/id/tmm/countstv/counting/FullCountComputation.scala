@@ -2,9 +2,12 @@ package au.id.tmm.countstv.counting
 
 import au.id.tmm.countstv.counting.countsteps.{DistributiveCountStepComputation, IneligibleHandling, InitialAllocationComputation}
 import au.id.tmm.countstv.model._
-import au.id.tmm.countstv.model.countsteps.{CountContext, CountStep}
+import au.id.tmm.countstv.model.countsteps._
+import au.id.tmm.utilities.logging.{LoggedEvent, Logger}
 
 object FullCountComputation {
+
+  implicit val logger: Logger = Logger()
 
   def runCount[C](
                    candidates: Set[C],
@@ -32,13 +35,19 @@ object FullCountComputation {
         .toMap
     )
 
-    val initialContext = InitialAllocationComputation.computeInitialContext(
-      initialCandidateStatuses,
-      rootPaperBundle,
-      numVacancies,
-    )
+    val initialContext = computeContextAndLog {
+      ProbabilityMeasure.always {
+        InitialAllocationComputation.computeInitialContext(
+          initialCandidateStatuses,
+          rootPaperBundle,
+          numVacancies,
+        )
+      }
+    }
 
-    val contextAfterIneligibles = IneligibleHandling.computeContextAfterIneligibles(initialContext)
+    val contextAfterIneligibles = computeContextAndLog {
+      IneligibleHandling.computeContextAfterIneligibles(initialContext.anyOutcome)
+    }
 
     contextAfterIneligibles.flatMap(allCountStepsFrom)
   }
@@ -47,11 +56,54 @@ object FullCountComputation {
   private def allCountStepsFrom[C](countContext: CountContext[C]): ProbabilityMeasure[List[CountStep[C]]] = {
 
     if (countContext.allVacanciesNowFilled) {
+      logger.info(eventId = "ALL_VACANCIES_FILLED", "count" -> countContext.mostRecentCountStep.count.countNumber)
+
       ProbabilityMeasure.always(countContext.previousCountSteps)
     } else {
-      val newContext = DistributiveCountStepComputation.computeNextContext(countContext)
+      val newContext = computeContextAndLog {
+        DistributiveCountStepComputation.computeNextContext(countContext)
+      }
 
       newContext.flatMap(allCountStepsFrom)
+    }
+
+  }
+
+  private def computeContextAndLog[C](
+                                       countContext: => ProbabilityMeasure[CountContext[C]],
+                                     ): ProbabilityMeasure[CountContext[C]] = {
+    val loggedEvent = LoggedEvent("COUNT_STEP_COMPUTATION")
+
+    val contextToReturn = loggedEvent.logWithTimeOnceFinished {
+      val contextToReturn = countContext
+
+      augmentLoggedEventWith(loggedEvent, contextToReturn.anyOutcome) // TODO log all possibilities
+
+      contextToReturn
+    }
+
+    contextToReturn
+  }
+
+  private def augmentLoggedEventWith[C](loggedEvent: LoggedEvent, countContext: CountContext[C]): Unit = {
+    val stepType = countContext.mostRecentCountStep match {
+      case _: InitialAllocation[C @unchecked] => "initial"
+      case _: AllocationAfterIneligibles[C @unchecked] => "after_ineligibles"
+      case _: DistributionCountStep[C @unchecked] => "distribution"
+    }
+
+    loggedEvent.kvPairs += "count" -> countContext.mostRecentCountStep.count
+    loggedEvent.kvPairs += "step_type" -> stepType
+
+    countContext.mostRecentCountStep match {
+      case DistributionCountStep(_, _, _, Some(source)) => {
+        loggedEvent.kvPairs ++= List(
+          "distribution_candidate" -> source.candidate,
+          "distribution_reason" -> source.candidateDistributionReason,
+          "distribution_transfer_value" -> source.transferValue.factor,
+        )
+      }
+      case _ =>
     }
 
   }
