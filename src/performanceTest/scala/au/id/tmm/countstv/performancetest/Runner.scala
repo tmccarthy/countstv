@@ -2,14 +2,14 @@ package au.id.tmm.countstv.performancetest
 
 import au.id.tmm.countstv.counting.FullCountComputation
 import au.id.tmm.countstv.model.{CandidateStatuses, PreferenceTree}
+import au.id.tmm.utilities.logging.{LoggedEvent, Logger}
 import org.kohsuke.randname.RandomNameGenerator
-import org.slf4j.{Logger, LoggerFactory}
 
 import scala.util.Random
 
 object Runner {
 
-  private val logger: Logger = LoggerFactory.getLogger(Runner.getClass.getName.stripSuffix("$"))
+  private implicit val logger: Logger = Logger()
 
   def runCountFor(
                    numCandidates: Int,
@@ -19,21 +19,31 @@ object Runner {
                  ): CandidateStatuses[Candidate] = {
     require(numIneligible < numCandidates)
 
-    logger.info("Generating candidates")
-    val candidates = generateCandidates(numCandidates)
+    val candidates =
+      LoggedEvent("GENERATING_CANDIDATES", "numCandidates" -> numCandidates)
+        .logWithTimeOnceFinished {
+          generateCandidates(numCandidates)
+        }
 
     val ineligibleCandidates = candidates.take(numIneligible)
 
     val ballots = generateBallots(candidates, numBallots)
 
-    logger.info("Building preference tree")
-    val preferenceTree = PreferenceTree.from(ballots)
+    val preferenceTree =
+      LoggedEvent("GENERATING_PREFERENCE_TREE", "numBallots" -> numBallots)
+        .logWithTimeOnceFinished {
+          PreferenceTree.from(ballots)
+        }
 
-    logger.info("Running count")
-    FullCountComputation.runCount(candidates, ineligibleCandidates, numVacancies, preferenceTree)
-      .anyOutcome
-      .last
-      .candidateStatuses
+    logger.info("STARTED_COUNT")
+
+    LoggedEvent("RUN_COUNT")
+      .logWithTimeOnceFinished {
+        FullCountComputation.runCount(candidates, ineligibleCandidates, numVacancies, preferenceTree)
+          .anyOutcome
+          .last
+          .candidateStatuses
+      }
   }
 
   private def generateCandidates(numCandidates: Int): Set[Candidate] = {
