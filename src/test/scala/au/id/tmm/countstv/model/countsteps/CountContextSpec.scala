@@ -8,12 +8,9 @@ import au.id.tmm.countstv.model._
 import au.id.tmm.countstv.model.values._
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
-import scala.collection.immutable.{Bag, HashedBagConfiguration, Queue}
+import scala.collection.immutable.Queue
 
 class CountContextSpec extends ImprovedFlatSpec {
-
-  private implicit def bagConfiguration[A]: HashedBagConfiguration[A] =
-    PaperBundle.bagConfiguration.asInstanceOf[HashedBagConfiguration[A]]
 
   private val initialAllocation = InitialAllocation[Fruit](
     candidateStatuses = CandidateStatuses[Fruit](
@@ -43,7 +40,7 @@ class CountContextSpec extends ImprovedFlatSpec {
   private val testContext = CountContext(
     numFormalPapers = NumPapers(40),
     numVacancies = 2,
-    paperBundles = Bag.empty[PaperBundle[Fruit]],
+    paperBundles = Set.empty[PaperBundle[Fruit]],
     previousCountSteps = List(initialAllocation, allocationAfterIneligibles),
     currentDistribution = None,
   )
@@ -97,7 +94,7 @@ class CountContextSpec extends ImprovedFlatSpec {
         CountContext.CurrentDistribution(
           Apple,
           CandidateDistributionReason.Election,
-          Queue(Bag[AssignedPaperBundle[Fruit]](testBundle)),
+          Queue(Set[AssignedPaperBundle[Fruit]](testBundle)),
           transferValueCoefficient = TransferValueCoefficient(1.0d),
         )
       )
@@ -158,7 +155,7 @@ class CountContextSpec extends ImprovedFlatSpec {
       CountContext(
         numFormalPapers = NumPapers(40),
         numVacancies = 2,
-        paperBundles = Bag.empty[PaperBundle[Fruit]],
+        paperBundles = Set.empty[PaperBundle[Fruit]],
         previousCountSteps = List.empty,
         currentDistribution = None,
       )
@@ -219,7 +216,7 @@ class CountContextSpec extends ImprovedFlatSpec {
     val currentDistribution = CountContext.CurrentDistribution(
       Apple,
       CandidateDistributionReason.Election,
-      Queue(Bag[AssignedPaperBundle[Fruit]](testBundle)),
+      Queue(Set[AssignedPaperBundle[Fruit]](testBundle)),
       transferValueCoefficient = TransferValueCoefficient(1.0d),
     )
 
@@ -230,7 +227,7 @@ class CountContextSpec extends ImprovedFlatSpec {
     val currentDistribution = CountContext.CurrentDistribution(
       Apple,
       CandidateDistributionReason.Exclusion,
-      Queue(Bag[AssignedPaperBundle[Fruit]](testBundle)),
+      Queue(Set[AssignedPaperBundle[Fruit]](testBundle)),
       transferValueCoefficient = TransferValueCoefficient(1.0d),
     )
 

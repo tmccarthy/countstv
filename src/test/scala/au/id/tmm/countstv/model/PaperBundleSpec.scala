@@ -6,12 +6,7 @@ import au.id.tmm.countstv.model.PaperBundle.Origin.IneligibleCandidate
 import au.id.tmm.countstv.model.values._
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
-import scala.collection.immutable.{Bag, HashedBagConfiguration}
-
 class PaperBundleSpec extends ImprovedFlatSpec {
-
-  private implicit val bagConfiguration: HashedBagConfiguration[PaperBundle[Fruit]] =
-    PaperBundle.bagConfiguration[Fruit]
 
   private val testPreferenceTree = PreferenceTree.from[Fruit](
     Vector(Apple, Pear, Banana, Strawberry),
@@ -76,7 +71,7 @@ class PaperBundleSpec extends ImprovedFlatSpec {
                                 pearStatus: CandidateStatus = CandidateStatus.Remaining,
                                 strawberryStatus: CandidateStatus = CandidateStatus.Remaining,
                                 originalTransferValue: TransferValue = TransferValue(1d),
-                                expectedBundlesAfterDistribution: Bag[PaperBundle[Fruit]] = Bag.empty[PaperBundle[Fruit]],
+                                expectedBundlesAfterDistribution: Set[PaperBundle[Fruit]] = Set.empty[PaperBundle[Fruit]],
                                 expectBundleUnchanged: Boolean = false,
                               ): Unit = {
     val candidateStatuses = CandidateStatuses[Fruit](
@@ -97,7 +92,7 @@ class PaperBundleSpec extends ImprovedFlatSpec {
     val actualBundlesAfterDistribution = originalBundle.distributeToRemainingCandidates(origin, candidateStatuses)
 
     if (expectBundleUnchanged) {
-      assert(actualBundlesAfterDistribution === Bag[PaperBundle[Fruit]](originalBundle))
+      assert(actualBundlesAfterDistribution === Set[PaperBundle[Fruit]](originalBundle))
     } else {
       assert(actualBundlesAfterDistribution === expectedBundlesAfterDistribution)
     }
@@ -115,7 +110,7 @@ class PaperBundleSpec extends ImprovedFlatSpec {
     testDistribution(
       originalCandidate = Banana,
       bananaStatus = CandidateStatus.Ineligible,
-      expectedBundlesAfterDistribution = Bag(
+      expectedBundlesAfterDistribution = Set(
         AssignedPaperBundle[Fruit](
           transferValue = TransferValue(1d),
           preferenceTreeNode = testPreferenceTree.childFor(Banana, Pear).get,
@@ -129,7 +124,7 @@ class PaperBundleSpec extends ImprovedFlatSpec {
     testDistribution(
       originalCandidate = Apple,
       appleStatus = CandidateStatus.Ineligible,
-      expectedBundlesAfterDistribution = Bag(
+      expectedBundlesAfterDistribution = Set(
         AssignedPaperBundle(
           transferValue = TransferValue(1d),
           preferenceTreeNode = testPreferenceTree.childFor(Apple, Pear).get,
@@ -149,7 +144,7 @@ class PaperBundleSpec extends ImprovedFlatSpec {
       originalCandidate = Apple,
       appleStatus = CandidateStatus.Ineligible,
       bananaStatus = CandidateStatus.Ineligible,
-      expectedBundlesAfterDistribution = Bag(
+      expectedBundlesAfterDistribution = Set(
         AssignedPaperBundle(
           transferValue = TransferValue(1d),
           preferenceTreeNode = testPreferenceTree.childFor(Apple, Pear).get,
@@ -182,7 +177,7 @@ class PaperBundleSpec extends ImprovedFlatSpec {
 
     val actualBundlesAfterDistribution = originalBundle.distributeToRemainingCandidates(origin, candidateStatuses)
 
-    val expectedBundlesAfterDistribution = Bag[PaperBundle[Fruit]](
+    val expectedBundlesAfterDistribution = Set[PaperBundle[Fruit]](
       ExhaustedPaperBundle[Fruit](
         numPapers = NumPapers(1),
         transferValue = TransferValue(1d),
@@ -212,7 +207,7 @@ class PaperBundleSpec extends ImprovedFlatSpec {
 
     val actualBundlesAfterDistribution = originalBundle.distributeToRemainingCandidates(origin, candidateStatuses)
 
-    val expectedBundlesAfterDistribution = Bag[PaperBundle[Fruit]](
+    val expectedBundlesAfterDistribution = Set[PaperBundle[Fruit]](
       AssignedPaperBundle(
         transferValue = transferValueCoefficient * TransferValue(0.9d),
         preferenceTreeNode = testPreferenceTree.childFor(Apple, Pear).get,
@@ -247,7 +242,7 @@ class PaperBundleSpec extends ImprovedFlatSpec {
 
     val actualBundlesAfterDistribution = originalBundle.distributeToRemainingCandidates(origin, candidateStatuses)
 
-    val expectedBundlesAfterDistribution = Bag[PaperBundle[Fruit]](originalBundle)
+    val expectedBundlesAfterDistribution = Set[PaperBundle[Fruit]](originalBundle)
 
     assert(actualBundlesAfterDistribution === expectedBundlesAfterDistribution)
   }
@@ -289,7 +284,7 @@ class PaperBundleSpec extends ImprovedFlatSpec {
     val actualBundles = PaperBundle.rootBundleFor(testPreferenceTree)
       .distributeToRemainingCandidates(PaperBundle.Origin.InitialAllocation, candidateStatuses)
 
-    val expectedBundles = Bag[PaperBundle[Fruit]](
+    val expectedBundles = Set[PaperBundle[Fruit]](
       AssignedPaperBundle(
         transferValue = TransferValue(1d),
         preferenceTreeNode = testPreferenceTree.childFor(Apple).get,
@@ -309,7 +304,7 @@ class PaperBundleSpec extends ImprovedFlatSpec {
     val actualBundles = PaperBundle.rootBundleFor(testPreferenceTree)
       .distribute
 
-    val expectedBundles = Bag[PaperBundle[Fruit]](
+    val expectedBundles = Set[PaperBundle[Fruit]](
       AssignedPaperBundle(
         transferValue = TransferValue(1d),
         preferenceTreeNode = testPreferenceTree.childFor(Apple).get,

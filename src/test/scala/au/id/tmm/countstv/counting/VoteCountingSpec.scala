@@ -6,11 +6,7 @@ import au.id.tmm.countstv.model._
 import au.id.tmm.countstv.model.values._
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
-import scala.collection.immutable.{Bag, BagConfiguration}
-
 class VoteCountingSpec extends ImprovedFlatSpec {
-
-  private implicit val bagConfiguration: BagConfiguration[PaperBundle[Fruit]] = PaperBundle.bagConfiguration[Fruit]
 
   private val testPreferenceTree = PreferenceTree.from[Fruit](
     Vector(Apple, Pear, Banana, Strawberry),
@@ -131,7 +127,7 @@ class VoteCountingSpec extends ImprovedFlatSpec {
       Strawberry -> CandidateStatus.Excluded(Ordinal.second, Count(3)),
     )
 
-    val paperBundles: Bag[PaperBundle[Fruit]] = Bag(
+    val paperBundles: Set[PaperBundle[Fruit]] = Set(
       AssignedPaperBundle(
         transferValue = TransferValue(0.666666666d),
         preferenceTreeNode = testPreferenceTree.childFor(Apple, Pear, Banana).get,

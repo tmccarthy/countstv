@@ -35,7 +35,6 @@ dependencies {
     compile "au.id.tmm:tmmutils${s}:$tmmUtilsVersion"
 
     compile 'net.sf.trove4j:trove4j:3.0.3'
-    compile "io.github.nicolasstucki:multisets${s}:0.4"
     compile "org.typelevel:spire${s}:0.14.1"
 
     testCompile "org.scalatest:scalatest${s}:$scalaTestVersion"

@@ -8,7 +8,7 @@ import au.id.tmm.countstv.model.countsteps.{CountContext, DistributionCountStep}
 import au.id.tmm.countstv.model.values.{Count, Ordinal, TransferValueCoefficient}
 import au.id.tmm.utilities.collection.DupelessSeq
 
-import scala.collection.immutable.{Bag, HashedBagConfiguration, Queue}
+import scala.collection.immutable.{Queue}
 
 // TODO the previous counts used for tie-breaking shouldn't include counts where we're continuing with a previous
 // distribution
@@ -135,7 +135,7 @@ object DistributiveCountStepComputation {
       .groupBy(_.transferValue)
       .toStream
       .sortBy { case (transferValue, bundles) => transferValue }
-      .map { case (transferValue, bundles) => bundles.to[Bag](Bag.canBuildFrom(HashedBagConfiguration.compact)) }
+      .map { case (transferValue, bundles) => bundles.toSet }
       .reverse
       .to[Queue]
 
@@ -201,8 +201,7 @@ object DistributiveCountStepComputation {
       candidateBeingDistributed,
       distributionReason,
       sourceCounts = bundlesToDistributeNow
-        .map(_.origin.count)
-        .toSet,
+        .map(_.origin.count),
       transferValue = currentDistribution.transferValueCoefficient * bundlesToDistributeNow.head.transferValue,
     )
 

@@ -6,7 +6,7 @@ import au.id.tmm.countstv.model.countsteps.CountContext.CurrentDistribution
 import au.id.tmm.countstv.model.values.{NumPapers, NumVotes, TransferValueCoefficient}
 import au.id.tmm.countstv.model.{AssignedPaperBundle, CandidateDistributionReason, CandidateStatuses, CandidateVoteCounts}
 
-import scala.collection.immutable.{Bag, Queue}
+import scala.collection.immutable.Queue
 
 final case class CountContext[C] (
                                    numFormalPapers: NumPapers,
@@ -77,7 +77,7 @@ object CountContext {
   final case class CurrentDistribution[C](
                                            candidateBeingDistributed: C,
                                            distributionReason: CandidateDistributionReason,
-                                           bundlesToDistribute: Queue[Bag[AssignedPaperBundle[C]]],
+                                           bundlesToDistribute: Queue[Set[AssignedPaperBundle[C]]],
                                            transferValueCoefficient: TransferValueCoefficient,
                                          ) {
     require(bundlesToDistribute.nonEmpty)

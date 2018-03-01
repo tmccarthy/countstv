@@ -9,11 +9,9 @@ import au.id.tmm.countstv.model.values._
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
 import scala.annotation.tailrec
-import scala.collection.immutable.{Bag, HashedBagConfiguration, Queue}
+import scala.collection.immutable.Queue
 
 class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
-
-  private implicit val bagConfig: HashedBagConfiguration[PaperBundle[Fruit]] = PaperBundle.bagConfiguration[Fruit]
 
   private val testPreferenceTree = PreferenceTree.from[Fruit](
     Vector(Apple, Banana, Strawberry, Pear, Raspberry, Mango, Watermelon),
@@ -124,7 +122,7 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
   it should "have the correct paper bundles" in {
     val actualContext = DistributiveCountStepComputation.computeNextContext(contextAfterIneligibles)
 
-    val expectedPaperBundles = Bag[PaperBundle[Fruit]](
+    val expectedPaperBundles = Set[PaperBundle[Fruit]](
       AssignedPaperBundle[Fruit](
         TransferValue(1.0),
         testPreferenceTree.childFor(Apple).get,
@@ -222,7 +220,7 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
   "count step 3, when Strawberry is excluded" should "have the correct paper bundles" in {
     val actualContext = actualContextAfterCount(3)
 
-    val expectedPaperBundles = Bag[PaperBundle[Fruit]](
+    val expectedPaperBundles = Set[PaperBundle[Fruit]](
       AssignedPaperBundle[Fruit](
         TransferValue(1.0),
         testPreferenceTree.childFor(Pear).get,
@@ -456,7 +454,7 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
       candidateBeingDistributed = Raspberry,
       distributionReason = CandidateDistributionReason.Exclusion,
       bundlesToDistribute = Queue(
-        Bag(
+        Set(
           AssignedPaperBundle(
             TransferValue(1d / 18d),
             testPreferenceTree.childFor(Watermelon, Apple, Raspberry).get,
@@ -486,7 +484,7 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
             TransferValue(1d / 18d),
             testPreferenceTree.childFor(Apple, Strawberry, Watermelon, Raspberry).get,
             PaperBundle.Origin.ElectedCandidate(Apple,TransferValueCoefficient(1d / 18d),Count(5)))
-        )(PaperBundle.bagConfiguration[Fruit].asInstanceOf[HashedBagConfiguration[AssignedPaperBundle[Fruit]]]),
+        ),
       ),
       transferValueCoefficient = TransferValueCoefficient(1),
     )

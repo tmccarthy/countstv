@@ -5,8 +5,6 @@ import au.id.tmm.countstv.model.PaperBundle.Origin
 import au.id.tmm.countstv.model.PreferenceTree.PreferenceTreeNode
 import au.id.tmm.countstv.model.values.{Count, NumPapers, TransferValue, TransferValueCoefficient}
 
-import scala.collection.immutable.{Bag, HashedBagConfiguration}
-
 sealed trait PaperBundle[C] {
 
   def assignedCandidate: Option[C]
@@ -43,7 +41,7 @@ final case class RootPaperBundle[C](preferenceTree: PreferenceTree[C]) extends P
       )
     }
 
-    Bag[PaperBundle[C]]() ++ childBundles
+    childBundles.toSet[PaperBundle[C]]
   }
 }
 
@@ -70,9 +68,6 @@ final case class ExhaustedPaperBundle[C](
 
 object PaperBundle {
 
-  implicit def bagConfiguration[C]: HashedBagConfiguration[PaperBundle[C]] =
-    HashedBagConfiguration.keepAll[PaperBundle[C]]
-
   def rootBundleFor[C](preferenceTree: PreferenceTree[C]): RootPaperBundle[C] = RootPaperBundle[C](preferenceTree)
 
   def distributeIfCandidateNotRemaining[C](
@@ -82,8 +77,8 @@ object PaperBundle {
                                           ): PaperBundles[C] = {
 
     bundle match {
-      case b: ExhaustedPaperBundle[C] => Bag[PaperBundle[C]](b)
-      case b if b.assignedCandidate.exists(candidateStatuses.remainingCandidates.contains) => Bag[PaperBundle[C]](b)
+      case b: ExhaustedPaperBundle[C] => Set[PaperBundle[C]](b)
+      case b if b.assignedCandidate.exists(candidateStatuses.remainingCandidates.contains) => Set[PaperBundle[C]](b)
       case b: AssignedPaperBundle[C] =>
         val nodesForDistributedBundles = childNodesAssignedToRemainingCandidates(
           b.preferenceTreeNode,
@@ -133,7 +128,7 @@ object PaperBundle {
       }
     }
 
-    Bag[PaperBundle[C]]() ++ bundlesDistributedToCandidates ++ exhaustedPaperBundle
+    bundlesDistributedToCandidates ++ exhaustedPaperBundle
   }
 
   private def childNodesAssignedToRemainingCandidates[C](
