@@ -11,6 +11,8 @@ object Runner {
 
   private implicit val logger: Logger = Logger()
 
+  private val seed: Long = -42
+
   def runCountFor(
                    numCandidates: Int,
                    numIneligible: Int,
@@ -40,14 +42,14 @@ object Runner {
     LoggedEvent("RUN_COUNT")
       .logWithTimeOnceFinished {
         FullCountComputation.runCount(candidates, ineligibleCandidates, numVacancies, preferenceTree)
-          .anyOutcome
+          .onlyOutcome
           .last
           .candidateStatuses
       }
   }
 
   private def generateCandidates(numCandidates: Int): Set[Candidate] = {
-    val randomNameGenerator = new RandomNameGenerator()
+    val randomNameGenerator = new RandomNameGenerator(seed.toInt)
 
     (0 until numCandidates)
       .map(Candidate(_, randomNameGenerator.next()))
@@ -55,15 +57,16 @@ object Runner {
   }
 
   private def generateBallots(candidates: Set[Candidate], numBallots: Int): Iterable[Vector[Candidate]] = {
+    val random = new Random(seed)
     val numCandidates = candidates.size
     val candidatesAsVector = candidates.toVector
 
     (0 until numBallots)
       .toStream
       .map { _ =>
-        val numPreferences = Random.nextInt(numCandidates) + 1
+        val numPreferences = random.nextInt(numCandidates) + 1
 
-        Random.shuffle(candidatesAsVector).take(numPreferences)
+        random.shuffle(candidatesAsVector).take(numPreferences)
       }
   }
 

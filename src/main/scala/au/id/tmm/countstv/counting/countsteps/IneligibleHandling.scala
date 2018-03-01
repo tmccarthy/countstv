@@ -32,12 +32,12 @@ object IneligibleHandling {
           paperBundle.distributeToRemainingCandidates(distributionOrigin, oldCandidateStatuses)
         }
 
-          ineligibleCandidate -> paperBundlesAfterDistribution
+        ineligibleCandidate -> paperBundlesAfterDistribution
       }
 
     val transfersDueToIneligibles = newPaperBundlesPerIneligibleCandidate
       .map { case (candidate, paperBundles) =>
-          candidate -> VoteCounting.performSimpleCount(allCandidates, paperBundles)
+        candidate -> VoteCounting.performSimpleCount(allCandidates, paperBundles)
       }
 
     val newPaperBundles = oldPaperBundles.filterNot(_.assignedCandidate.exists(ineligibleCandidates.contains)) ++

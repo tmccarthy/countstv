@@ -92,6 +92,14 @@ class ProbabilityMeasureSpec extends ImprovedFlatSpec {
     assert(Set(Apple, Pear, Stream) contains probabilityMeasure.anyOutcome)
   }
 
+  it can "not return its only possibility" in {
+    val probabilityMeasure = ProbabilityMeasure.evenly(Apple, Pear, Strawberry)
+
+    intercept[IllegalStateException] {
+      probabilityMeasure.onlyOutcome
+    }
+  }
+
   it should "have a sensible toString" in {
     val probabilityMeasure = ProbabilityMeasure.evenly(Apple, Pear, Strawberry)
     val expected = "ProbabilityMeasure(Apple -> 1/3, Pear -> 1/3, Strawberry -> 1/3)"
@@ -119,8 +127,12 @@ class ProbabilityMeasureSpec extends ImprovedFlatSpec {
     assert(ProbabilityMeasure.always[Fruit](Apple).chanceOf(Banana) === Rational.zero)
   }
 
-  it can "return its only possibility" in {
+  it can "return its only possibility as any possibility" in {
     assert(ProbabilityMeasure.always(Apple).anyOutcome === Apple)
+  }
+
+  it can "return its only possibility" in {
+    assert(ProbabilityMeasure.always(Apple).onlyOutcome === Apple)
   }
 
   it should "have a sensible toString" in {

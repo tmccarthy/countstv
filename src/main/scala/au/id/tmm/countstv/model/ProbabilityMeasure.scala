@@ -13,6 +13,8 @@ sealed trait ProbabilityMeasure[A] {
 
   def anyOutcome: A
 
+  def onlyOutcome: A
+
   override def toString: String = {
     val asMap = this.asMap
 
@@ -82,6 +84,8 @@ object ProbabilityMeasure {
     override def asMap: Map[A, Rational] = Map(outcome -> Rational.one)
 
     override def anyOutcome: A = outcome
+
+    override def onlyOutcome: A = outcome
   }
 
   private final class Varied[A](val asMap: Map[A, Rational]) extends ProbabilityMeasure[A] {
@@ -108,5 +112,7 @@ object ProbabilityMeasure {
     }
 
     override def anyOutcome: A = asMap.keys.head
+
+    override def onlyOutcome: A = throw new IllegalStateException()
   }
 }

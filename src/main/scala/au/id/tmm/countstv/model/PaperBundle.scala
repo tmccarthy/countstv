@@ -57,6 +57,7 @@ final case class AssignedPaperBundle[C](
 
   override def numPapers: NumPapers = preferenceTreeNode.numPapers
 
+  override val hashCode: Int = preferenceTreeNode.hashCode()
 }
 
 final case class ExhaustedPaperBundle[C](
