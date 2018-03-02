@@ -3,8 +3,7 @@ package au.id.tmm.countstv.counting
 import au.id.tmm.countstv.PaperBundles
 import au.id.tmm.countstv.model._
 import au.id.tmm.countstv.model.values.{NumPapers, NumVotes}
-
-import scala.collection.mutable
+import gnu.trove.map.hash.{TObjectDoubleHashMap, TObjectLongHashMap}
 
 object VoteCounting {
   def countVotes[C](
@@ -47,39 +46,42 @@ object VoteCounting {
                              paperBundles: PaperBundles[C],
                            ): CandidateVoteCounts[C] = {
 
-    val votesPerCandidate: mutable.Map[C, VoteCount] = mutable.Map(
-      allCandidates
-        .toStream
-        .map(c => c -> VoteCount.zero)
-        : _*
-    )
+    val papersPerCandidate = new TObjectLongHashMap[C](allCandidates.size)
+    val votesPerCandidate = new TObjectDoubleHashMap[C](allCandidates.size)
+
+    allCandidates
+      .foreach { candidate =>
+        papersPerCandidate.put(candidate, 0)
+        votesPerCandidate.put(candidate, 0)
+      }
 
     var exhaustedVotes: VoteCount = VoteCount.zero
 
-    paperBundles
-      .toIterator
-      .foreach { b: PaperBundle[C] =>
-        val numVotes = b.transferValue * b.numPapers
+    for (bundle <- paperBundles) {
+      val numVotes = bundle.transferValue * bundle.numPapers
 
-        val voteCount = VoteCount(
-          b.numPapers,
-          numVotes,
-        )
-
-        b.assignedCandidate match {
-          case Some(assignedCandidate) => votesPerCandidate(assignedCandidate) += voteCount
-          case None => exhaustedVotes += voteCount
+      bundle.assignedCandidate match {
+        case Some(assignedCandidate) => {
+          papersPerCandidate.adjustValue(assignedCandidate, bundle.numPapers.asLong)
+          votesPerCandidate.adjustValue(assignedCandidate, numVotes.asDouble)
         }
+        case None => exhaustedVotes += VoteCount(bundle.numPapers, numVotes)
       }
-
-    votesPerCandidate.transform { case (_, voteCount) =>
-      roundVotes(voteCount)
     }
+
+    val voteCountsPerCandidate = allCandidates
+      .map { candidate =>
+        val numPapers = NumPapers(papersPerCandidate.get(candidate))
+        val numVotes = NumVotes(votesPerCandidate.get(candidate))
+        val unroundedVoteCount = VoteCount(numPapers, numVotes)
+        candidate -> roundVotes(unroundedVoteCount)
+      }
+      .toMap
 
     exhaustedVotes = roundVotes(exhaustedVotes)
 
     CandidateVoteCounts(
-      perCandidate = votesPerCandidate.toMap,
+      perCandidate = voteCountsPerCandidate,
       exhausted = exhaustedVotes,
       roundingError = VoteCount.zero,
     )

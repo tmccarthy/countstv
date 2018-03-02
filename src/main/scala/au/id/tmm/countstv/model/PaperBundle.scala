@@ -58,6 +58,7 @@ final case class AssignedPaperBundle[C](
   override val hashCode: Int = preferenceTreeNode.hashCode()
 }
 
+// TODO track count too
 final case class ExhaustedPaperBundle[C](
                                           numPapers: NumPapers,
                                           transferValue: TransferValue,
