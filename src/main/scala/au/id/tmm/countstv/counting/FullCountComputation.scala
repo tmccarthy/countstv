@@ -52,21 +52,28 @@ object FullCountComputation {
     contextAfterIneligibles.flatMap(allCountStepsFrom)
   }
 
-  // TODO should find a way to do this without non-tail recursion
-  private def allCountStepsFrom[C](countContext: CountContext[C]): ProbabilityMeasure[List[CountStep[C]]] = {
+  private def allCountStepsFrom[C](originalContext: CountContext[C]): ProbabilityMeasure[List[CountStep[C]]] = {
 
-    if (countContext.allVacanciesNowFilled) {
-      logger.info(eventId = "ALL_VACANCIES_FILLED", "count" -> countContext.mostRecentCountStep.count.countNumber)
+    var currentContext = originalContext
 
-      ProbabilityMeasure.always(countContext.previousCountSteps)
-    } else {
+    while (!currentContext.allVacanciesNowFilled) {
+
       val newContext = computeContextAndLog {
-        DistributiveCountStepComputation.computeNextContext(countContext)
+        DistributiveCountStepComputation.computeNextContext(currentContext)
       }
 
-      newContext.flatMap(allCountStepsFrom)
+      // TODO dedicated method on ProbabilityMeasure for this
+      if (newContext.asMap.size == 1) {
+        currentContext = newContext.onlyOutcome
+      } else {
+        return newContext.flatMap(allCountStepsFrom) // TODO needs coverage
+      }
+
     }
 
+    logger.info(eventId = "ALL_VACANCIES_FILLED", "count" -> originalContext.mostRecentCountStep.count.countNumber)
+
+    ProbabilityMeasure.always(currentContext.previousCountSteps)
   }
 
   private def computeContextAndLog[C](
