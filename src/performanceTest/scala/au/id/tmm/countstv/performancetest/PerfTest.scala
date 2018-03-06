@@ -20,6 +20,7 @@ class PerfTest extends ImprovedFlatSpec {
       numIneligible = systemProperties.getOrElse("numIneligible", "3").toInt,
       numVacancies = systemProperties.getOrElse("numVacancies", "12").toInt,
       numBallots = systemProperties.getOrElse("numBallots", "10000").toInt,
+      numTimesToRunCount = systemProperties.getOrElse("numTimesToRunCount", "2").toInt,
     )
 
     println(prettyResults(result))

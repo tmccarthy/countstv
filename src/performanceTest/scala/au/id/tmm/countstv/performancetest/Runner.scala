@@ -18,6 +18,7 @@ object Runner {
                    numIneligible: Int,
                    numVacancies: Int,
                    numBallots: Int,
+                   numTimesToRunCount: Int = 1,
                  ): CandidateStatuses[Candidate] = {
     require(numIneligible < numCandidates)
 
@@ -37,15 +38,21 @@ object Runner {
           PreferenceTree.from(ballots)
         }
 
+    System.gc()
+
     logger.info("STARTED_COUNT")
 
-    LoggedEvent("RUN_COUNT")
-      .logWithTimeOnceFinished {
-        FullCountComputation.runCount(candidates, ineligibleCandidates, numVacancies, preferenceTree)
-          .onlyOutcome
-          .last
-          .candidateStatuses
-      }
+    (1 to numTimesToRunCount).foldLeft(None: Option[CandidateStatuses[Candidate]]) { (_, _) =>
+      Some(
+        LoggedEvent("RUN_COUNT")
+        .logWithTimeOnceFinished {
+          FullCountComputation.runCount(candidates, ineligibleCandidates, numVacancies, preferenceTree)
+            .onlyOutcome
+            .last
+            .candidateStatuses
+        }
+      )
+    }.get
   }
 
   private def generateCandidates(numCandidates: Int): Set[Candidate] = {
@@ -70,6 +77,8 @@ object Runner {
       }
   }
 
-  final case class Candidate(id: Int, name: String)
+  final case class Candidate(id: Int, name: String) {
+    @inline override def hashCode(): Int = id
+  }
 
 }

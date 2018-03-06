@@ -81,16 +81,6 @@ class PreferenceTreeSpec extends ImprovedFlatSpec {
     assert(preferenceTree.children.keySet === Set(Apple, Banana))
   }
 
-  it should "have no parent" in {
-    val preferenceTree = PreferenceTree.from(
-      Vector(Apple, Pear, Banana, Strawberry),
-      Vector(Apple, Banana, Strawberry, Pear),
-      Vector(Banana, Pear),
-    )
-
-    assert(preferenceTree.parent === None)
-  }
-
   it should "have a string representation" in {
     val preferenceTree = PreferenceTree.from(
       Vector(Apple, Pear, Banana, Strawberry),
@@ -122,33 +112,6 @@ class PreferenceTreeSpec extends ImprovedFlatSpec {
     assert(childNode.associatedCandidate === ballotWith4Preferences.head)
   }
 
-  it should "have a reference to its parent" in {
-    val preferenceTree = PreferenceTree.from(
-      Vector(Apple, Pear, Banana, Strawberry),
-      Vector(Apple, Banana, Strawberry, Pear),
-      Vector(Banana, Pear),
-    )
-
-    assert(preferenceTree.childFor(Apple).get.parent === Some(preferenceTree))
-  }
-
-  it should "have a path" in {
-    val preferenceTree = PreferenceTree.from(
-      Vector(Apple, Pear, Banana, Strawberry),
-      Vector(Apple, Banana, Strawberry, Pear),
-      Vector(Banana, Pear),
-    )
-
-    val expectedPath = List(
-      preferenceTree,
-      preferenceTree.childFor(Apple).get,
-      preferenceTree.childFor(Apple, Pear).get,
-      preferenceTree.childFor(Apple, Pear, Banana).get,
-    )
-
-    assert(preferenceTree.childFor(Apple, Pear, Banana).get.path === expectedPath)
-  }
-
   it should "have a string representation" in {
     val preferenceTree = PreferenceTree.from(
       Vector(Apple, Pear, Banana, Strawberry),
@@ -158,6 +121,6 @@ class PreferenceTreeSpec extends ImprovedFlatSpec {
 
     val childNode = preferenceTree.childFor(Apple, Pear, Banana).get
 
-    assert(childNode.toString === "PreferenceTreeNode(path=[Apple, Pear, Banana], NumPapers(1))")
+    assert(childNode.toString === "PreferenceTreeNode(numChildren=1, NumPapers(1))")
   }
 }

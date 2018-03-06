@@ -5,10 +5,11 @@ import au.id.tmm.countstv.counting._
 import au.id.tmm.countstv.model.CandidateDistributionReason._
 import au.id.tmm.countstv.model._
 import au.id.tmm.countstv.model.countsteps.{CountContext, DistributionCountStep}
-import au.id.tmm.countstv.model.values.{Count, Ordinal, TransferValueCoefficient}
+import au.id.tmm.countstv.model.values.{Count, Ordinal, TransferValue, TransferValueCoefficient}
 import au.id.tmm.utilities.collection.DupelessSeq
 
-import scala.collection.immutable.{Queue}
+import scala.collection.immutable.Queue
+import scala.collection.mutable
 
 // TODO the previous counts used for tie-breaking shouldn't include counts where we're continuing with a previous
 // distribution
@@ -127,16 +128,20 @@ object DistributiveCountStepComputation {
                                               distributionTransferValue: TransferValueCoefficient,
                                               oldPaperBundles: PaperBundles[C],
                                             ): CountContext.CurrentDistribution[C] = {
-    val bundlesToDistribute = oldPaperBundles
-      .toStream
-      .collect {
-        case b: AssignedPaperBundle[C] if b.assignedCandidate.contains(candidateToDistribute) => b
+    val bundlesPerTransferValue =
+      new mutable.TreeMap[TransferValue, mutable.Set[AssignedPaperBundle[C]]]()(TransferValue.ordering.reverse)
+
+    for (bundle <- oldPaperBundles) {
+      bundle match {
+        case b: AssignedPaperBundle[C] if b.assignedCandidate.contains(candidateToDistribute) =>
+          bundlesPerTransferValue.getOrElseUpdate(b.transferValue, mutable.Set.empty) += b
+        case _ =>
       }
-      .groupBy(_.transferValue)
-      .toStream
-      .sortBy { case (transferValue, bundles) => transferValue }
-      .map { case (transferValue, bundles) => bundles.toSet }
-      .reverse
+    }
+
+    val bundlesToDistribute = bundlesPerTransferValue
+      .valuesIterator
+      .map(_.toSet)
       .to[Queue]
 
     CountContext.CurrentDistribution[C](
