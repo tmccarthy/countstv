@@ -39,6 +39,7 @@ object IneligibleHandling {
       .map { case (candidate, paperBundles) =>
         candidate -> VoteCounting.performSimpleCount(allCandidates, paperBundles)
       }
+      .seq
 
     val newPaperBundles = oldPaperBundles.filterNot(_.assignedCandidate.exists(ineligibleCandidates.contains)) ++
       newPaperBundlesPerIneligibleCandidate.values.flatten

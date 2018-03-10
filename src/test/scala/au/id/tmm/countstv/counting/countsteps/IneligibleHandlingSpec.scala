@@ -9,6 +9,8 @@ import au.id.tmm.countstv.model.countsteps.AllocationAfterIneligibles
 import au.id.tmm.countstv.model.values.{Count, NumPapers, Ordinal, TransferValue}
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
+import scala.collection.parallel.immutable.ParSet
+
 class IneligibleHandlingSpec extends ImprovedFlatSpec {
 
   private val testPreferenceTree = PreferenceTree.from[Fruit](
@@ -131,7 +133,7 @@ class IneligibleHandlingSpec extends ImprovedFlatSpec {
             )
           )
         ),
-      paperBundles = Set[PaperBundle[Fruit]](
+      paperBundles = ParSet[PaperBundle[Fruit]](
         AssignedPaperBundle(TransferValue(1.0), testPreferenceTree.childFor(Apple).get, PaperBundle.Origin.InitialAllocation),
         AssignedPaperBundle(TransferValue(1.0), testPreferenceTree.childFor(Banana).get, PaperBundle.Origin.InitialAllocation),
         AssignedPaperBundle(TransferValue(1.0), testPreferenceTree.childFor(Pear).get, PaperBundle.Origin.InitialAllocation),

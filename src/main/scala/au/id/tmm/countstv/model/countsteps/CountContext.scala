@@ -7,6 +7,7 @@ import au.id.tmm.countstv.model.values.{NumPapers, NumVotes, TransferValueCoeffi
 import au.id.tmm.countstv.model.{AssignedPaperBundle, CandidateDistributionReason, CandidateStatuses, CandidateVoteCounts}
 
 import scala.collection.immutable.Queue
+import scala.collection.parallel.immutable.ParSet
 
 final case class CountContext[C] (
                                    numFormalPapers: NumPapers,
@@ -77,7 +78,7 @@ object CountContext {
   final case class CurrentDistribution[C](
                                            candidateBeingDistributed: C,
                                            distributionReason: CandidateDistributionReason,
-                                           bundlesToDistribute: Queue[Set[AssignedPaperBundle[C]]],
+                                           bundlesToDistribute: Queue[ParSet[AssignedPaperBundle[C]]],
                                            transferValueCoefficient: TransferValueCoefficient,
                                          ) {
     require(bundlesToDistribute.nonEmpty)

@@ -6,6 +6,8 @@ import au.id.tmm.countstv.model._
 import au.id.tmm.countstv.model.values._
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
+import scala.collection.parallel.immutable.ParSet
+
 class VoteCountingSpec extends ImprovedFlatSpec {
 
   private val testPreferenceTree = PreferenceTree.from[Fruit](
@@ -127,7 +129,7 @@ class VoteCountingSpec extends ImprovedFlatSpec {
       Strawberry -> CandidateStatus.Excluded(Ordinal.second, Count(3)),
     )
 
-    val paperBundles: Set[PaperBundle[Fruit]] = Set(
+    val paperBundles: ParSet[PaperBundle[Fruit]] = ParSet(
       AssignedPaperBundle(
         transferValue = TransferValue(0.666666666d),
         preferenceTreeNode = testPreferenceTree.childFor(Apple, Pear, Banana).get,

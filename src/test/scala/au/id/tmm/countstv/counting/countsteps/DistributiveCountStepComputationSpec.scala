@@ -10,6 +10,7 @@ import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
 import scala.annotation.tailrec
 import scala.collection.immutable.Queue
+import scala.collection.parallel.immutable.ParSet
 
 class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
 
@@ -454,7 +455,7 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
       candidateBeingDistributed = Raspberry,
       distributionReason = CandidateDistributionReason.Exclusion,
       bundlesToDistribute = Queue(
-        Set(
+        ParSet(
           AssignedPaperBundle(
             TransferValue(1d / 18d),
             testPreferenceTree.childFor(Watermelon, Apple, Raspberry).get,

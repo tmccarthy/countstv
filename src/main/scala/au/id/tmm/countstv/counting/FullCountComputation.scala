@@ -101,6 +101,7 @@ object FullCountComputation {
 
     loggedEvent.kvPairs += "count" -> countContext.mostRecentCountStep.count
     loggedEvent.kvPairs += "step_type" -> stepType
+    loggedEvent.kvPairs += "num_paper_bundles" -> countContext.paperBundles.size
 
     countContext.mostRecentCountStep match {
       case DistributionCountStep(_, _, _, Some(source)) => {

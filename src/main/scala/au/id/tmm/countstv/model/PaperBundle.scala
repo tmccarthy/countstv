@@ -5,6 +5,8 @@ import au.id.tmm.countstv.model.PaperBundle.Origin
 import au.id.tmm.countstv.model.PreferenceTree.PreferenceTreeNode
 import au.id.tmm.countstv.model.values.{Count, NumPapers, TransferValue, TransferValueCoefficient}
 
+import scala.collection.parallel.immutable.ParSet
+
 sealed trait PaperBundle[C] {
 
   def assignedCandidate: Option[C]
@@ -41,7 +43,11 @@ final case class RootPaperBundle[C](preferenceTree: PreferenceTree[C]) extends P
       )
     }
 
-    childBundles.toSet[PaperBundle[C]]
+    val builder = ParSet.newCombiner[PaperBundle[C]]
+
+    builder ++= childBundles
+
+    builder.result()
   }
 }
 
@@ -78,8 +84,8 @@ object PaperBundle {
                                           ): PaperBundles[C] = {
 
     bundle match {
-      case b: ExhaustedPaperBundle[C] => Set[PaperBundle[C]](b)
-      case b if b.assignedCandidate.exists(candidateStatuses.remainingCandidates.contains) => Set[PaperBundle[C]](b)
+      case b: ExhaustedPaperBundle[C] => ParSet[PaperBundle[C]](b)
+      case b if b.assignedCandidate.exists(candidateStatuses.remainingCandidates.contains) => ParSet[PaperBundle[C]](b)
       case b: AssignedPaperBundle[C] =>
         val nodesForDistributedBundles = childNodesAssignedToRemainingCandidates(
           b.preferenceTreeNode,
@@ -108,7 +114,7 @@ object PaperBundle {
 
     val bundlesDistributedToCandidates = nodesForDistributedBundles
       .map(childNode => AssignedPaperBundle(distributedTransferValue, childNode, origin))
-      .toSet
+      .to[ParSet]
 
     val exhaustedPaperBundle = {
       val numPapersDistributedToCandidates = bundlesDistributedToCandidates

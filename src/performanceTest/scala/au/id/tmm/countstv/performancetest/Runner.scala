@@ -19,7 +19,7 @@ object Runner {
                    numVacancies: Int,
                    numBallots: Int,
                    numTimesToRunCount: Int = 1,
-                 ): CandidateStatuses[Candidate] = {
+                 ): Option[CandidateStatuses[Candidate]] = {
     require(numIneligible < numCandidates)
 
     val candidates =
@@ -52,7 +52,7 @@ object Runner {
             .candidateStatuses
         }
       )
-    }.get
+    }
   }
 
   private def generateCandidates(numCandidates: Int): Set[Candidate] = {

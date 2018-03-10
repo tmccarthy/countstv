@@ -10,6 +10,7 @@ import au.id.tmm.utilities.collection.DupelessSeq
 
 import scala.collection.immutable.Queue
 import scala.collection.mutable
+import scala.collection.parallel.immutable.ParSet
 
 // TODO the previous counts used for tie-breaking shouldn't include counts where we're continuing with a previous
 // distribution
@@ -131,7 +132,7 @@ object DistributiveCountStepComputation {
     val bundlesPerTransferValue =
       new mutable.TreeMap[TransferValue, mutable.Set[AssignedPaperBundle[C]]]()(TransferValue.ordering.reverse)
 
-    for (bundle <- oldPaperBundles) {
+    for (bundle <- oldPaperBundles.seq) {
       bundle match {
         case b: AssignedPaperBundle[C] if b.assignedCandidate.contains(candidateToDistribute) =>
           bundlesPerTransferValue.getOrElseUpdate(b.transferValue, mutable.Set.empty) += b
@@ -141,7 +142,7 @@ object DistributiveCountStepComputation {
 
     val bundlesToDistribute = bundlesPerTransferValue
       .valuesIterator
-      .map(_.toSet)
+      .map(_.to[ParSet])
       .to[Queue]
 
     CountContext.CurrentDistribution[C](
@@ -180,7 +181,7 @@ object DistributiveCountStepComputation {
           )
         }
 
-      (countContext.paperBundles -- bundlesToDistributeNow) ++ newlyCreatedBundles
+      (countContext.paperBundles diff bundlesToDistributeNow.asInstanceOf[ParSet[PaperBundle[C]]]) union newlyCreatedBundles
     }
 
     val newCurrentDistribution = {
@@ -206,7 +207,8 @@ object DistributiveCountStepComputation {
       candidateBeingDistributed,
       distributionReason,
       sourceCounts = bundlesToDistributeNow
-        .map(_.origin.count),
+        .map(_.origin.count)
+        .seq,
       transferValue = currentDistribution.transferValueCoefficient * bundlesToDistributeNow.head.transferValue,
     )
 

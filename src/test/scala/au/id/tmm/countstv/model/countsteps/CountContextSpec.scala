@@ -9,6 +9,7 @@ import au.id.tmm.countstv.model.values._
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
 import scala.collection.immutable.Queue
+import scala.collection.parallel.immutable.ParSet
 
 class CountContextSpec extends ImprovedFlatSpec {
 
@@ -40,7 +41,7 @@ class CountContextSpec extends ImprovedFlatSpec {
   private val testContext = CountContext(
     numFormalPapers = NumPapers(40),
     numVacancies = 2,
-    paperBundles = Set.empty[PaperBundle[Fruit]],
+    paperBundles = ParSet.empty[PaperBundle[Fruit]],
     previousCountSteps = List(initialAllocation, allocationAfterIneligibles),
     currentDistribution = None,
   )
@@ -94,7 +95,7 @@ class CountContextSpec extends ImprovedFlatSpec {
         CountContext.CurrentDistribution(
           Apple,
           CandidateDistributionReason.Election,
-          Queue(Set[AssignedPaperBundle[Fruit]](testBundle)),
+          Queue(ParSet[AssignedPaperBundle[Fruit]](testBundle)),
           transferValueCoefficient = TransferValueCoefficient(1.0d),
         )
       )
@@ -155,7 +156,7 @@ class CountContextSpec extends ImprovedFlatSpec {
       CountContext(
         numFormalPapers = NumPapers(40),
         numVacancies = 2,
-        paperBundles = Set.empty[PaperBundle[Fruit]],
+        paperBundles = ParSet.empty[PaperBundle[Fruit]],
         previousCountSteps = List.empty,
         currentDistribution = None,
       )
@@ -216,7 +217,7 @@ class CountContextSpec extends ImprovedFlatSpec {
     val currentDistribution = CountContext.CurrentDistribution(
       Apple,
       CandidateDistributionReason.Election,
-      Queue(Set[AssignedPaperBundle[Fruit]](testBundle)),
+      Queue(ParSet[AssignedPaperBundle[Fruit]](testBundle)),
       transferValueCoefficient = TransferValueCoefficient(1.0d),
     )
 
@@ -227,7 +228,7 @@ class CountContextSpec extends ImprovedFlatSpec {
     val currentDistribution = CountContext.CurrentDistribution(
       Apple,
       CandidateDistributionReason.Exclusion,
-      Queue(Set[AssignedPaperBundle[Fruit]](testBundle)),
+      Queue(ParSet[AssignedPaperBundle[Fruit]](testBundle)),
       transferValueCoefficient = TransferValueCoefficient(1.0d),
     )
 

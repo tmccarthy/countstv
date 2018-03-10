@@ -3,7 +3,6 @@ package au.id.tmm.countstv.counting
 import au.id.tmm.countstv.PaperBundles
 import au.id.tmm.countstv.model._
 import au.id.tmm.countstv.model.values.{NumPapers, NumVotes}
-import gnu.trove.map.hash.{TObjectDoubleHashMap, TObjectLongHashMap}
 
 object VoteCounting {
   def countVotes[C](
@@ -46,45 +45,82 @@ object VoteCounting {
                              paperBundles: PaperBundles[C],
                            ): CandidateVoteCounts[C] = {
 
-    val papersPerCandidate = new TObjectLongHashMap[C](allCandidates.size)
-    val votesPerCandidate = new TObjectDoubleHashMap[C](allCandidates.size)
+    val interimCount = paperBundles
+      .aggregate[InterimCount[C]](InterimCount[C]())(
+      (countSoFar, bundle) => {
+        val numVotes = bundle.transferValue * bundle.numPapers
 
-    allCandidates
-      .foreach { candidate =>
-        papersPerCandidate.put(candidate, 0)
-        votesPerCandidate.put(candidate, 0)
-      }
+        bundle.assignedCandidate match {
+          case Some(candidate) => {
+            val oldVoteCount = countSoFar.perCandidate.getOrElse(candidate, InterimVoteCount())
 
-    var exhaustedVotes: VoteCount = VoteCount.zero
+            val newVoteCount = InterimVoteCount(
+              numPapers = oldVoteCount.numPapers + bundle.numPapers.asLong,
+              numVotes = oldVoteCount.numVotes + numVotes.asDouble
+            )
 
-    for (bundle <- paperBundles) {
-      val numVotes = bundle.transferValue * bundle.numPapers
+            val newPerCandidate = countSoFar.perCandidate.updated(candidate, newVoteCount)
 
-      bundle.assignedCandidate match {
-        case Some(assignedCandidate) => {
-          papersPerCandidate.adjustValue(assignedCandidate, bundle.numPapers.asLong)
-          votesPerCandidate.adjustValue(assignedCandidate, numVotes.asDouble)
+            countSoFar.copy(perCandidate = newPerCandidate)
+          }
+          case None => {
+            countSoFar.copy(
+              exhausted = InterimVoteCount(
+                numPapers = countSoFar.exhausted.numPapers + bundle.numPapers.asLong,
+                numVotes = countSoFar.exhausted.numVotes + numVotes.asDouble,
+              )
+            )
+          }
         }
-        case None => exhaustedVotes += VoteCount(bundle.numPapers, numVotes)
-      }
+      },
+      _ combineWith _,
+    )
+
+    interimCount.toCandidateVoteCounts(allCandidates)
+  }
+
+  private final case class InterimVoteCount(numPapers: Long = 0, numVotes: Double = 0d) {
+    def combineWith(that: InterimVoteCount): InterimVoteCount =
+      InterimVoteCount(this.numPapers + that.numPapers, this.numVotes + that.numVotes)
+
+    def toVoteCount: VoteCount = VoteCount(NumPapers(numPapers), NumVotes(numVotes).roundedDown)
+  }
+
+  private final case class InterimCount[C](
+                                            perCandidate: Map[C, InterimVoteCount] = Map.empty[C, InterimVoteCount],
+                                            exhausted: InterimVoteCount = InterimVoteCount(),
+                                          ) {
+
+    def combineWith(that: InterimCount[C]): InterimCount[C] = {
+      InterimCount(
+        perCandidate =
+          (this.perCandidate.keys ++ that.perCandidate.keys)
+            .toStream
+            .distinct
+            .map { candidate =>
+              val newInterimCount =
+                this.perCandidate.getOrElse(candidate, InterimVoteCount()) combineWith
+                  that.perCandidate.getOrElse(candidate, InterimVoteCount())
+
+              candidate -> newInterimCount
+            }
+            .toMap,
+        exhausted = this.exhausted combineWith that.exhausted,
+      )
     }
 
-    val voteCountsPerCandidate = allCandidates
-      .map { candidate =>
-        val numPapers = NumPapers(papersPerCandidate.get(candidate))
-        val numVotes = NumVotes(votesPerCandidate.get(candidate))
-        val unroundedVoteCount = VoteCount(numPapers, numVotes)
-        candidate -> roundVotes(unroundedVoteCount)
-      }
-      .toMap
-
-    exhaustedVotes = roundVotes(exhaustedVotes)
-
-    CandidateVoteCounts(
-      perCandidate = voteCountsPerCandidate,
-      exhausted = exhaustedVotes,
+    def toCandidateVoteCounts(allCandidates: Set[C]): CandidateVoteCounts[C] = CandidateVoteCounts(
+      perCandidate = {
+        allCandidates
+          .map { candidate =>
+            candidate -> this.perCandidate.getOrElse(candidate, InterimVoteCount()).toVoteCount
+          }
+          .toMap
+      },
+      exhausted = this.exhausted.toVoteCount,
       roundingError = VoteCount.zero,
     )
+
   }
 
   private def roundVotes(voteCount: VoteCount): VoteCount = voteCount.copy(numVotes = voteCount.numVotes.roundedDown)
