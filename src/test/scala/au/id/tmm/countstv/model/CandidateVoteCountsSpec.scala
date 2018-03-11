@@ -15,7 +15,7 @@ class CandidateVoteCountsSpec extends ImprovedFlatSpec {
       Strawberry -> VoteCount(0),
     ),
     exhausted = VoteCount(42),
-    roundingError = VoteCount(NumPapers(0), NumVotes(13.4d)),
+    roundingError = VoteCount(NumPapers(0), NumVotes(13)),
   )
 
   "a collection of candidate vote counts" should "store the number of exhausted votes" in {
@@ -23,7 +23,7 @@ class CandidateVoteCountsSpec extends ImprovedFlatSpec {
   }
 
   it should "store the votes gained or lost due to rounding" in {
-    assert(testCandidateVoteCounts.roundingError === VoteCount(NumPapers(0), NumVotes(13.4d)))
+    assert(testCandidateVoteCounts.roundingError === VoteCount(NumPapers(0), NumVotes(13)))
   }
 
   it should "store the votes per candidate" in {

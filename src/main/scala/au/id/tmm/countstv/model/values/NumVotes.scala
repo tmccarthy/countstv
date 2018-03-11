@@ -1,22 +1,22 @@
 package au.id.tmm.countstv.model.values
 
-// TODO there should be a way to make this an integral type
-final case class NumVotes(asDouble: Double) extends AnyVal {
+final case class NumVotes(asLong: Long) extends AnyVal {
 
-  def roundedDown: NumVotes = NumVotes(math.floor(asDouble))
+  def + (that: NumVotes): NumVotes = NumVotes(this.asLong + that.asLong)
 
-  def + (that: NumVotes): NumVotes = NumVotes(this.asDouble + that.asDouble)
+  def - (that: NumVotes): NumVotes = NumVotes(this.asLong - that.asLong)
 
-  def - (that: NumVotes): NumVotes = NumVotes(this.asDouble - that.asDouble)
-
-  def >(that: NumVotes): Boolean = this.asDouble > that.asDouble
-  def >=(that: NumVotes): Boolean = this.asDouble >= that.asDouble
-  def <=(that: NumVotes): Boolean = this.asDouble <= that.asDouble
-  def <(that: NumVotes): Boolean = this.asDouble < that.asDouble
+  def >(that: NumVotes): Boolean = this.asLong > that.asLong
+  def >=(that: NumVotes): Boolean = this.asLong >= that.asLong
+  def <=(that: NumVotes): Boolean = this.asLong <= that.asLong
+  def <(that: NumVotes): Boolean = this.asLong < that.asLong
 
 }
 
 object NumVotes {
+
+  def byRoundingDown(asDouble: Double): NumVotes = NumVotes(math.floor(asDouble).toLong)
+
   implicit val ordering: Ordering[NumVotes] = (x: NumVotes, y: NumVotes) => {
     if (x > y) {
       1

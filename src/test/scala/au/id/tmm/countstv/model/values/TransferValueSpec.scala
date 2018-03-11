@@ -4,11 +4,7 @@ import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
 class TransferValueSpec extends ImprovedFlatSpec {
 
-  "a transfer value" can "be multipled by a number of ballots to get a number of votes" in {
-    assert(TransferValue(0.7d) * NumPapers(100) === NumVotes(70d))
-  }
-
-  it can "be compared to another" in {
+  "a transfer value" can "be compared to another" in {
     assert(TransferValue(0.5) > TransferValue(0.4))
     assert(!(TransferValue(0.4) > TransferValue(0.5)))
 

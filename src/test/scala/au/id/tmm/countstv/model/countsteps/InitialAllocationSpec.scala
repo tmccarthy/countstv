@@ -17,13 +17,13 @@ class InitialAllocationSpec extends ImprovedFlatSpec {
     ),
     candidateVoteCounts = CandidateVoteCounts[Fruit](
       perCandidate = Map(
-        Apple -> VoteCount(NumPapers(32), NumVotes(42d)),
-        Banana -> VoteCount(NumPapers(32), NumVotes(42d)),
-        Pear -> VoteCount(NumPapers(32), NumVotes(42d)),
-        Strawberry -> VoteCount(NumPapers(32), NumVotes(42d)),
+        Apple -> VoteCount(NumPapers(32), NumVotes(42)),
+        Banana -> VoteCount(NumPapers(32), NumVotes(42)),
+        Pear -> VoteCount(NumPapers(32), NumVotes(42)),
+        Strawberry -> VoteCount(NumPapers(32), NumVotes(42)),
       ),
-      exhausted = VoteCount(NumPapers(0), NumVotes(0d)),
-      roundingError = VoteCount(NumPapers(0), NumVotes(0d)),
+      exhausted = VoteCount(NumPapers(0), NumVotes(0)),
+      roundingError = VoteCount(NumPapers(0), NumVotes(0)),
     )
   )
 

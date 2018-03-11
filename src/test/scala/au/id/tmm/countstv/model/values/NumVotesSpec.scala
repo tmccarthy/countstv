@@ -4,8 +4,8 @@ import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
 class NumVotesSpec extends ImprovedFlatSpec {
 
-  "a number of votes" can "be rounded down" in {
-    assert(NumVotes(42.42d).roundedDown === NumVotes(42.0d))
+  "a number of votes" can "be built from a rounded down float" in {
+    assert(NumVotes.byRoundingDown(42.42d) === NumVotes(42))
   }
 
   it can "be added to another" in {

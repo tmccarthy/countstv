@@ -350,16 +350,16 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
       ),
       candidateVoteCounts = CandidateVoteCounts[Fruit](
         perCandidate = Map(
-          Apple -> VoteCount(NumPapers(18), NumVotes(18.0)),
-          Banana -> VoteCount(NumPapers(0), NumVotes(0.0)),
-          Mango -> VoteCount(NumPapers(11), NumVotes(11.0)),
-          Pear -> VoteCount(NumPapers(11), NumVotes(11.0)),
-          Raspberry -> VoteCount(NumPapers(10), NumVotes(10.0)),
-          Strawberry -> VoteCount(NumPapers(0), NumVotes(0.0)),
-          Watermelon -> VoteCount(NumPapers(0), NumVotes(0.0)),
+          Apple -> VoteCount(NumPapers(18), NumVotes(18)),
+          Banana -> VoteCount(NumPapers(0), NumVotes(0)),
+          Mango -> VoteCount(NumPapers(11), NumVotes(11)),
+          Pear -> VoteCount(NumPapers(11), NumVotes(11)),
+          Raspberry -> VoteCount(NumPapers(10), NumVotes(10)),
+          Strawberry -> VoteCount(NumPapers(0), NumVotes(0)),
+          Watermelon -> VoteCount(NumPapers(0), NumVotes(0)),
         ),
         exhausted = VoteCount.zero,
-        roundingError = VoteCount(NumPapers(0), NumVotes(0.0))
+        roundingError = VoteCount(NumPapers(0), NumVotes(0))
       ),
       distributionSource = Some(DistributionCountStep.Source(
         Banana,
@@ -388,16 +388,16 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
       ),
       candidateVoteCounts = CandidateVoteCounts[Fruit](
         perCandidate = Map(
-          Apple -> VoteCount(NumPapers(0), NumVotes(17.0)),
-          Banana -> VoteCount(NumPapers(0), NumVotes(0.0)),
-          Mango -> VoteCount(NumPapers(16), NumVotes(11.0)),
-          Pear -> VoteCount(NumPapers(17), NumVotes(11.0)),
-          Raspberry -> VoteCount(NumPapers(17), NumVotes(10.0)),
-          Strawberry -> VoteCount(NumPapers(0), NumVotes(0.0)),
-          Watermelon -> VoteCount(NumPapers(0), NumVotes(0.0)),
+          Apple -> VoteCount(NumPapers(0), NumVotes(17)),
+          Banana -> VoteCount(NumPapers(0), NumVotes(0)),
+          Mango -> VoteCount(NumPapers(16), NumVotes(11)),
+          Pear -> VoteCount(NumPapers(17), NumVotes(11)),
+          Raspberry -> VoteCount(NumPapers(17), NumVotes(10)),
+          Strawberry -> VoteCount(NumPapers(0), NumVotes(0)),
+          Watermelon -> VoteCount(NumPapers(0), NumVotes(0)),
         ),
         exhausted = VoteCount.zero,
-        roundingError = VoteCount(NumPapers(0), NumVotes(-1.0))
+        roundingError = VoteCount(NumPapers(0), NumVotes(-1))
       ),
       distributionSource = Some(DistributionCountStep.Source(
         Apple,
@@ -426,16 +426,16 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
       ),
       candidateVoteCounts = CandidateVoteCounts[Fruit](
         perCandidate = Map(
-          Apple -> VoteCount(NumPapers(0), NumVotes(17.0)),
-          Banana -> VoteCount(NumPapers(0), NumVotes(0.0)),
-          Mango -> VoteCount(NumPapers(21), NumVotes(16.0)),
-          Pear -> VoteCount(NumPapers(22), NumVotes(16.0)),
-          Raspberry -> VoteCount(NumPapers(7), NumVotes(0.0)),
-          Strawberry -> VoteCount(NumPapers(0), NumVotes(0.0)),
-          Watermelon -> VoteCount(NumPapers(0), NumVotes(0.0)),
+          Apple -> VoteCount(NumPapers(0), NumVotes(17)),
+          Banana -> VoteCount(NumPapers(0), NumVotes(0)),
+          Mango -> VoteCount(NumPapers(21), NumVotes(16)),
+          Pear -> VoteCount(NumPapers(22), NumVotes(16)),
+          Raspberry -> VoteCount(NumPapers(7), NumVotes(0)),
+          Strawberry -> VoteCount(NumPapers(0), NumVotes(0)),
+          Watermelon -> VoteCount(NumPapers(0), NumVotes(0)),
         ),
         exhausted = VoteCount.zero,
-        roundingError = VoteCount(NumPapers(0), NumVotes(-1.0))
+        roundingError = VoteCount(NumPapers(0), NumVotes(-1))
       ),
       distributionSource = Some(DistributionCountStep.Source(
         Raspberry,
@@ -509,16 +509,16 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
       ),
       candidateVoteCounts = CandidateVoteCounts[Fruit](
         perCandidate = Map(
-          Apple -> VoteCount(NumPapers(0), NumVotes(17.0)),
-          Banana -> VoteCount(NumPapers(0), NumVotes(0.0)),
-          Mango -> VoteCount(NumPapers(25), NumVotes(16.0)),
-          Pear -> VoteCount(NumPapers(25), NumVotes(16.0)),
-          Raspberry -> VoteCount(NumPapers(0), NumVotes(0.0)),
-          Strawberry -> VoteCount(NumPapers(0), NumVotes(0.0)),
-          Watermelon -> VoteCount(NumPapers(0), NumVotes(0.0)),
+          Apple -> VoteCount(NumPapers(0), NumVotes(17)),
+          Banana -> VoteCount(NumPapers(0), NumVotes(0)),
+          Mango -> VoteCount(NumPapers(25), NumVotes(16)),
+          Pear -> VoteCount(NumPapers(25), NumVotes(16)),
+          Raspberry -> VoteCount(NumPapers(0), NumVotes(0)),
+          Strawberry -> VoteCount(NumPapers(0), NumVotes(0)),
+          Watermelon -> VoteCount(NumPapers(0), NumVotes(0)),
         ),
         exhausted = VoteCount.zero,
-        roundingError = VoteCount(NumPapers(0), NumVotes(-1.0))
+        roundingError = VoteCount(NumPapers(0), NumVotes(-1))
       ),
       distributionSource = Some(DistributionCountStep.Source(
         Raspberry,
@@ -547,16 +547,16 @@ class DistributiveCountStepComputationSpec extends ImprovedFlatSpec {
       ),
       candidateVoteCounts = CandidateVoteCounts[Fruit](
         perCandidate = Map(
-          Apple -> VoteCount(NumPapers(0), NumVotes(17.0)),
-          Banana -> VoteCount(NumPapers(0), NumVotes(0.0)),
-          Mango -> VoteCount(NumPapers(25), NumVotes(16.0)),
-          Pear -> VoteCount(NumPapers(25), NumVotes(16.0)),
-          Raspberry -> VoteCount(NumPapers(0), NumVotes(0.0)),
-          Strawberry -> VoteCount(NumPapers(0), NumVotes(0.0)),
-          Watermelon -> VoteCount(NumPapers(0), NumVotes(0.0)),
+          Apple -> VoteCount(NumPapers(0), NumVotes(17)),
+          Banana -> VoteCount(NumPapers(0), NumVotes(0)),
+          Mango -> VoteCount(NumPapers(25), NumVotes(16)),
+          Pear -> VoteCount(NumPapers(25), NumVotes(16)),
+          Raspberry -> VoteCount(NumPapers(0), NumVotes(0)),
+          Strawberry -> VoteCount(NumPapers(0), NumVotes(0)),
+          Watermelon -> VoteCount(NumPapers(0), NumVotes(0)),
         ),
         exhausted = VoteCount.zero,
-        roundingError = VoteCount(NumPapers(0), NumVotes(-1.0))
+        roundingError = VoteCount(NumPapers(0), NumVotes(-1))
       ),
       distributionSource = None,
     )

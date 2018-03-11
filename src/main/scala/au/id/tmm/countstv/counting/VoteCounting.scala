@@ -48,7 +48,7 @@ object VoteCounting {
     val interimCount = paperBundles
       .aggregate[InterimCount[C]](InterimCount[C]())(
       (countSoFar, bundle) => {
-        val numVotes = bundle.transferValue * bundle.numPapers
+        val numVotes = bundle.transferValue.factor * bundle.numPapers.asLong
 
         bundle.assignedCandidate match {
           case Some(candidate) => {
@@ -56,7 +56,7 @@ object VoteCounting {
 
             val newVoteCount = InterimVoteCount(
               numPapers = oldVoteCount.numPapers + bundle.numPapers.asLong,
-              numVotes = oldVoteCount.numVotes + numVotes.asDouble
+              numVotes = oldVoteCount.numVotes + numVotes
             )
 
             val newPerCandidate = countSoFar.perCandidate.updated(candidate, newVoteCount)
@@ -67,7 +67,7 @@ object VoteCounting {
             countSoFar.copy(
               exhausted = InterimVoteCount(
                 numPapers = countSoFar.exhausted.numPapers + bundle.numPapers.asLong,
-                numVotes = countSoFar.exhausted.numVotes + numVotes.asDouble,
+                numVotes = countSoFar.exhausted.numVotes + numVotes,
               )
             )
           }
@@ -83,7 +83,7 @@ object VoteCounting {
     def combineWith(that: InterimVoteCount): InterimVoteCount =
       InterimVoteCount(this.numPapers + that.numPapers, this.numVotes + that.numVotes)
 
-    def toVoteCount: VoteCount = VoteCount(NumPapers(numPapers), NumVotes(numVotes).roundedDown)
+    def toVoteCount: VoteCount = VoteCount(NumPapers(numPapers), NumVotes.byRoundingDown(numVotes))
   }
 
   private final case class InterimCount[C](

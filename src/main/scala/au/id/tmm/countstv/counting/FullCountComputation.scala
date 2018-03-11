@@ -65,7 +65,7 @@ object FullCountComputation {
       if (newContext.hasOnlyOneOutcome) {
         currentContext = newContext.onlyOutcome
       } else {
-        return newContext.flatMap(allCountStepsFrom) // TODO needs coverage
+        return newContext.flatMap(allCountStepsFrom)
       }
 
     }

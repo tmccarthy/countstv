@@ -5,8 +5,6 @@ package au.id.tmm.countstv.model.values
   */
 final case class TransferValue(factor: Double) extends AnyVal {
 
-  def * (numBallots: NumPapers): NumVotes = NumVotes(factor * numBallots.asLong)
-
   def >(that: TransferValue): Boolean = this.factor > that.factor
   def >=(that: TransferValue): Boolean = this.factor >= that.factor
   def <=(that: TransferValue): Boolean = this.factor <= that.factor

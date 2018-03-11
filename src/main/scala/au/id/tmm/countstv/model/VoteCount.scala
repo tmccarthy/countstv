@@ -17,7 +17,7 @@ final case class VoteCount(numPapers: NumPapers, numVotes: NumVotes) {
 }
 
 object VoteCount {
-  val zero: VoteCount = VoteCount(NumPapers(0), NumVotes(0d))
+  val zero: VoteCount = VoteCount(NumPapers(0), NumVotes(0))
 
   def apply(numVotesAndPapers: Long): VoteCount = VoteCount(NumPapers(numVotesAndPapers), NumVotes(numVotesAndPapers))
 }
