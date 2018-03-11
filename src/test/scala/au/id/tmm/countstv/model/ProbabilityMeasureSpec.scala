@@ -135,6 +135,10 @@ class ProbabilityMeasureSpec extends ImprovedFlatSpec {
     assert(ProbabilityMeasure.always(Apple).onlyOutcome === Apple)
   }
 
+  it should "have only one outcome" in {
+    assert(ProbabilityMeasure.always(Apple).hasOnlyOneOutcome)
+  }
+
   it should "have a sensible toString" in {
     val probabilityMeasure = ProbabilityMeasure.always(Apple)
     val expected = "ProbabilityMeasure(Apple -> always)"
@@ -148,6 +152,10 @@ class ProbabilityMeasureSpec extends ImprovedFlatSpec {
 
   it should "not be equal to another possibility" in {
     assert(ProbabilityMeasure.always(Apple) !== ProbabilityMeasure.always(Banana))
+  }
+
+  "a probability measure with many possibilities" should "not have one outcome" in {
+    assert(!ProbabilityMeasure.evenly(Apple, Banana).hasOnlyOneOutcome)
   }
 
   "a possibility" must "have a positive probability" in {

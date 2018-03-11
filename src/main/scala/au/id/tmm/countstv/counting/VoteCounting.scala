@@ -122,6 +122,4 @@ object VoteCounting {
     )
 
   }
-
-  private def roundVotes(voteCount: VoteCount): VoteCount = voteCount.copy(numVotes = voteCount.numVotes.roundedDown)
 }

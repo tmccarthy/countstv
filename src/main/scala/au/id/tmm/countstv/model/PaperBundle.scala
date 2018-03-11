@@ -15,9 +15,10 @@ sealed trait PaperBundle[C] {
 
   def distributeToRemainingCandidates(
                                        origin: Origin[C],
+                                       count: Count,
                                        candidateStatuses: CandidateStatuses[C],
                                      ): PaperBundles[C] =
-    PaperBundle.distributeIfCandidateNotRemaining(this, origin, candidateStatuses)
+    PaperBundle.distributeIfCandidateNotRemaining(this, origin, count, candidateStatuses)
 
   def numPapers: NumPapers
 
@@ -64,11 +65,11 @@ final case class AssignedPaperBundle[C](
   override val hashCode: Int = preferenceTreeNode.hashCode()
 }
 
-// TODO track count too
 final case class ExhaustedPaperBundle[C](
                                           numPapers: NumPapers,
                                           transferValue: TransferValue,
                                           origin: Origin[C],
+                                          exhaustedAtCount: Count,
                                         ) extends PaperBundle[C] {
   override def assignedCandidate: Option[C] = None
 }
@@ -80,6 +81,7 @@ object PaperBundle {
   def distributeIfCandidateNotRemaining[C](
                                             bundle: PaperBundle[C],
                                             origin: Origin[C],
+                                            count: Count,
                                             candidateStatuses: CandidateStatuses[C],
                                           ): PaperBundles[C] = {
 
@@ -92,17 +94,18 @@ object PaperBundle {
           candidateStatuses.remainingCandidates,
         )
 
-        distributeToRemainingCandidates(b, origin, nodesForDistributedBundles)
+        distributeToRemainingCandidates(b, origin, count, nodesForDistributedBundles)
       case b: RootPaperBundle[C] =>
         val nodesForDistributedBundles = b.preferenceTree.children.valuesIterator
 
-        distributeToRemainingCandidates(b, origin, nodesForDistributedBundles)
+        distributeToRemainingCandidates(b, origin, count, nodesForDistributedBundles)
     }
   }
 
   private def distributeToRemainingCandidates[C](
                                                   bundle: PaperBundle[C],
                                                   origin: Origin[C],
+                                                  count: Count,
                                                   nodesForDistributedBundles: Iterator[PreferenceTreeNode[C]],
                                                 ): PaperBundles[C] = {
 
@@ -129,6 +132,7 @@ object PaperBundle {
           numPapers = numExhaustedPapers,
           transferValue = distributedTransferValue,
           origin = origin,
+          exhaustedAtCount = count,
         ))
       } else {
         None

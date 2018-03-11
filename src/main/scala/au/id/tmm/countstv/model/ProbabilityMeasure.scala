@@ -15,13 +15,15 @@ sealed trait ProbabilityMeasure[A] {
 
   def onlyOutcome: A
 
+  def hasOnlyOneOutcome: Boolean
+
   override def toString: String = {
     val asMap = this.asMap
 
     val className = classOf[ProbabilityMeasure[Any]].getSimpleName
 
     val possibilityList = {
-      if (asMap.size == 1) {
+      if (hasOnlyOneOutcome) {
         s"${asMap.keys.head} -> always"
       } else {
         asMap.map { case (possibility, probability) =>
@@ -86,6 +88,8 @@ object ProbabilityMeasure {
     override def anyOutcome: A = outcome
 
     override def onlyOutcome: A = outcome
+
+    override def hasOnlyOneOutcome: Boolean = true
   }
 
   private final class Varied[A](val asMap: Map[A, Rational]) extends ProbabilityMeasure[A] {
@@ -114,5 +118,7 @@ object ProbabilityMeasure {
     override def anyOutcome: A = asMap.keys.head
 
     override def onlyOutcome: A = throw new IllegalStateException()
+
+    override def hasOnlyOneOutcome: Boolean = false
   }
 }

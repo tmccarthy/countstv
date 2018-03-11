@@ -177,6 +177,7 @@ object DistributiveCountStepComputation {
         .flatMap { bundle =>
           bundle.distributeToRemainingCandidates(
             distributionOrigin,
+            count,
             countContext.candidateStatuses,
           )
         }

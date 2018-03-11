@@ -54,7 +54,11 @@ class IneligibleHandlingSpec extends ImprovedFlatSpec {
     )
 
     val paperBundles = PaperBundle.rootBundleFor[Fruit](testPreferenceTree)
-      .distributeToRemainingCandidates(PaperBundle.Origin.InitialAllocation, candidateStatuses)
+      .distributeToRemainingCandidates(
+        PaperBundle.Origin.InitialAllocation,
+        Count(1),
+        candidateStatuses,
+      )
 
     val initialContext = InitialAllocationComputation.computeInitialContext[Fruit](
       candidateStatuses,
@@ -140,7 +144,7 @@ class IneligibleHandlingSpec extends ImprovedFlatSpec {
         AssignedPaperBundle(TransferValue(1.0), testPreferenceTree.childFor(Strawberry, Apple).get, PaperBundle.Origin.IneligibleCandidate(Strawberry)),
         AssignedPaperBundle(TransferValue(1.0), testPreferenceTree.childFor(Strawberry, Banana).get, PaperBundle.Origin.IneligibleCandidate(Strawberry)),
         AssignedPaperBundle(TransferValue(1.0), testPreferenceTree.childFor(Strawberry, Pear).get, PaperBundle.Origin.IneligibleCandidate(Strawberry)),
-        ExhaustedPaperBundle[Fruit](NumPapers(1), TransferValue(1.0), PaperBundle.Origin.IneligibleCandidate(Strawberry)),
+        ExhaustedPaperBundle[Fruit](NumPapers(1), TransferValue(1.0), PaperBundle.Origin.IneligibleCandidate(Strawberry), Count(1)),
       ),
     )
 

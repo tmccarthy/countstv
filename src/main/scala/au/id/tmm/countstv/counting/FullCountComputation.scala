@@ -62,8 +62,7 @@ object FullCountComputation {
         DistributiveCountStepComputation.computeNextContext(currentContext)
       }
 
-      // TODO dedicated method on ProbabilityMeasure for this
-      if (newContext.asMap.size == 1) {
+      if (newContext.hasOnlyOneOutcome) {
         currentContext = newContext.onlyOutcome
       } else {
         return newContext.flatMap(allCountStepsFrom) // TODO needs coverage

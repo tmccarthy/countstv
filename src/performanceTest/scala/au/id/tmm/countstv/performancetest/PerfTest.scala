@@ -3,7 +3,6 @@ package au.id.tmm.countstv.performancetest
 import au.id.tmm.countstv.model.CandidateStatuses
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
-import scala.io.StdIn
 import scala.sys.SystemProperties
 
 class PerfTest extends ImprovedFlatSpec {
@@ -25,8 +24,6 @@ class PerfTest extends ImprovedFlatSpec {
     )
 
     result.map(prettyResults).foreach(println)
-
-    StdIn.readLine() // TODO rm
   }
 
   private def prettyResults(results: CandidateStatuses[Runner.Candidate]): String = {

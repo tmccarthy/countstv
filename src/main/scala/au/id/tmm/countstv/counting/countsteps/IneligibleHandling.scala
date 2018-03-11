@@ -8,6 +8,8 @@ import au.id.tmm.countstv.model.values.{Count, NumVotes, Ordinal}
 object IneligibleHandling {
 
   def computeContextAfterIneligibles[C](previousContext: CountContext[C]): ProbabilityMeasure[CountContext[C]] = {
+    val count = Count(1)
+
     val initialNumPapers = previousContext.numFormalPapers
     val numVacancies = previousContext.numVacancies
     val quota = previousContext.quota
@@ -29,7 +31,7 @@ object IneligibleHandling {
         val distributionOrigin = PaperBundle.Origin.IneligibleCandidate(ineligibleCandidate)
 
         val paperBundlesAfterDistribution = paperBundlesForIneligibleCandidate.flatMap { paperBundle =>
-          paperBundle.distributeToRemainingCandidates(distributionOrigin, oldCandidateStatuses)
+          paperBundle.distributeToRemainingCandidates(distributionOrigin, count, oldCandidateStatuses)
         }
 
         ineligibleCandidate -> paperBundlesAfterDistribution

@@ -59,6 +59,7 @@ class PaperBundleSpec extends ImprovedFlatSpec {
       numPapers = NumPapers(10),
       transferValue = TransferValue(0.5d),
       origin = PaperBundle.Origin.InitialAllocation,
+      exhaustedAtCount = Count(1),
     )
 
     assert(paperBundle.assignedCandidate === None)
@@ -89,7 +90,7 @@ class PaperBundleSpec extends ImprovedFlatSpec {
 
     val origin = PaperBundle.Origin.IneligibleCandidate(originalCandidate)
 
-    val actualBundlesAfterDistribution = originalBundle.distributeToRemainingCandidates(origin, candidateStatuses)
+    val actualBundlesAfterDistribution = originalBundle.distributeToRemainingCandidates(origin, Count(1), candidateStatuses)
 
     if (expectBundleUnchanged) {
       assert(actualBundlesAfterDistribution === Set[PaperBundle[Fruit]](originalBundle))
@@ -175,13 +176,14 @@ class PaperBundleSpec extends ImprovedFlatSpec {
 
     val origin = PaperBundle.Origin.ExcludedCandidate(Pear, Count(2))
 
-    val actualBundlesAfterDistribution = originalBundle.distributeToRemainingCandidates(origin, candidateStatuses)
+    val actualBundlesAfterDistribution = originalBundle.distributeToRemainingCandidates(origin, Count(2), candidateStatuses)
 
     val expectedBundlesAfterDistribution = Set[PaperBundle[Fruit]](
       ExhaustedPaperBundle[Fruit](
         numPapers = NumPapers(1),
         transferValue = TransferValue(1d),
         origin = origin,
+        exhaustedAtCount = Count(2),
       ),
     )
 
@@ -205,7 +207,7 @@ class PaperBundleSpec extends ImprovedFlatSpec {
     val transferValueCoefficient = TransferValueCoefficient(0.7d)
     val origin = PaperBundle.Origin.ElectedCandidate(Apple, transferValueCoefficient, Count(1))
 
-    val actualBundlesAfterDistribution = originalBundle.distributeToRemainingCandidates(origin, candidateStatuses)
+    val actualBundlesAfterDistribution = originalBundle.distributeToRemainingCandidates(origin, Count(1), candidateStatuses)
 
     val expectedBundlesAfterDistribution = Set[PaperBundle[Fruit]](
       AssignedPaperBundle(
@@ -235,12 +237,13 @@ class PaperBundleSpec extends ImprovedFlatSpec {
       numPapers = NumPapers(1),
       transferValue = TransferValue(1d),
       origin = IneligibleCandidate(Banana),
+      exhaustedAtCount = Count(1),
     )
 
     val origin: PaperBundle.Origin[Fruit] =
       PaperBundle.Origin.ElectedCandidate(Apple, TransferValueCoefficient(0.7d), Count(1))
 
-    val actualBundlesAfterDistribution = originalBundle.distributeToRemainingCandidates(origin, candidateStatuses)
+    val actualBundlesAfterDistribution = originalBundle.distributeToRemainingCandidates(origin, Count(1), candidateStatuses)
 
     val expectedBundlesAfterDistribution = Set[PaperBundle[Fruit]](originalBundle)
 
@@ -282,7 +285,7 @@ class PaperBundleSpec extends ImprovedFlatSpec {
     )
 
     val actualBundles = PaperBundle.rootBundleFor(testPreferenceTree)
-      .distributeToRemainingCandidates(PaperBundle.Origin.InitialAllocation, candidateStatuses)
+      .distributeToRemainingCandidates(PaperBundle.Origin.InitialAllocation, Count(1), candidateStatuses)
 
     val expectedBundles = Set[PaperBundle[Fruit]](
       AssignedPaperBundle(
