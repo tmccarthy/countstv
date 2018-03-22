@@ -1,6 +1,6 @@
 package au.id.tmm.countstv.counting
 
-import au.id.tmm.countstv.counting.countsteps.{DistributiveCountStepComputation, IneligibleHandling, InitialAllocationComputation}
+import au.id.tmm.countstv.counting.countsteps.{CountContext, DistributiveCountStepComputation, IneligibleHandling, InitialAllocationComputation}
 import au.id.tmm.countstv.model._
 import au.id.tmm.countstv.model.countsteps._
 import au.id.tmm.utilities.logging.{LoggedEvent, Logger}
@@ -10,6 +10,9 @@ object FullCountComputation {
 
   implicit val logger: Logger = Logger()
 
+  /**
+    * Runs a full count according to the given parameters, returning the count steps through the count.
+    */
   def runCount[C](
                    candidates: Set[C],
                    ineligibleCandidates: Set[C],
@@ -71,7 +74,7 @@ object FullCountComputation {
 
     }
 
-    logger.info(eventId = "ALL_VACANCIES_FILLED", "count" -> originalContext.mostRecentCountStep.count.countNumber)
+    logger.info(eventId = "ALL_VACANCIES_FILLED", "count" -> originalContext.mostRecentCountStep.count.asInt)
 
     ProbabilityMeasure.always(currentContext.previousCountSteps)
   }

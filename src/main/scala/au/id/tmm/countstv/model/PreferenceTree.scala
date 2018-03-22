@@ -7,14 +7,30 @@ import au.id.tmm.countstv.model.values.NumPapers
 import scala.annotation.tailrec
 import scala.collection.mutable
 
+/**
+  * A static, immutable representation of all ballots in an election, organised as a tree. The root node records the
+  * total number of papers, and contains links to its children, all of which are instances of
+  * [[au.id.tmm.countstv.model.PreferenceTree.PreferenceTreeNode PreferenceTreeNode]]. Each child node is associated
+  * with a candidate, with its path from the root node being the same as the preferences on the ballot papers counted in
+  * its `numPapers` field.
+  *
+  * Because duplicate ballot papers simply increment the `numPapers` field, this representation scales in memory
+  * according to the number of distinct ballot papers.
+  */
 sealed class PreferenceTree[C] () {
 
   private var internalNumPapers: Long = 0
 
+  /**
+    * The number of ballot papers that this node represents.
+    */
   def numPapers: NumPapers = NumPapers(internalNumPapers)
 
   private val internalChildren: mutable.Map[C, PreferenceTreeNode[C]] = new mutable.OpenHashMap(5)
 
+  /**
+    * The child nodes of this node.
+    */
   def children: scala.collection.Map[C, PreferenceTreeNode[C]] = internalChildren
 
   private def getOrCreateChildFor(candidate: C): PreferenceTreeNode[C] =

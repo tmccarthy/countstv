@@ -4,7 +4,7 @@ import au.id.tmm.countstv.PaperBundles
 import au.id.tmm.countstv.counting._
 import au.id.tmm.countstv.model.CandidateDistributionReason._
 import au.id.tmm.countstv.model._
-import au.id.tmm.countstv.model.countsteps.{CountContext, DistributionCountStep}
+import au.id.tmm.countstv.model.countsteps.DistributionCountStep
 import au.id.tmm.countstv.model.values.{Count, Ordinal, TransferValue, TransferValueCoefficient}
 import au.id.tmm.utilities.collection.DupelessSeq
 import au.id.tmm.utilities.probabilities.ProbabilityMeasure
@@ -15,8 +15,13 @@ import scala.collection.parallel.immutable.ParSet
 
 // TODO the previous counts used for tie-breaking shouldn't include counts where we're continuing with a previous
 // distribution
-object DistributiveCountStepComputation {
+private[counting] object DistributiveCountStepComputation {
 
+  /**
+    * Computes the next context after applying a distribution step to the given context.
+    *
+    * @throws IllegalArgumentException if all vacancies have been filled in the given context
+    */
   def computeNextContext[C](countContext: CountContext[C]): ProbabilityMeasure[CountContext[C]] = {
     require(!countContext.allVacanciesNowFilled)
 

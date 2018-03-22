@@ -4,7 +4,7 @@ import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
 import au.id.tmm.countstv.model.CandidateStatus._
 import au.id.tmm.countstv.model._
-import au.id.tmm.countstv.model.countsteps.{CountContext, DistributionCountStep}
+import au.id.tmm.countstv.model.countsteps.DistributionCountStep
 import au.id.tmm.countstv.model.values._
 import au.id.tmm.utilities.probabilities.ProbabilityMeasure
 import au.id.tmm.utilities.testing.ImprovedFlatSpec

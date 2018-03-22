@@ -1,8 +1,11 @@
 package au.id.tmm.countstv.model.values
 
-final case class Count(countNumber: Int) extends AnyVal {
+/**
+  * A count number.
+  */
+final case class Count(asInt: Int) extends AnyVal {
 
-  def increment: Count = Count(countNumber + 1)
+  def increment: Count = Count(asInt + 1)
 
 }
 

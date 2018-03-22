@@ -5,6 +5,12 @@ import au.id.tmm.countstv.model._
 import au.id.tmm.countstv.model.values.{NumPapers, NumVotes}
 
 object VoteCounting {
+
+  /**
+    * Produces a count of votes per candidate, as well as a count of exhausted votes, and any error due to rounding. Any
+    * elected candidates, despite necessarily having no papers allocated to them in the count, are counted as having a
+    * quota of votes.
+    */
   def countVotes[C](
                      initialNumPapers: NumPapers,
                      quota: NumVotes,
@@ -40,6 +46,11 @@ object VoteCounting {
     )
   }
 
+  /**
+    * Produces a count of votes per candidate, as well as a count of exhausted votes. Unlike
+    * `performCount()`, this method does not track rounding error. Nor does it allocate a quota of votes to any elected
+    * candidates.
+    */
   def performSimpleCount[C](
                              allCandidates: Set[C],
                              paperBundles: PaperBundles[C],

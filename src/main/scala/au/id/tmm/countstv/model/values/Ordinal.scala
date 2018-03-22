@@ -1,5 +1,8 @@
 package au.id.tmm.countstv.model.values
 
+/**
+  * An ordinal number.
+  */
 final case class Ordinal(asInt: Int) extends AnyVal {
 
   def >(that: Ordinal): Boolean = this.asInt > that.asInt

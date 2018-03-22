@@ -2,6 +2,9 @@ package au.id.tmm.countstv.model
 
 import au.id.tmm.countstv.model.values.{NumPapers, NumVotes}
 
+/**
+  * A vote count, bundling together a number of papers with a number of votes.
+  */
 final case class VoteCount(numPapers: NumPapers, numVotes: NumVotes) {
 
   def +(that: VoteCount): VoteCount = VoteCount(

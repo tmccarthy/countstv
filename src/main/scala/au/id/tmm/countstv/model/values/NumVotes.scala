@@ -1,5 +1,8 @@
 package au.id.tmm.countstv.model.values
 
+/**
+  * A count of a number of votes.
+  */
 final case class NumVotes(asLong: Long) extends AnyVal {
 
   def + (that: NumVotes): NumVotes = NumVotes(this.asLong + that.asLong)

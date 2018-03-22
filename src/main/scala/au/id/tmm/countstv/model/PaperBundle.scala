@@ -7,6 +7,10 @@ import au.id.tmm.countstv.model.values.{Count, NumPapers, TransferValue, Transfe
 
 import scala.collection.parallel.immutable.ParSet
 
+/**
+  * A representation of a bundle of ballot papers, along with their origin in the count, their assigned candidate and
+  * their transfer value.
+  */
 sealed trait PaperBundle[C] {
 
   def assignedCandidate: Option[C]
@@ -26,6 +30,10 @@ sealed trait PaperBundle[C] {
 
 }
 
+/**
+  * The root paper bundle, representing all ballot papers in a count. This is essentially a pointer to the root node of
+  * a `PreferenceTree`, along with the functionality to distribute these papers.
+  */
 final case class RootPaperBundle[C](preferenceTree: PreferenceTree[C]) extends PaperBundle[C] {
   override def assignedCandidate: Option[C] = None
 
@@ -52,6 +60,10 @@ final case class RootPaperBundle[C](preferenceTree: PreferenceTree[C]) extends P
   }
 }
 
+/**
+  * A bundle of papers assigned to a candidate in the count. This is essentially a pointer to a `PreferenceTreeNode`,
+  * along with the origin of the papers in the count and their transfer value.
+  */
 final case class AssignedPaperBundle[C](
                                          transferValue: TransferValue,
                                          preferenceTreeNode: PreferenceTreeNode[C],
@@ -65,6 +77,10 @@ final case class AssignedPaperBundle[C](
   override val hashCode: Int = preferenceTreeNode.hashCode()
 }
 
+/**
+  * A bundle of exhausted papers. Because exhausted papers are no longer tracked by a `PreferenceTree`, this
+  * representation is just number of papers and a transfer value.
+  */
 final case class ExhaustedPaperBundle[C](
                                           numPapers: NumPapers,
                                           transferValue: TransferValue,
@@ -78,7 +94,7 @@ object PaperBundle {
 
   def rootBundleFor[C](preferenceTree: PreferenceTree[C]): RootPaperBundle[C] = RootPaperBundle[C](preferenceTree)
 
-  def distributeIfCandidateNotRemaining[C](
+  private def distributeIfCandidateNotRemaining[C](
                                             bundle: PaperBundle[C],
                                             origin: Origin[C],
                                             count: Count,
@@ -155,21 +171,37 @@ object PaperBundle {
     }
   }
 
+  /**
+    * The origin of a PaperBundle
+    */
   sealed trait Origin[+C] {
     def count: Count
   }
 
   object Origin {
+
+    /**
+      * The origin of a paper bundle that was allocated in the initial allocation.
+      */
     case object InitialAllocation extends Origin[Nothing] {
       def count: Count = Count.ofInitialAllocation
     }
 
+    /**
+      * The origin of a paper bundle that was distributed away from an ineligible candidate.
+      */
     final case class IneligibleCandidate[C](source: C) extends Origin[C] {
       def count: Count = Count.ofIneligibleCandidateHandling
     }
 
+    /**
+      * The origin of a paper bundle that was distributed away from an elected candidate.
+      */
     final case class ElectedCandidate[C](source: C, transferValue: TransferValueCoefficient, count: Count) extends Origin[C]
 
+    /**
+      * The origin of a paper bundle that was distributed away from an excluded candidate.
+      */
     final case class ExcludedCandidate[C](source: C, count: Count) extends Origin[C]
 
   }

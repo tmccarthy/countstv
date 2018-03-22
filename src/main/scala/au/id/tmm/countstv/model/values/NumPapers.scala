@@ -1,5 +1,8 @@
 package au.id.tmm.countstv.model.values
 
+/**
+  * A count of a number of ballot papers.
+  */
 final case class NumPapers(asLong: Long) extends AnyVal {
   def + (that: NumPapers): NumPapers = NumPapers(this.asLong + that.asLong)
 

@@ -1,24 +1,29 @@
-package au.id.tmm.countstv.model.countsteps
+package au.id.tmm.countstv.counting.countsteps
 
 import au.id.tmm.countstv.PaperBundles
 import au.id.tmm.countstv.counting.QuotaComputation
-import au.id.tmm.countstv.model.countsteps.CountContext.CurrentDistribution
+import au.id.tmm.countstv.counting.countsteps.CountContext.CurrentDistribution
+import au.id.tmm.countstv.model.countsteps.CountStep
 import au.id.tmm.countstv.model.values.{NumPapers, NumVotes, TransferValueCoefficient}
 import au.id.tmm.countstv.model.{AssignedPaperBundle, CandidateDistributionReason, CandidateStatuses, CandidateVoteCounts}
 
 import scala.collection.immutable.Queue
 import scala.collection.parallel.immutable.ParSet
 
-final case class CountContext[C] (
-                                   numFormalPapers: NumPapers,
-                                   numVacancies: Int,
+/**
+  * An internal representation of the full state of a count, containing everything necessary to compute the context
+  * after the next count step.
+  */
+private[counting] final case class CountContext[C] (
+                                                     numFormalPapers: NumPapers,
+                                                     numVacancies: Int,
 
-                                   paperBundles: PaperBundles[C],
-                                   candidateStatuses: CandidateStatuses[C],
-                                   previousCountSteps: List[CountStep[C]],
+                                                     paperBundles: PaperBundles[C],
+                                                     candidateStatuses: CandidateStatuses[C],
+                                                     previousCountSteps: List[CountStep[C]],
 
-                                   currentDistribution: Option[CurrentDistribution[C]],
-                                 ) {
+                                                     currentDistribution: Option[CurrentDistribution[C]],
+                                                   ) {
 
   require(previousCountSteps.nonEmpty)
 
@@ -48,7 +53,7 @@ final case class CountContext[C] (
 
   def allVacanciesNowFilled: Boolean = candidateStatuses.electedCandidates.size == numVacancies || (
     numVacancies > candidateStatuses.eligibleCandidates.size && candidateStatuses.electedCandidates.size == candidateStatuses.eligibleCandidates.size
-  )
+    )
 
 }
 

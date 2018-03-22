@@ -4,6 +4,11 @@ import au.id.tmm.countstv.model.{CandidateStatuses, CandidateVoteCounts}
 import au.id.tmm.utilities.probabilities.{ProbabilityMeasure, TieSensitiveSorting}
 
 object ExcludedCandidateComputations {
+
+  /**
+    * Computes the next candidate to be excluded. This will be the remaining candidate with the least votes according to
+    * [[au.id.tmm.countstv.counting.CandidateVoteCountOrdering CandidateVoteCountOrdering]].
+    */
   def computeExcluded[C](
                           currentCandidateVoteCounts: CandidateVoteCounts[C],
                           previousCandidateVoteCountsAscending: List[CandidateVoteCounts[C]],

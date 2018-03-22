@@ -2,7 +2,11 @@ package au.id.tmm.countstv.model
 
 import au.id.tmm.utilities.collection.DupelessSeq
 
+/**
+  * A bundle holding in one place the [[CandidateStatus]] of each candidate in a count, with convenience methods.
+  */
 final case class CandidateStatuses[C](asMap: Map[C, CandidateStatus]) {
+
   def allCandidates: Set[C] = asMap.keySet
 
   val electedCandidates: DupelessSeq[C] =
@@ -29,8 +33,14 @@ final case class CandidateStatuses[C](asMap: Map[C, CandidateStatus]) {
     }
     .toSet
 
+  /**
+    * Candidates that are not remaining.
+    */
   val ineligibleForPreferenceFlows: Set[C] = allCandidates -- remainingCandidates
 
+  /**
+    * Candidates that are not ineligible.
+    */
   val eligibleCandidates: Set[C] = allCandidates -- ineligibleCandidates
 
   def update(candidate: C, newStatus: CandidateStatus): CandidateStatuses[C] =

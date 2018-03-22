@@ -5,10 +5,14 @@ import au.id.tmm.countstv.model.values.NumVotes
 
 import scala.annotation.tailrec
 
-private[counting] class CandidateVoteCountOrdering[C] (
-                                                        currentCandidateVoteCounts: CandidateVoteCounts[C],
-                                                        previousCandidateVoteCountsAscending: List[CandidateVoteCounts[C]],
-                                                      ) extends Ordering[C] {
+/**
+  * An ordering of candidates, based on their current vote counts, and vote counts from previous steps. The counts from
+  * previous steps are used to break ties.
+  */
+class CandidateVoteCountOrdering[C] (
+                                      currentCandidateVoteCounts: CandidateVoteCounts[C],
+                                      previousCandidateVoteCountsAscending: List[CandidateVoteCounts[C]],
+                                    ) extends Ordering[C] {
   override def compare(left: C, right: C): Int = {
     val allVoteCountsDescending = List(currentCandidateVoteCounts) ++ previousCandidateVoteCountsAscending.reverse
     compareUsingRecursively(allVoteCountsDescending)(left, right)

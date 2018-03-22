@@ -2,12 +2,15 @@ package au.id.tmm.countstv.counting.countsteps
 
 import au.id.tmm.countstv.counting.{ElectedCandidateComputations, VoteCounting}
 import au.id.tmm.countstv.model._
-import au.id.tmm.countstv.model.countsteps.{AllocationAfterIneligibles, CountContext}
+import au.id.tmm.countstv.model.countsteps.AllocationAfterIneligibles
 import au.id.tmm.countstv.model.values.{Count, NumVotes, Ordinal}
 import au.id.tmm.utilities.probabilities.ProbabilityMeasure
 
-object IneligibleHandling {
+private[counting] object IneligibleHandling {
 
+  /**
+    * Computes the next context after distributing votes away from any ineligible candidates in the given context.
+    */
   def computeContextAfterIneligibles[C](previousContext: CountContext[C]): ProbabilityMeasure[CountContext[C]] = {
     val count = Count(1)
 
