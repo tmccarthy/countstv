@@ -1,6 +1,6 @@
 plugins {
     id 'scala'
-    id 'com.github.maiflai.scalatest' version '0.16'
+    id 'com.github.maiflai.scalatest' version '0.19'
     id 'org.scoverage' version '2.1.0'
     id 'org.unbroken-dome.test-sets' version '1.4.2'
     id 'io.codearte.nexus-staging' version '0.11.0'
@@ -8,15 +8,19 @@ plugins {
 
 apply plugin: au.id.tmm.tmmUtils.build.MyReleasePlugin
 apply plugin: 'idea'
+apply plugin: 'maven'
+apply plugin: 'signing'
 
 group = 'au.id.tmm'
+description =
+        'A library for performing a Single Transferable Vote count, mainly to be used for Australian Senate elections.'
 
 repositories {
     mavenCentral()
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '4.4.1'
+    gradleVersion = '4.6'
     distributionUrl = "http://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
 }
 
@@ -63,3 +67,5 @@ checkScoverage {
 }
 
 check.dependsOn(checkScoverage)
+
+apply from: rootProject.file('gradle/maven-publishing.gradle')
