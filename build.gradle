@@ -3,8 +3,10 @@ plugins {
     id 'com.github.maiflai.scalatest' version '0.16'
     id 'org.scoverage' version '2.1.0'
     id 'org.unbroken-dome.test-sets' version '1.4.2'
+    id 'io.codearte.nexus-staging' version '0.11.0'
 }
 
+apply plugin: au.id.tmm.tmmUtils.build.MyReleasePlugin
 apply plugin: 'idea'
 
 group = 'au.id.tmm'
