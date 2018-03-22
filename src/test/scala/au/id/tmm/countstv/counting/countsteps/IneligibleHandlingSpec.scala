@@ -7,6 +7,7 @@ import au.id.tmm.countstv.model.CandidateStatus.{Remaining, _}
 import au.id.tmm.countstv.model._
 import au.id.tmm.countstv.model.countsteps.AllocationAfterIneligibles
 import au.id.tmm.countstv.model.values.{Count, NumPapers, Ordinal, TransferValue}
+import au.id.tmm.utilities.probabilities.ProbabilityMeasure
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
 import scala.collection.parallel.immutable.ParSet

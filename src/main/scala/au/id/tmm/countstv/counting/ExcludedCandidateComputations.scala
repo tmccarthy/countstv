@@ -1,6 +1,7 @@
 package au.id.tmm.countstv.counting
 
-import au.id.tmm.countstv.model.{CandidateStatuses, CandidateVoteCounts, ProbabilityMeasure}
+import au.id.tmm.countstv.model.{CandidateStatuses, CandidateVoteCounts}
+import au.id.tmm.utilities.probabilities.{ProbabilityMeasure, TieSensitiveSorting}
 
 object ExcludedCandidateComputations {
   def computeExcluded[C](

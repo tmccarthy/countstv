@@ -1,8 +1,9 @@
 package au.id.tmm.countstv.counting
 
 import au.id.tmm.countstv.model.values.NumVotes
-import au.id.tmm.countstv.model.{CandidateStatuses, CandidateVoteCounts, ProbabilityMeasure}
+import au.id.tmm.countstv.model.{CandidateStatuses, CandidateVoteCounts}
 import au.id.tmm.utilities.collection.DupelessSeq
+import au.id.tmm.utilities.probabilities.{ProbabilityMeasure, TieSensitiveSorting}
 
 object ElectedCandidateComputations {
 

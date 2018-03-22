@@ -4,7 +4,8 @@ import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
 import au.id.tmm.countstv.model.CandidateStatus._
 import au.id.tmm.countstv.model.values.{Count, NumPapers, Ordinal}
-import au.id.tmm.countstv.model.{CandidateStatuses, CandidateVoteCounts, ProbabilityMeasure, VoteCount}
+import au.id.tmm.countstv.model.{CandidateStatuses, CandidateVoteCounts, VoteCount}
+import au.id.tmm.utilities.probabilities.ProbabilityMeasure
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
 class ExcludedCandidateComputationsSpec extends ImprovedFlatSpec {

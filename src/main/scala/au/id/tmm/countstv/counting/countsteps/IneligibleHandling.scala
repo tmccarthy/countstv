@@ -4,6 +4,7 @@ import au.id.tmm.countstv.counting.{ElectedCandidateComputations, VoteCounting}
 import au.id.tmm.countstv.model._
 import au.id.tmm.countstv.model.countsteps.{AllocationAfterIneligibles, CountContext}
 import au.id.tmm.countstv.model.values.{Count, NumVotes, Ordinal}
+import au.id.tmm.utilities.probabilities.ProbabilityMeasure
 
 object IneligibleHandling {
 

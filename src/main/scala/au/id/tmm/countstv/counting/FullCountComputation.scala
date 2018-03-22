@@ -4,6 +4,7 @@ import au.id.tmm.countstv.counting.countsteps.{DistributiveCountStepComputation,
 import au.id.tmm.countstv.model._
 import au.id.tmm.countstv.model.countsteps._
 import au.id.tmm.utilities.logging.{LoggedEvent, Logger}
+import au.id.tmm.utilities.probabilities.ProbabilityMeasure
 
 object FullCountComputation {
 

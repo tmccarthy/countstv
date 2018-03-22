@@ -4,7 +4,8 @@ import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
 import au.id.tmm.countstv.model.CandidateStatus._
 import au.id.tmm.countstv.model.values.{Count, Ordinal}
-import au.id.tmm.countstv.model.{CandidateStatuses, PreferenceTree, ProbabilityMeasure}
+import au.id.tmm.countstv.model.{CandidateStatuses, PreferenceTree}
+import au.id.tmm.utilities.probabilities.ProbabilityMeasure
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
 class FullCountComputationSpec extends ImprovedFlatSpec {

@@ -7,6 +7,7 @@ import au.id.tmm.countstv.model._
 import au.id.tmm.countstv.model.countsteps.{CountContext, DistributionCountStep}
 import au.id.tmm.countstv.model.values.{Count, Ordinal, TransferValue, TransferValueCoefficient}
 import au.id.tmm.utilities.collection.DupelessSeq
+import au.id.tmm.utilities.probabilities.ProbabilityMeasure
 
 import scala.collection.immutable.Queue
 import scala.collection.mutable
