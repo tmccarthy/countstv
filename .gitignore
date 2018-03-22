@@ -33,3 +33,4 @@ gradle-app.setting
 *.db-journal
 
 /build
+/buildSrc/build
