@@ -3,7 +3,7 @@ package au.id.tmm.countstv.counting.countsteps
 import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
 import au.id.tmm.countstv.model.CandidateStatus._
-import au.id.tmm.countstv.model.countsteps.InitialAllocation
+import au.id.tmm.countstv.model.countsteps.{CountSteps, InitialAllocation}
 import au.id.tmm.countstv.model.values.{Count, NumPapers, Ordinal}
 import au.id.tmm.countstv.model.{PaperBundle, _}
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
@@ -94,7 +94,7 @@ class InitialAllocationComputationSpec extends ImprovedFlatSpec {
       numFormalPapers = NumPapers(25),
       numVacancies = 2,
       paperBundles = rootBundle.distribute,
-      previousCountSteps = List(
+      previousCountSteps = CountSteps(
         InitialAllocation(
           candidateStatuses = candidateStatuses,
           candidateVoteCounts = CandidateVoteCounts[Fruit](
@@ -107,7 +107,9 @@ class InitialAllocationComputationSpec extends ImprovedFlatSpec {
             exhausted = VoteCount.zero,
             roundingError = VoteCount.zero
           ),
-        )
+        ),
+        allocationAfterIneligibles = None,
+        distributionCountSteps = Nil,
       ),
       currentDistribution = None,
     )

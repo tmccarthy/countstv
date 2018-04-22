@@ -2,7 +2,7 @@ package au.id.tmm.countstv.counting.countsteps
 
 import au.id.tmm.countstv.counting.{QuotaComputation, VoteCounting}
 import au.id.tmm.countstv.model._
-import au.id.tmm.countstv.model.countsteps.InitialAllocation
+import au.id.tmm.countstv.model.countsteps.{CountSteps, InitialAllocation}
 
 private[counting] object InitialAllocationComputation {
 
@@ -27,7 +27,7 @@ private[counting] object InitialAllocationComputation {
       numFormalPapers = numFormalPapers,
       numVacancies = numVacancies,
       paperBundles = firstSetOfPaperBundles,
-      previousCountSteps = List(
+      previousCountSteps = CountSteps(
         InitialAllocation(
           candidateStatuses = initialCandidateStatuses,
           candidateVoteCounts = VoteCounting.countVotes(
@@ -36,7 +36,9 @@ private[counting] object InitialAllocationComputation {
             candidateStatuses = initialCandidateStatuses,
             paperBundles = firstSetOfPaperBundles,
           )
-        )
+        ),
+        allocationAfterIneligibles = None,
+        distributionCountSteps = Nil,
       ),
       currentDistribution = None,
     )

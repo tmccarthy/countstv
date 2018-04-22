@@ -68,7 +68,9 @@ private[counting] object IneligibleHandling {
 
       previousContext.copy(
         paperBundles = newPaperBundles,
-        previousCountSteps = previousContext.previousCountSteps :+ newCountStep,
+        previousCountSteps = previousContext.previousCountSteps.copy(
+          allocationAfterIneligibles = Some(newCountStep)
+        )
       )
     }
   }

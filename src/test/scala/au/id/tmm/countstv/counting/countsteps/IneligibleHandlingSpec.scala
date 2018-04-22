@@ -70,17 +70,20 @@ class IneligibleHandlingSpec extends ImprovedFlatSpec {
     val actualContextAfterIneligibles = IneligibleHandling.computeContextAfterIneligibles[Fruit](initialContext)
 
     val expectedContextAfterIneligibles = initialContext.copy(
-      previousCountSteps = initialContext.previousCountSteps :+
-        AllocationAfterIneligibles(
-          candidateStatuses = CandidateStatuses[Fruit](
-            Apple -> Elected(Ordinal.first, Count(1)),
-            Banana -> Remaining,
-            Pear -> Remaining,
-            Strawberry -> Remaining,
-          ),
-          candidateVoteCounts = initialContext.mostRecentCountStep.candidateVoteCounts,
-          transfersDueToIneligibles = Map.empty[Fruit, CandidateVoteCounts[Fruit]],
+      previousCountSteps = initialContext.previousCountSteps.copy(
+        allocationAfterIneligibles = Some(
+          AllocationAfterIneligibles(
+            candidateStatuses = CandidateStatuses[Fruit](
+              Apple -> Elected(Ordinal.first, Count(1)),
+              Banana -> Remaining,
+              Pear -> Remaining,
+              Strawberry -> Remaining,
+            ),
+            candidateVoteCounts = initialContext.mostRecentCountStep.candidateVoteCounts,
+            transfersDueToIneligibles = Map.empty[Fruit, CandidateVoteCounts[Fruit]],
+          )
         )
+      )
     )
 
     assert(actualContextAfterIneligibles === ProbabilityMeasure.always(expectedContextAfterIneligibles))
@@ -107,37 +110,40 @@ class IneligibleHandlingSpec extends ImprovedFlatSpec {
     val actualContextAfterIneligibles = IneligibleHandling.computeContextAfterIneligibles[Fruit](initialContext)
 
     val expectedContextAfterIneligibles = initialContext.copy(
-      previousCountSteps = initialContext.previousCountSteps :+
-        AllocationAfterIneligibles(
-          candidateStatuses = CandidateStatuses[Fruit](
-            Apple -> Elected(Ordinal.first, Count(1)),
-            Banana -> Remaining,
-            Pear -> Remaining,
-            Strawberry -> CandidateStatus.Ineligible,
-          ),
-          candidateVoteCounts = CandidateVoteCounts[Fruit](
-            perCandidate = Map(
-              Apple -> VoteCount(11),
-              Banana -> VoteCount(5),
-              Pear -> VoteCount(8),
-              Strawberry -> VoteCount.zero,
+      previousCountSteps = initialContext.previousCountSteps.copy(
+        allocationAfterIneligibles = Some(
+          AllocationAfterIneligibles(
+            candidateStatuses = CandidateStatuses[Fruit](
+              Apple -> Elected(Ordinal.first, Count(1)),
+              Banana -> Remaining,
+              Pear -> Remaining,
+              Strawberry -> CandidateStatus.Ineligible,
             ),
-            exhausted = VoteCount(1),
-            roundingError = VoteCount.zero,
-          ),
-          transfersDueToIneligibles = Map[Fruit, CandidateVoteCounts[Fruit]](
-            Strawberry -> CandidateVoteCounts(
+            candidateVoteCounts = CandidateVoteCounts[Fruit](
               perCandidate = Map(
-                Apple -> VoteCount(2),
-                Banana -> VoteCount(1),
-                Pear -> VoteCount(1),
+                Apple -> VoteCount(11),
+                Banana -> VoteCount(5),
+                Pear -> VoteCount(8),
                 Strawberry -> VoteCount.zero,
               ),
               exhausted = VoteCount(1),
               roundingError = VoteCount.zero,
+            ),
+            transfersDueToIneligibles = Map[Fruit, CandidateVoteCounts[Fruit]](
+              Strawberry -> CandidateVoteCounts(
+                perCandidate = Map(
+                  Apple -> VoteCount(2),
+                  Banana -> VoteCount(1),
+                  Pear -> VoteCount(1),
+                  Strawberry -> VoteCount.zero,
+                ),
+                exhausted = VoteCount(1),
+                roundingError = VoteCount.zero,
+              )
             )
-          )
-        ),
+          ),
+        )
+      ),
       paperBundles = ParSet[PaperBundle[Fruit]](
         AssignedPaperBundle(TransferValue(1.0), testPreferenceTree.childFor(Apple).get, PaperBundle.Origin.InitialAllocation),
         AssignedPaperBundle(TransferValue(1.0), testPreferenceTree.childFor(Banana).get, PaperBundle.Origin.InitialAllocation),

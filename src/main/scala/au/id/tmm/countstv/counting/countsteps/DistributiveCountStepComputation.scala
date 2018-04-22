@@ -91,7 +91,7 @@ private[counting] object DistributiveCountStepComputation {
     ProbabilityMeasure.always(
       countContext.copy(
         candidateStatuses = newCandidateStatuses,
-        previousCountSteps = countContext.previousCountSteps :+ newCountStep,
+        previousCountSteps = countContext.previousCountSteps append newCountStep,
         currentDistribution = None,
       )
     )
@@ -250,7 +250,7 @@ private[counting] object DistributiveCountStepComputation {
 
         countContext.copy(
           paperBundles = newPaperBundles,
-          previousCountSteps = countContext.previousCountSteps :+ newCountStep,
+          previousCountSteps = countContext.previousCountSteps append newCountStep,
           candidateStatuses = newCandidateStatuses,
           currentDistribution = newCurrentDistribution,
         )

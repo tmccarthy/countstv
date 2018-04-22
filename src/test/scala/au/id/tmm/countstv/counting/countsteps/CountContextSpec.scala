@@ -5,7 +5,7 @@ import au.id.tmm.countstv.Fruit._
 import au.id.tmm.countstv.counting.QuotaComputation
 import au.id.tmm.countstv.model.CandidateStatus._
 import au.id.tmm.countstv.model._
-import au.id.tmm.countstv.model.countsteps.{AllocationAfterIneligibles, InitialAllocation}
+import au.id.tmm.countstv.model.countsteps.{AllocationAfterIneligibles, CountSteps, InitialAllocation}
 import au.id.tmm.countstv.model.values._
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
@@ -43,7 +43,7 @@ class CountContextSpec extends ImprovedFlatSpec {
     numFormalPapers = NumPapers(40),
     numVacancies = 2,
     paperBundles = ParSet.empty[PaperBundle[Fruit]],
-    previousCountSteps = List(initialAllocation, allocationAfterIneligibles),
+    previousCountSteps = CountSteps(initialAllocation, Some(allocationAfterIneligibles), distributionCountSteps = Nil),
     currentDistribution = None,
   )
 
@@ -72,7 +72,9 @@ class CountContextSpec extends ImprovedFlatSpec {
         ),
       )
 
-    val localTestContext = testContext.copy(previousCountSteps = List(mostRecentCountStep))
+    val localTestContext = testContext.copy(
+      previousCountSteps = CountSteps(initialAllocation, Some(mostRecentCountStep), Nil)
+    )
 
     assert(localTestContext.electedCandidatesWaitingToBeDistributed === Queue(Apple, Banana))
   }
@@ -91,7 +93,7 @@ class CountContextSpec extends ImprovedFlatSpec {
       )
 
     val localTestContext = testContext.copy(
-      previousCountSteps = List(mostRecentCountStep),
+      previousCountSteps = CountSteps(initialAllocation, Some(mostRecentCountStep), Nil),
       currentDistribution = Some(
         CountContext.CurrentDistribution(
           Apple,
@@ -128,7 +130,9 @@ class CountContextSpec extends ImprovedFlatSpec {
         )
       )
 
-    val localTestContext = testContext.copy(previousCountSteps = List(mostRecentCountStep))
+    val localTestContext = testContext.copy(
+      previousCountSteps = CountSteps(initialAllocation, Some(mostRecentCountStep), Nil)
+    )
 
     assert(localTestContext.electedCandidatesWaitingToBeDistributed === Queue())
   }
@@ -146,24 +150,6 @@ class CountContextSpec extends ImprovedFlatSpec {
     assert(testContext.previousCandidateVoteCounts === expectedCandidateVoteCounts)
   }
 
-  it can "not have no previous count steps" in {
-    intercept[IllegalArgumentException] {
-      testContext.copy(previousCountSteps = List.empty)
-    }
-  }
-
-  it can "not have no previous count steps when using the convenience constructor" in {
-    intercept[IllegalArgumentException] {
-      CountContext(
-        numFormalPapers = NumPapers(40),
-        numVacancies = 2,
-        paperBundles = ParSet.empty[PaperBundle[Fruit]],
-        previousCountSteps = List.empty,
-        currentDistribution = None,
-      )
-    }
-  }
-
   it should "indicate if all vacancies are filled" in {
     val candidateStatuses = CandidateStatuses[Fruit](
       Apple -> Elected(Ordinal.first, Count(1)),
@@ -174,11 +160,12 @@ class CountContextSpec extends ImprovedFlatSpec {
 
     val contextWithAllVacanciesFilled = testContext
       .copy(
-        previousCountSteps = List(
+        previousCountSteps = CountSteps(
           initialAllocation,
-          allocationAfterIneligibles.copy(
+          Some(allocationAfterIneligibles.copy(
             candidateStatuses = candidateStatuses,
-          ),
+          )),
+          distributionCountSteps = Nil,
         ),
         candidateStatuses = candidateStatuses,
       )
@@ -202,11 +189,12 @@ class CountContextSpec extends ImprovedFlatSpec {
     val contextWithAllVacanciesFilled = testContext
       .copy(
         numVacancies = 4,
-        previousCountSteps = List(
+        previousCountSteps = CountSteps(
           initialAllocation,
-          allocationAfterIneligibles.copy(
+          Some(allocationAfterIneligibles.copy(
             candidateStatuses = candidateStatuses,
-          ),
+          )),
+          distributionCountSteps = Nil,
         ),
         candidateStatuses = candidateStatuses,
       )

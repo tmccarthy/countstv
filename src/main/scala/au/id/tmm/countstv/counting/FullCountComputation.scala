@@ -18,7 +18,7 @@ object FullCountComputation {
                    ineligibleCandidates: Set[C],
                    numVacancies: Int,
                    preferenceTree: PreferenceTree[C],
-                 ): ProbabilityMeasure[List[CountStep[C]]] = {
+                 ): ProbabilityMeasure[CountSteps[C]] = {
 
     require(ineligibleCandidates.subsetOf(candidates))
 
@@ -56,7 +56,7 @@ object FullCountComputation {
     contextAfterIneligibles.flatMap(allCountStepsFrom)
   }
 
-  private def allCountStepsFrom[C](originalContext: CountContext[C]): ProbabilityMeasure[List[CountStep[C]]] = {
+  private def allCountStepsFrom[C](originalContext: CountContext[C]): ProbabilityMeasure[CountSteps[C]] = {
 
     var currentContext = originalContext
 
