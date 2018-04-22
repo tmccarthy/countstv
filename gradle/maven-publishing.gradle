@@ -47,6 +47,42 @@ nexusStaging {
     password = findProperty('ossrhPassword') ?: ''
 }
 
+def configurePom(MavenPom pom) {
+    pom.project {
+        artifactId "${project.name}${s}"
+        name "$project.group:${project.name}"
+        description project.description
+        packaging 'jar'
+        url 'https://github.com/tmccarthy/countstv'
+        licenses {
+            license {
+                name 'BSD 3-Clause'
+                url 'https://opensource.org/licenses/BSD-3-Clause'
+                distribution 'repo'
+            }
+        }
+        scm {
+            url 'https://github.com/tmccarthy/countstv'
+            connection 'git@github.com:tmccarthy/countstv.git'
+            developerConnection 'git@github.com:tmccarthy/countstv.git'
+        }
+        developers {
+            developer {
+                name 'Timothy McCarthy'
+                email "ebh042@gmail.com"
+            }
+        }
+    }
+}
+
+install {
+    repositories {
+        mavenInstaller {
+            configurePom(pom)
+        }
+    }
+}
+
 uploadArchives {
     repositories {
         mavenDeployer {
@@ -56,31 +92,7 @@ uploadArchives {
                 authentication(userName: nexusStaging.username, password: nexusStaging.password)
             }
 
-            pom.project {
-                artifactId "${project.name}${s}"
-                name "$project.group:${project.name}"
-                description project.description
-                packaging 'jar'
-                url 'https://github.com/tmccarthy/countstv'
-                licenses {
-                    license {
-                        name 'BSD 3-Clause'
-                        url 'https://opensource.org/licenses/BSD-3-Clause'
-                        distribution 'repo'
-                    }
-                }
-                scm {
-                    url 'https://github.com/tmccarthy/countstv'
-                    connection 'git@github.com:tmccarthy/countstv.git'
-                    developerConnection 'git@github.com:tmccarthy/countstv.git'
-                }
-                developers {
-                    developer {
-                        name 'Timothy McCarthy'
-                        email "ebh042@gmail.com"
-                    }
-                }
-            }
+            configurePom(pom)
         }
     }
 }
