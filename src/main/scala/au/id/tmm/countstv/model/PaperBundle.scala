@@ -95,11 +95,11 @@ object PaperBundle {
   def rootBundleFor[C](preferenceTree: PreferenceTree[C]): RootPaperBundle[C] = RootPaperBundle[C](preferenceTree)
 
   private def distributeIfCandidateNotRemaining[C](
-                                            bundle: PaperBundle[C],
-                                            origin: Origin[C],
-                                            count: Count,
-                                            candidateStatuses: CandidateStatuses[C],
-                                          ): PaperBundles[C] = {
+                                                    bundle: PaperBundle[C],
+                                                    origin: Origin[C],
+                                                    count: Count,
+                                                    candidateStatuses: CandidateStatuses[C],
+                                                  ): PaperBundles[C] = {
 
     bundle match {
       case b: ExhaustedPaperBundle[C] => ParSet[PaperBundle[C]](b)

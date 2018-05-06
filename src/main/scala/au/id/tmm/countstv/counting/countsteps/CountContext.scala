@@ -3,9 +3,9 @@ package au.id.tmm.countstv.counting.countsteps
 import au.id.tmm.countstv.PaperBundles
 import au.id.tmm.countstv.counting.QuotaComputation
 import au.id.tmm.countstv.counting.countsteps.CountContext.CurrentDistribution
+import au.id.tmm.countstv.model._
 import au.id.tmm.countstv.model.countsteps.{CountStep, CountSteps}
 import au.id.tmm.countstv.model.values.{NumPapers, NumVotes, TransferValueCoefficient}
-import au.id.tmm.countstv.model.{AssignedPaperBundle, CandidateDistributionReason, CandidateStatuses, CandidateVoteCounts}
 
 import scala.collection.immutable.Queue
 import scala.collection.parallel.immutable.ParSet
@@ -47,7 +47,8 @@ private[counting] final case class CountContext[C] (
       .to[Queue]
   }
 
-  lazy val previousCandidateVoteCounts: List[CandidateVoteCounts[C]] = previousCountSteps.asList.map(_.candidateVoteCounts)
+  lazy val previousCandidateVoteCounts: List[CandidateVoteCounts[C]] =
+    previousCountSteps.toList.map(_.candidateVoteCounts)
 
   def allVacanciesNowFilled: Boolean = candidateStatuses.electedCandidates.size == numVacancies || (
     numVacancies > candidateStatuses.eligibleCandidates.size && candidateStatuses.electedCandidates.size == candidateStatuses.eligibleCandidates.size

@@ -2,7 +2,7 @@ package au.id.tmm.countstv.model
 
 import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
-import au.id.tmm.countstv.model.CandidateStatus.{Elected, Excluded, Ineligible, Remaining}
+import au.id.tmm.countstv.model.CandidateStatus._
 import au.id.tmm.countstv.model.values.{Count, Ordinal}
 import au.id.tmm.utilities.collection.DupelessSeq
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
@@ -39,7 +39,7 @@ class CandidateStatusesSpec extends ImprovedFlatSpec {
       Strawberry -> Excluded(Ordinal.first, excludedAtCount = Count(1)),
     )
 
-    assert(testCandidateStatuses.electedCandidates.toList === List(Banana, Apple))
+    assert(testCandidateStatuses.electedCandidates === DupelessSeq(Banana, Apple))
   }
 
   it should "indicate remaining candidates" in {
@@ -51,10 +51,21 @@ class CandidateStatusesSpec extends ImprovedFlatSpec {
   }
 
   it should "indicate excluded candidates" in {
-    assert(testCandidateStatuses.excludedCandidates === Set(Strawberry))
+    assert(testCandidateStatuses.excludedCandidates === DupelessSeq(Strawberry))
   }
 
-  it should "indicate the candidates that are ineligble for preference flows" in {
+  it should "indicate excluded candidates in order" in {
+    val testCandidateStatuses: CandidateStatuses[Fruit] = CandidateStatuses(
+      Apple -> Excluded(Ordinal.third, excludedAtCount = Count(3)),
+      Banana -> Excluded(Ordinal.second, excludedAtCount = Count(2)),
+      Pear -> Ineligible,
+      Strawberry -> Excluded(Ordinal.first, excludedAtCount = Count(1)),
+    )
+
+    assert(testCandidateStatuses.excludedCandidates === DupelessSeq(Strawberry, Banana, Apple))
+  }
+
+  it should "indicate the candidates that are ineligible for preference flows" in {
     assert(testCandidateStatuses.ineligibleForPreferenceFlows === Set(Apple, Pear, Strawberry))
   }
 
@@ -91,5 +102,18 @@ class CandidateStatusesSpec extends ImprovedFlatSpec {
     )
 
     assert(actualCandidateStatuses === expectedCandidateStatuses)
+  }
+
+  it can "compute the difference to another CandidateStatuses object" in {
+    val newCandidateStatuses: CandidateStatuses[Fruit] = CandidateStatuses(
+      Apple -> Elected(Ordinal.first, electedAtCount = Count(1)),
+      Banana -> Elected(Ordinal.second, electedAtCount = Count(2)),
+      Pear -> Ineligible,
+      Strawberry -> Excluded(Ordinal.first, excludedAtCount = Count(1)),
+    )
+
+    val expectedDiff = Map(Banana -> Elected(Ordinal.second, electedAtCount = Count(2)))
+
+    assert((newCandidateStatuses diff testCandidateStatuses) === expectedDiff)
   }
 }

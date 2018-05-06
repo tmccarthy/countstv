@@ -34,4 +34,30 @@ class CandidateVoteCountsSpec extends ImprovedFlatSpec {
       Strawberry -> VoteCount(0),
     ))
   }
+
+  it can "have a diff with another instance" in {
+    val newCandidateVoteCounts = CandidateVoteCounts[Fruit](
+      perCandidate = Map(
+        Apple -> VoteCount(7),
+        Banana -> VoteCount(1),
+        Pear -> VoteCount(5),
+        Strawberry -> VoteCount(2),
+      ),
+      exhausted = VoteCount(70),
+      roundingError = VoteCount(NumPapers(0), NumVotes(2)),
+    )
+
+    val expectedDiff = CandidateVoteCounts[Fruit](
+      perCandidate = Map(
+        Apple -> VoteCount(4),
+        Banana -> VoteCount(-1),
+        Pear -> VoteCount(4),
+        Strawberry -> VoteCount(2),
+      ),
+      exhausted = VoteCount(28),
+      roundingError = VoteCount(NumPapers(0), NumVotes(-11)),
+    )
+
+    assert((newCandidateVoteCounts diff testCandidateVoteCounts) === expectedDiff)
+  }
 }

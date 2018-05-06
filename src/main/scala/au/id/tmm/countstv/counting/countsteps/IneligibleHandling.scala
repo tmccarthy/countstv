@@ -94,7 +94,10 @@ private[counting] object IneligibleHandling {
         .toStream
         .zipWithIndex
         .map { case (candidate, ordinalElected) =>
-          candidate -> CandidateStatus.Elected(Ordinal(ordinalElected), Count.ofIneligibleCandidateHandling)
+          candidate -> CandidateStatus.Elected(
+            Ordinal(ordinalElected),
+            Count.ofIneligibleCandidateHandling,
+          )
         }
         .toMap
 

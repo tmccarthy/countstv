@@ -27,6 +27,7 @@ object VoteCounting {
         val candidateStatus = candidateStatuses.asMap(candidate)
 
         val voteCountForCandidate = {
+          // TODO I don't think this is correct *during* a distribution
           if (candidateStatus.isInstanceOf[CandidateStatus.Elected] && voteCountFromSimpleCount == VoteCount.zero) {
             voteCountFromSimpleCount + VoteCount(NumPapers(0), quota)
           } else {
