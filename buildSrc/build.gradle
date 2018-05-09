@@ -6,6 +6,6 @@ repositories {
 }
 
 dependencies {
-    compile 'org.ajoberstar.reckon:reckon-gradle:0.4.0'
+    compile 'org.ajoberstar.reckon:reckon-gradle:0.6.0'
     compile 'org.ajoberstar:grgit:2.1.1'
 }

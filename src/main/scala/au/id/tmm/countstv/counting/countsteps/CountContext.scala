@@ -1,8 +1,7 @@
 package au.id.tmm.countstv.counting.countsteps
 
-import au.id.tmm.countstv.PaperBundles
-import au.id.tmm.countstv.counting.QuotaComputation
 import au.id.tmm.countstv.counting.countsteps.CountContext.CurrentDistribution
+import au.id.tmm.countstv.counting.{AssignedPaperBundle, PaperBundles, QuotaComputation}
 import au.id.tmm.countstv.model._
 import au.id.tmm.countstv.model.countsteps.{CountStep, CountSteps}
 import au.id.tmm.countstv.model.values.{NumPapers, NumVotes, TransferValueCoefficient}
@@ -83,7 +82,7 @@ object CountContext {
                                            bundlesToDistribute: Queue[ParSet[AssignedPaperBundle[C]]],
                                            transferValueCoefficient: TransferValueCoefficient,
                                          ) {
-    require(bundlesToDistribute.nonEmpty)
+    require(bundlesToDistribute.nonEmpty) // TODO what happens if a candidate genuinely has no votes?
   }
 
 }

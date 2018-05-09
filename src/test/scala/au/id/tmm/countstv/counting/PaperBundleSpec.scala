@@ -1,9 +1,10 @@
-package au.id.tmm.countstv.model
+package au.id.tmm.countstv.counting
 
 import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit.{Apple, Banana, Pear, Strawberry}
-import au.id.tmm.countstv.model.PaperBundle.Origin.IneligibleCandidate
+import au.id.tmm.countstv.counting.PaperBundle.Origin.IneligibleCandidate
 import au.id.tmm.countstv.model.values._
+import au.id.tmm.countstv.model.{CandidateStatus, CandidateStatuses, PreferenceTree}
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
 class PaperBundleSpec extends ImprovedFlatSpec {

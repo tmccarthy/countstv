@@ -1,8 +1,8 @@
-package au.id.tmm.countstv.model
+package au.id.tmm.countstv.counting
 
-import au.id.tmm.countstv.PaperBundles
-import au.id.tmm.countstv.model.PaperBundle.Origin
+import au.id.tmm.countstv.counting.PaperBundle.Origin
 import au.id.tmm.countstv.model.PreferenceTree.PreferenceTreeNode
+import au.id.tmm.countstv.model._
 import au.id.tmm.countstv.model.values.{Count, NumPapers, TransferValue, TransferValueCoefficient}
 
 import scala.collection.parallel.immutable.ParSet
@@ -11,7 +11,7 @@ import scala.collection.parallel.immutable.ParSet
   * A representation of a bundle of ballot papers, along with their origin in the count, their assigned candidate and
   * their transfer value.
   */
-sealed trait PaperBundle[C] {
+private[counting] sealed trait PaperBundle[C] {
 
   def assignedCandidate: Option[C]
 
@@ -34,7 +34,7 @@ sealed trait PaperBundle[C] {
   * The root paper bundle, representing all ballot papers in a count. This is essentially a pointer to the root node of
   * a `PreferenceTree`, along with the functionality to distribute these papers.
   */
-final case class RootPaperBundle[C](preferenceTree: PreferenceTree[C]) extends PaperBundle[C] {
+private[counting] final case class RootPaperBundle[C](preferenceTree: PreferenceTree[C]) extends PaperBundle[C] {
   override def assignedCandidate: Option[C] = None
 
   override def origin: Origin[C] = PaperBundle.Origin.InitialAllocation
@@ -64,7 +64,7 @@ final case class RootPaperBundle[C](preferenceTree: PreferenceTree[C]) extends P
   * A bundle of papers assigned to a candidate in the count. This is essentially a pointer to a `PreferenceTreeNode`,
   * along with the origin of the papers in the count and their transfer value.
   */
-final case class AssignedPaperBundle[C](
+private[counting] final case class AssignedPaperBundle[C](
                                          transferValue: TransferValue,
                                          preferenceTreeNode: PreferenceTreeNode[C],
                                          origin: PaperBundle.Origin[C]
@@ -81,7 +81,7 @@ final case class AssignedPaperBundle[C](
   * A bundle of exhausted papers. Because exhausted papers are no longer tracked by a `PreferenceTree`, this
   * representation is just number of papers and a transfer value.
   */
-final case class ExhaustedPaperBundle[C](
+private[counting] final case class ExhaustedPaperBundle[C](
                                           numPapers: NumPapers,
                                           transferValue: TransferValue,
                                           origin: Origin[C],
@@ -90,7 +90,7 @@ final case class ExhaustedPaperBundle[C](
   override def assignedCandidate: Option[C] = None
 }
 
-object PaperBundle {
+private[counting] object PaperBundle {
 
   def rootBundleFor[C](preferenceTree: PreferenceTree[C]): RootPaperBundle[C] = RootPaperBundle[C](preferenceTree)
 

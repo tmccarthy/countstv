@@ -1,7 +1,6 @@
 package au.id.tmm.countstv.counting.countsteps
 
-import au.id.tmm.countstv.PaperBundles
-import au.id.tmm.countstv.counting._
+import au.id.tmm.countstv.counting.{PaperBundles, _}
 import au.id.tmm.countstv.model.CandidateDistributionReason._
 import au.id.tmm.countstv.model._
 import au.id.tmm.countstv.model.countsteps.DistributionCountStep

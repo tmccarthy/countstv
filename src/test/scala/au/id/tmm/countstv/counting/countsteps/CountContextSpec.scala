@@ -2,7 +2,7 @@ package au.id.tmm.countstv.counting.countsteps
 
 import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
-import au.id.tmm.countstv.counting.QuotaComputation
+import au.id.tmm.countstv.counting.{AssignedPaperBundle, PaperBundle, QuotaComputation}
 import au.id.tmm.countstv.model.CandidateStatus._
 import au.id.tmm.countstv.model._
 import au.id.tmm.countstv.model.countsteps.{AllocationAfterIneligibles, CountSteps, InitialAllocation}

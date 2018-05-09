@@ -1,6 +1,6 @@
 package au.id.tmm.countstv.counting.countsteps
 
-import au.id.tmm.countstv.counting.{ElectedCandidateComputations, VoteCounting}
+import au.id.tmm.countstv.counting.{ElectedCandidateComputations, PaperBundle, VoteCounting}
 import au.id.tmm.countstv.model._
 import au.id.tmm.countstv.model.countsteps.AllocationAfterIneligibles
 import au.id.tmm.countstv.model.values.{Count, NumVotes, Ordinal}

@@ -1,6 +1,5 @@
 package au.id.tmm.countstv.counting
 
-import au.id.tmm.countstv.PaperBundles
 import au.id.tmm.countstv.model._
 import au.id.tmm.countstv.model.values.{NumPapers, NumVotes}
 
