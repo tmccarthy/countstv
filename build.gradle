@@ -41,11 +41,11 @@ dependencies {
     compile "org.typelevel:spire${s}:0.14.1"
 
     testCompile "org.scalatest:scalatest${s}:$scalaTestVersion"
-    testCompile "au.id.tmm:tmm-test-utils${s}:$tmmUtilsVersion"
+    testCompile "au.id.tmm:tmm-test-utils${s}:$tmmTestUtilsVersion"
     testCompile 'org.slf4j:slf4j-simple:1.7.25'
 
     performanceTestCompile "org.scalatest:scalatest${s}:$scalaTestVersion"
-    performanceTestCompile "au.id.tmm:tmm-test-utils${s}:$tmmUtilsVersion"
+    performanceTestCompile "au.id.tmm:tmm-test-utils${s}:$tmmTestUtilsVersion"
     performanceTestCompile 'org.slf4j:slf4j-simple:1.7.25'
     performanceTestCompile 'org.kohsuke:wordnet-random-name:1.3'
 
@@ -63,7 +63,7 @@ scoverage {
 }
 
 checkScoverage {
-    minimumRate = 1
+    minimumRate = 0.995
 }
 
 check.dependsOn(checkScoverage)

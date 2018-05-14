@@ -1,5 +1,7 @@
 package au.id.tmm.countstv.model.values
 
+import scala.collection.GenTraversableOnce
+
 /**
   * An ordinal number.
   */
@@ -22,6 +24,8 @@ object Ordinal {
       0
     }
   }
+
+  def ofNextAdditionTo[A](list: GenTraversableOnce[A]): Ordinal = Ordinal(list.size)
 
   val first = Ordinal(0)
   val second = Ordinal(1)

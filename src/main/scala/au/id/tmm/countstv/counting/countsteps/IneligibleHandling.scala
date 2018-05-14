@@ -2,7 +2,7 @@ package au.id.tmm.countstv.counting.countsteps
 
 import au.id.tmm.countstv.counting.{ElectedCandidateComputations, PaperBundle, VoteCounting}
 import au.id.tmm.countstv.model._
-import au.id.tmm.countstv.model.countsteps.AllocationAfterIneligibles
+import au.id.tmm.countstv.model.countsteps.{AllocationAfterIneligibles, CountSteps}
 import au.id.tmm.countstv.model.values.{Count, NumVotes, Ordinal}
 import au.id.tmm.utilities.probabilities.ProbabilityMeasure
 
@@ -11,7 +11,9 @@ private[counting] object IneligibleHandling {
   /**
     * Computes the next context after distributing votes away from any ineligible candidates in the given context.
     */
-  def computeContextAfterIneligibles[C](previousContext: CountContext[C]): ProbabilityMeasure[CountContext[C]] = {
+  def computeContextAfterIneligibles[C](
+                                         previousContext: CountContext[C, CountSteps.Initial[C]]
+                                       ): ProbabilityMeasure[CountContext[C, CountSteps.AfterIneligibleHandling[C]]] = {
     val count = Count(1)
 
     val initialNumPapers = previousContext.numFormalPapers
@@ -68,9 +70,7 @@ private[counting] object IneligibleHandling {
 
       previousContext.copy(
         paperBundles = newPaperBundles,
-        previousCountSteps = previousContext.previousCountSteps.copy(
-          allocationAfterIneligibles = Some(newCountStep)
-        )
+        previousCountSteps = previousContext.previousCountSteps.append(newCountStep)
       )
     }
   }

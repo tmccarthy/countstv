@@ -49,14 +49,18 @@ final case class AllocationAfterIneligibles[C](
 /**
   * A normal count step, where papers are distributed away from an elected or ineligible candidate.
   */
-final case class DistributionCountStep[C] (
+final case class DistributionCountStep[C](
+                                           count: Count,
+                                           candidateStatuses: CandidateStatuses[C],
+                                           candidateVoteCounts: CandidateVoteCounts[C],
+                                           distributionSource: DistributionCountStep.Source[C],
+                                         ) extends CountStep[C]
+
+final case class FinalElectionCountStep[C](
                                             count: Count,
                                             candidateStatuses: CandidateStatuses[C],
                                             candidateVoteCounts: CandidateVoteCounts[C],
-                                            distributionSource: Option[DistributionCountStep.Source[C]],
-                                          ) extends CountStep[C] {
-
-}
+                                          ) extends CountStep[C]
 
 object DistributionCountStep {
 

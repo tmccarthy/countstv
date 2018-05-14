@@ -91,11 +91,11 @@ class InitialAllocationComputationSpec extends ImprovedFlatSpec {
       numVacancies,
     )
 
-    val expectedContext = CountContext[Fruit](
+    val expectedContext = CountContext(
       numFormalPapers = NumPapers(25),
       numVacancies = 2,
       paperBundles = rootBundle.distribute,
-      previousCountSteps = CountSteps(
+      previousCountSteps = CountSteps.Initial(
         InitialAllocation(
           candidateStatuses = candidateStatuses,
           candidateVoteCounts = CandidateVoteCounts[Fruit](
@@ -109,10 +109,7 @@ class InitialAllocationComputationSpec extends ImprovedFlatSpec {
             roundingError = VoteCount.zero
           ),
         ),
-        allocationAfterIneligibles = None,
-        distributionCountSteps = Nil,
       ),
-      currentDistribution = None,
     )
 
     assert(actualContext === expectedContext)

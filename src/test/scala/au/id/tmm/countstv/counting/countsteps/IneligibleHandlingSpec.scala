@@ -70,18 +70,16 @@ class IneligibleHandlingSpec extends ImprovedFlatSpec {
     val actualContextAfterIneligibles = IneligibleHandling.computeContextAfterIneligibles[Fruit](initialContext)
 
     val expectedContextAfterIneligibles = initialContext.copy(
-      previousCountSteps = initialContext.previousCountSteps.copy(
-        allocationAfterIneligibles = Some(
-          AllocationAfterIneligibles(
-            candidateStatuses = CandidateStatuses[Fruit](
-              Apple -> Elected(Ordinal.first, Count(1)),
-              Banana -> Remaining,
-              Pear -> Remaining,
-              Strawberry -> Remaining,
-            ),
-            candidateVoteCounts = initialContext.mostRecentCountStep.candidateVoteCounts,
-            transfersDueToIneligibles = Map.empty[Fruit, CandidateVoteCounts[Fruit]],
-          )
+      previousCountSteps = initialContext.previousCountSteps.append(
+        AllocationAfterIneligibles(
+          candidateStatuses = CandidateStatuses[Fruit](
+            Apple -> Elected(Ordinal.first, Count(1)),
+            Banana -> Remaining,
+            Pear -> Remaining,
+            Strawberry -> Remaining,
+          ),
+          candidateVoteCounts = initialContext.mostRecentCountStep.candidateVoteCounts,
+          transfersDueToIneligibles = Map.empty[Fruit, CandidateVoteCounts[Fruit]],
         )
       )
     )
@@ -110,38 +108,36 @@ class IneligibleHandlingSpec extends ImprovedFlatSpec {
     val actualContextAfterIneligibles = IneligibleHandling.computeContextAfterIneligibles[Fruit](initialContext)
 
     val expectedContextAfterIneligibles = initialContext.copy(
-      previousCountSteps = initialContext.previousCountSteps.copy(
-        allocationAfterIneligibles = Some(
-          AllocationAfterIneligibles(
-            candidateStatuses = CandidateStatuses[Fruit](
-              Apple -> Elected(Ordinal.first, Count(1)),
-              Banana -> Remaining,
-              Pear -> Remaining,
-              Strawberry -> CandidateStatus.Ineligible,
+      previousCountSteps = initialContext.previousCountSteps.append(
+        AllocationAfterIneligibles(
+          candidateStatuses = CandidateStatuses[Fruit](
+            Apple -> Elected(Ordinal.first, Count(1)),
+            Banana -> Remaining,
+            Pear -> Remaining,
+            Strawberry -> CandidateStatus.Ineligible,
+          ),
+          candidateVoteCounts = CandidateVoteCounts[Fruit](
+            perCandidate = Map(
+              Apple -> VoteCount(11),
+              Banana -> VoteCount(5),
+              Pear -> VoteCount(8),
+              Strawberry -> VoteCount.zero,
             ),
-            candidateVoteCounts = CandidateVoteCounts[Fruit](
+            exhausted = VoteCount(1),
+            roundingError = VoteCount.zero,
+          ),
+          transfersDueToIneligibles = Map[Fruit, CandidateVoteCounts[Fruit]](
+            Strawberry -> CandidateVoteCounts(
               perCandidate = Map(
-                Apple -> VoteCount(11),
-                Banana -> VoteCount(5),
-                Pear -> VoteCount(8),
+                Apple -> VoteCount(2),
+                Banana -> VoteCount(1),
+                Pear -> VoteCount(1),
                 Strawberry -> VoteCount.zero,
               ),
               exhausted = VoteCount(1),
               roundingError = VoteCount.zero,
-            ),
-            transfersDueToIneligibles = Map[Fruit, CandidateVoteCounts[Fruit]](
-              Strawberry -> CandidateVoteCounts(
-                perCandidate = Map(
-                  Apple -> VoteCount(2),
-                  Banana -> VoteCount(1),
-                  Pear -> VoteCount(1),
-                  Strawberry -> VoteCount.zero,
-                ),
-                exhausted = VoteCount(1),
-                roundingError = VoteCount.zero,
-              )
             )
-          ),
+          )
         )
       ),
       paperBundles = ParSet[PaperBundle[Fruit]](

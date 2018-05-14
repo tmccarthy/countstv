@@ -72,188 +72,261 @@ class CountStepsSpec extends ImprovedFlatSpec {
       exhausted = VoteCount.zero,
       roundingError = VoteCount.zero,
     ),
-    distributionSource = Some(DistributionCountStep.Source(
+    distributionSource = DistributionCountStep.Source(
       Watermelon,
       CandidateDistributionReason.Exclusion,
       sourceCounts = Set(Count(0)),
       transferValue = TransferValue(1),
-    ))
+    ),
   )
 
   private val secondDistributionStep = testDistributionCountStep.copy(count = testDistributionCountStep.count.increment)
 
-  private val fullTestCountSteps = CountSteps[Fruit](
-    initialAllocation = testInitialAllocation,
-    allocationAfterIneligibles = Some(testAllocationAfterIneligibles),
-    distributionCountSteps = List(testDistributionCountStep),
+  private val testFinalElectionStep = FinalElectionCountStep[Fruit](
+    count = Count(3),
+    candidateStatuses = CandidateStatuses[Fruit](
+      Apple -> Elected(Ordinal.first, Count(3)),
+      Banana -> Elected(Ordinal.second, Count(3)),
+      Mango -> Remaining,
+      Pear -> Remaining,
+      Raspberry -> Remaining,
+      Strawberry -> Remaining,
+      Watermelon -> Excluded(Ordinal.first, Count(2)),
+    ),
+    candidateVoteCounts = CandidateVoteCounts(
+      perCandidate = Map(
+        Apple -> VoteCount(11),
+        Banana -> VoteCount(6),
+        Mango -> VoteCount(10),
+        Pear -> VoteCount(11),
+        Raspberry -> VoteCount(7),
+        Strawberry -> VoteCount(5),
+        Watermelon -> VoteCount(0),
+      ),
+      exhausted = VoteCount.zero,
+      roundingError = VoteCount.zero,
+    ),
   )
 
-  "a collection of count steps" should "always contain an initial step" in {
-    val countSteps = fullTestCountSteps.copy(allocationAfterIneligibles = None, distributionCountSteps = Nil)
+  private val testCountStepsInitial: CountSteps.Initial[Fruit] = CountSteps.Initial(testInitialAllocation)
+  private val testCountStepsAfterIneligibleHandling: CountSteps.AfterIneligibleHandling[Fruit] = CountSteps.AfterIneligibleHandling(testInitialAllocation, testAllocationAfterIneligibles)
+  private val testCountStepsDuringDistributions: CountSteps.DuringDistributions[Fruit] = CountSteps.DuringDistributions(testInitialAllocation, testAllocationAfterIneligibles, List(testDistributionCountStep))
+  private val testCountStepsAfterFinalElections: CountSteps.AfterFinalElections[Fruit] = CountSteps.AfterFinalElections(testInitialAllocation, testAllocationAfterIneligibles, List(testDistributionCountStep), testFinalElectionStep)
 
-    assert(countSteps.initialAllocation === testInitialAllocation)
+  behaviour of "an initial CountSteps instance"
+
+  standardTests(testCountStepsInitial)(
+    expectedHead = testInitialAllocation,
+    expectedLast = testInitialAllocation,
+    expectedAsList = List(testInitialAllocation),
+    expectedSize = 1,
+    expectedDefinedUpToCount = Count.ofInitialAllocation,
+    expectedWhenTruncatedAtCount = List(
+      Count(0) -> testCountStepsInitial,
+      Count(42) -> testCountStepsInitial,
+    ),
+  )
+
+  it should "contain an initial step" in {
+    assert(testCountStepsInitial.initialAllocation === testInitialAllocation)
   }
 
-  it can "be missing an allocation away from ineligible candidates" in {
-    val countSteps = fullTestCountSteps.copy(allocationAfterIneligibles = None, distributionCountSteps = Nil)
-
-    assert(countSteps.allocationAfterIneligibles === None)
+  it can "have an ineligibles-handling step appended" in {
+    assert(testCountStepsInitial.append(testAllocationAfterIneligibles) === testCountStepsAfterIneligibleHandling)
   }
 
-  it can "have an allocation away from from ineligible candidates" in {
-    val countSteps = fullTestCountSteps.copy(distributionCountSteps = Nil)
+  behaviour of "a CountSteps instance after ineligible handling"
 
-    assert(countSteps.allocationAfterIneligibles === Some(testAllocationAfterIneligibles))
+  standardTests(testCountStepsAfterIneligibleHandling)(
+    expectedHead = testInitialAllocation,
+    expectedLast = testAllocationAfterIneligibles,
+    expectedAsList = List(testInitialAllocation, testAllocationAfterIneligibles),
+    expectedSize = 2,
+    expectedDefinedUpToCount = Count.ofIneligibleCandidateHandling,
+    expectedWhenTruncatedAtCount = List(
+      Count(0) -> testCountStepsInitial,
+      Count(1) -> testCountStepsAfterIneligibleHandling,
+      Count(42) -> testCountStepsAfterIneligibleHandling,
+    )
+  )
+
+  it should "contain an initial step" in {
+    assert(testCountStepsAfterIneligibleHandling.initialAllocation === testInitialAllocation)
   }
 
-  it can "not be missing an allocation away from ineligibles and also have a distribution" in {
-    intercept[IllegalArgumentException] {
-      fullTestCountSteps.copy(allocationAfterIneligibles = None)
-    }
-  }
-
-  it should "have a list of distribution steps" in {
-    assert(fullTestCountSteps.distributionCountSteps === List(testDistributionCountStep))
-  }
-
-  it can "be represented as a list when there was only one step" in {
-    val countSteps = fullTestCountSteps.copy(allocationAfterIneligibles = None, distributionCountSteps = Nil)
-
-    assert(countSteps.toList === List(testInitialAllocation))
-  }
-
-  it can "be represented as a list when there was an allocation away from ineligibles and no distributions" in {
-    val countSteps = fullTestCountSteps.copy(distributionCountSteps = Nil)
-
-    assert(countSteps.toList === List(testInitialAllocation, testAllocationAfterIneligibles))
-  }
-
-  it can "be represented as a list when there was an allocation away from ineligibles and a distribution" in {
-    assert(fullTestCountSteps.toList === List(testInitialAllocation, testAllocationAfterIneligibles, testDistributionCountStep))
-  }
-
-  it should "expose the last count step when there was only one step" in {
-    val countSteps = fullTestCountSteps.copy(allocationAfterIneligibles = None, distributionCountSteps = Nil)
-
-    assert(countSteps.last === testInitialAllocation)
-  }
-
-  it should "expose the last count step when there was an allocation away from ineligibles and no distributions" in {
-    val countSteps = fullTestCountSteps.copy(distributionCountSteps = Nil)
-
-    assert(countSteps.last === testAllocationAfterIneligibles)
-  }
-
-  it should "expose the last count step when there was an allocation away from ineligibles and a distribution" in {
-    assert(fullTestCountSteps.last === testDistributionCountStep)
-  }
-
-  it should "return the initial allocation as the head" in {
-    assert(fullTestCountSteps.head === testInitialAllocation)
+  it should "contain an allocation after ineligible candidates" in {
+    assert(testCountStepsAfterIneligibleHandling.allocationAfterIneligibles === testAllocationAfterIneligibles)
   }
 
   it can "have a distribution step appended" in {
-    val countSteps = fullTestCountSteps.copy(distributionCountSteps = Nil)
+    val countSteps = testCountStepsAfterIneligibleHandling
 
     val withAppendedDistributionStep = countSteps.append(testDistributionCountStep)
 
-    assert(withAppendedDistributionStep.distributionCountSteps === List(testDistributionCountStep))
+    assert(withAppendedDistributionStep === CountSteps.DuringDistributions(testInitialAllocation, testAllocationAfterIneligibles, List(testDistributionCountStep)))
   }
 
-  it should "have a size" in {
-    assert(fullTestCountSteps.size === 3)
+  it can "have a final election step appended" in {
+    val countSteps = testCountStepsAfterIneligibleHandling
+
+    val withAppendedDistributionStep = countSteps.append(testFinalElectionStep)
+
+    assert(withAppendedDistributionStep === CountSteps.AfterFinalElections(testInitialAllocation, testAllocationAfterIneligibles, Nil, testFinalElectionStep))
   }
 
-  it can "not be empty" in {
-    assert(fullTestCountSteps.isEmpty === false)
+  behaviour of "a CountSteps instance during distribution steps"
+
+  standardTests(testCountStepsDuringDistributions)(
+    expectedHead = testInitialAllocation,
+    expectedLast = testDistributionCountStep,
+    expectedAsList = List(testInitialAllocation, testAllocationAfterIneligibles, testDistributionCountStep),
+    expectedSize = 3,
+    expectedDefinedUpToCount = Count(2),
+    expectedWhenTruncatedAtCount = List(
+      Count(0) -> testCountStepsInitial,
+      Count(1) -> testCountStepsAfterIneligibleHandling,
+      Count(2) -> testCountStepsDuringDistributions,
+      Count(42) -> testCountStepsDuringDistributions,
+    )
+  )
+
+  it should "contain an initial step" in {
+    assert(testCountStepsDuringDistributions.initialAllocation === testInitialAllocation)
   }
 
-  it should "not be defined for a negative count" in {
-    assert(!fullTestCountSteps.isDefinedAt(Count(-1)))
+  it should "contain an allocation after ineligible candidates" in {
+    assert(testCountStepsDuringDistributions.allocationAfterIneligibles === testAllocationAfterIneligibles)
   }
 
-  it should "be defined for the present count numbers" in {
-    Range.inclusive(0, 2).foreach { countAsInt =>
-      assert(fullTestCountSteps.isDefinedAt(Count(countAsInt)), countAsInt)
-    }
+  it should "contain a list of distribution steps" in {
+    assert(testCountStepsDuringDistributions.distributionCountSteps === List(testDistributionCountStep))
   }
 
-  it should "not be defined for a count greater than the last count" in {
-    assert(!fullTestCountSteps.isDefinedAt(Count(3)))
+  it can "have a distribution step appended" in {
+    val countSteps = testCountStepsDuringDistributions
+
+    val withAppendedDistributionStep = countSteps.append(secondDistributionStep)
+
+    assert(withAppendedDistributionStep.distributionCountSteps === List(testDistributionCountStep, secondDistributionStep))
   }
 
-  it should "return the initial allocation for count 0" in {
-    assert(fullTestCountSteps(Count.ofInitialAllocation) === testInitialAllocation)
-  }
+  it can "have a final election step appended" in {
+    val countSteps = testCountStepsDuringDistributions
 
-  it should "return the allocation after ineligibles handling for count 1" in {
-    assert(fullTestCountSteps(Count.ofIneligibleCandidateHandling) === testAllocationAfterIneligibles)
-  }
+    val withAppendedDistributionStep = countSteps.append(testFinalElectionStep)
 
-  it should "return the distribution step for a count greater than 1" in {
-    assert(fullTestCountSteps(Count(2)) === testDistributionCountStep)
-  }
-
-  it should "throw if asked for an ineligibles handling step and one is missing" in {
-    val countSteps = fullTestCountSteps.copy(allocationAfterIneligibles = None, distributionCountSteps = Nil)
-
-    intercept[IndexOutOfBoundsException] {
-      countSteps(Count.ofIneligibleCandidateHandling)
-    }
-  }
-
-  it should "throw if asked for a count step beyond the bounds of the count" in {
-    intercept[IndexOutOfBoundsException] {
-      fullTestCountSteps(Count(5))
-    }
-  }
-
-  it should "return nothing if there is no second last count step" in {
-    val countSteps = fullTestCountSteps.copy(allocationAfterIneligibles = None, distributionCountSteps = Nil)
-
-    assert(countSteps.secondLast === None)
-  }
-
-  it can "return the second last count step if it is the initial allocation" in {
-    val countSteps = fullTestCountSteps.copy(distributionCountSteps = Nil)
-
-    assert(countSteps.secondLast === Some(testInitialAllocation))
-  }
-
-  it can "return the second last count step if it is the allocation after ineligible handling" in {
-    assert(fullTestCountSteps.secondLast === Some(testAllocationAfterIneligibles))
-  }
-
-  it can "return the second last count step if it is a distribution step" in {
-    val countSteps = fullTestCountSteps.copy(distributionCountSteps = List(testDistributionCountStep, secondDistributionStep))
-
-    assert(countSteps.secondLast === Some(testDistributionCountStep))
-  }
-
-  it can "be truncated to the initial allocation" in {
-    val actualTruncatedCountSteps = fullTestCountSteps.truncateAfter(Count.ofInitialAllocation)
-
-    val expectedTruncatedCountSteps =
-      fullTestCountSteps.copy(allocationAfterIneligibles = None, distributionCountSteps = Nil)
-
-    assert(actualTruncatedCountSteps === expectedTruncatedCountSteps)
-  }
-
-  it can "be truncated to the allocation after ineligible handling" in {
-    val actualTruncatedCountSteps = fullTestCountSteps.truncateAfter(Count.ofIneligibleCandidateHandling)
-
-    val expectedTruncatedCountSteps = fullTestCountSteps.copy(distributionCountSteps = Nil)
-
-    assert(actualTruncatedCountSteps === expectedTruncatedCountSteps)
+    assert(withAppendedDistributionStep === testCountStepsAfterFinalElections)
   }
 
   it can "be truncated to a distribution step" in {
-    val initialCountSteps = fullTestCountSteps.copy(distributionCountSteps = List(testDistributionCountStep, secondDistributionStep))
+    val initialCountSteps = testCountStepsDuringDistributions.append(secondDistributionStep)
 
     val actualTruncatedCountSteps = initialCountSteps.truncateAfter(Count(2))
 
-    val expectedTruncatedCountSteps = fullTestCountSteps
+    val expectedTruncatedCountSteps = testCountStepsDuringDistributions
 
     assert(actualTruncatedCountSteps === expectedTruncatedCountSteps)
   }
+
+  it should "throw if constructed with an empty list of distribution steps" in {
+    intercept[IllegalArgumentException] {
+      CountSteps.DuringDistributions(testInitialAllocation, testAllocationAfterIneligibles, Nil)
+    }
+  }
+
+  behaviour of "a CountSteps instance after a final election step"
+
+  standardTests(testCountStepsAfterFinalElections)(
+    expectedHead = testInitialAllocation,
+    expectedLast = testFinalElectionStep,
+    expectedAsList = List(testInitialAllocation, testAllocationAfterIneligibles, testDistributionCountStep, testFinalElectionStep),
+    expectedSize = 4,
+    expectedDefinedUpToCount = Count(3),
+    expectedWhenTruncatedAtCount = List(
+      Count(0) -> testCountStepsInitial,
+      Count(1) -> testCountStepsAfterIneligibleHandling,
+      Count(2) -> testCountStepsDuringDistributions,
+      Count(3) -> testCountStepsAfterFinalElections,
+      Count(42) -> testCountStepsAfterFinalElections,
+    )
+  )
+
+  it should "contain an initial step" in {
+    assert(testCountStepsAfterFinalElections.initialAllocation === testInitialAllocation)
+  }
+
+  it should "contain an allocation after ineligible candidates" in {
+    assert(testCountStepsAfterFinalElections.allocationAfterIneligibles === testAllocationAfterIneligibles)
+  }
+
+  it should "contain a list of distribution steps" in {
+    assert(testCountStepsAfterFinalElections.distributionCountSteps === List(testDistributionCountStep))
+  }
+
+  it should "contain a final election step" in {
+    assert(testCountStepsAfterFinalElections.finalElectionCountStep === testFinalElectionStep)
+  }
+
+  private def standardTests(testInstance: CountSteps[Fruit])
+                           (
+                             expectedHead: InitialAllocation[Fruit],
+                             expectedLast: CountStep[Fruit],
+                             expectedAsList: List[CountStep[Fruit]],
+                             expectedSize: Int,
+                             expectedDefinedUpToCount: Count,
+                             expectedWhenTruncatedAtCount: List[(Count, CountSteps[Fruit])],
+                           ): Unit = {
+    it should "have the initial allocation as the head" in {
+      assert(testInstance.head === expectedHead)
+    }
+
+    it should "expose the last step" in {
+      assert(testInstance.last === expectedLast)
+    }
+
+    it can "be converted to a list of count steps" in {
+      assert(testInstance.toList === expectedAsList)
+    }
+
+    it should s"have the correct size" in {
+      assert(testInstance.size === expectedSize)
+    }
+
+    it should "have a definite size" in {
+      assert(testInstance.hasDefiniteSize === true)
+    }
+
+    it should "not be empty" in {
+      assert(testInstance.isEmpty === false)
+    }
+
+    for (countAsInt <- 0 to expectedDefinedUpToCount.asInt) {
+      it should s"be defined for count $countAsInt" in {
+        assert(testInstance.isDefinedAt(Count(countAsInt)))
+      }
+
+      it should s"return the correct count for count $countAsInt" in {
+        assert(testInstance(Count(countAsInt)) === expectedAsList(countAsInt))
+      }
+    }
+
+    for (countAsInt <- (expectedDefinedUpToCount.asInt + 1) to (expectedDefinedUpToCount.asInt + 3)) {
+      it should s"not be defined for count $countAsInt" in {
+        assert(!testInstance.isDefinedAt(Count(countAsInt)))
+      }
+
+      it should s"throw when attempting to extract a count for count $countAsInt" in {
+        intercept[IndexOutOfBoundsException] {
+          testInstance(Count(countAsInt))
+        }
+      }
+    }
+
+    for ((count, expectedTruncated) <- expectedWhenTruncatedAtCount) {
+      it should s"correctly truncate to count $count" in {
+        assert(testInstance.truncateAfter(count) === expectedTruncated)
+      }
+    }
+  }
+
 }

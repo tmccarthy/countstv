@@ -2,6 +2,7 @@ package au.id.tmm.countstv.counting
 
 import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
+import au.id.tmm.countstv.counting.countsteps.distribution.DistributingPapersFixture
 import au.id.tmm.countstv.model.CandidateStatus._
 import au.id.tmm.countstv.model.values.{Count, Ordinal}
 import au.id.tmm.countstv.model.{CandidateStatuses, PreferenceTree}
@@ -154,6 +155,29 @@ class FullCountComputationSpec extends ImprovedFlatSpec {
     )
 
     assert(countSteps.map(_.last.candidateStatuses) === expectedFinalOutcomes)
+  }
+
+  it should "produce the correct outcome when there is a final election step" in {
+    val actualOutcome = FullCountComputation.runCount[Fruit](
+      DistributingPapersFixture.WithFinalElection.candidates,
+      Set.empty,
+      DistributingPapersFixture.WithFinalElection.numVacancies,
+      DistributingPapersFixture.WithFinalElection.testPreferenceTree,
+    ).map(_.last.candidateStatuses)
+
+    val expectedFinalOutcome = ProbabilityMeasure.Always(
+      CandidateStatuses[Fruit](
+        Apple -> Elected(Ordinal.first,Count(4)),
+        Banana -> Excluded(Ordinal.third,Count(4)),
+        Mango -> Remaining,
+        Pear -> Elected(Ordinal.second,Count(8)),
+        Raspberry -> Excluded(Ordinal.fourth,Count(6)),
+        Strawberry -> Excluded(Ordinal.second,Count(3)),
+        Watermelon -> Excluded(Ordinal.first,Count(2)),
+      )
+    )
+
+    assert(actualOutcome === expectedFinalOutcome)
   }
 
   it can "not occur if the set of ineligible candidates is not a subset of the set of all candidates" in {

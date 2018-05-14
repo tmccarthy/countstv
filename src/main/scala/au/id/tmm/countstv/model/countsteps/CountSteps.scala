@@ -1,68 +1,160 @@
 package au.id.tmm.countstv.model.countsteps
 
-import au.id.tmm.countstv.model.countsteps.CountSteps.numStepsBeforeDistributionSteps
 import au.id.tmm.countstv.model.values.Count
 
-final case class CountSteps[C](
-                                initialAllocation: InitialAllocation[C],
-                                allocationAfterIneligibles: Option[AllocationAfterIneligibles[C]],
-                                distributionCountSteps: List[DistributionCountStep[C]],
-                              )
-  extends Iterable[CountStep[C]]
-    with PartialFunction[Count, CountStep[C]] {
-
-  ensureValid()
-
-  private def ensureValid(): Unit = {
-    if (distributionCountSteps.nonEmpty) {
-      require(allocationAfterIneligibles.nonEmpty)
-    }
-  }
+sealed trait CountSteps[C] extends Iterable[CountStep[C]] with PartialFunction[Count, CountStep[C]] {
+  def initialAllocation: InitialAllocation[C]
 
   override def head: CountStep[C] = initialAllocation
 
-  override def last: CountStep[C] =
-    distributionCountSteps.lastOption orElse allocationAfterIneligibles getOrElse initialAllocation
+  override def last: CountStep[C]
 
-  def secondLast: Option[CountStep[C]] = {
-    size match {
-      case 0 | 1 => None
-      case 2 => Some(initialAllocation)
-      case 3 => allocationAfterIneligibles
-      case _ => distributionCountSteps.init.takeRight(2).headOption
-    }
-  }
+  override def iterator: Iterator[CountStep[C]]
 
-  def append(distributionCountStep: DistributionCountStep[C]): CountSteps[C] =
-    this.copy(distributionCountSteps = distributionCountSteps :+ distributionCountStep)
+  override def hasDefiniteSize: Boolean = true
 
-  override def iterator: Iterator[CountStep[C]] =
-    Iterator(initialAllocation) ++ allocationAfterIneligibles ++ distributionCountSteps
-
-  override def size: Int = 1 + allocationAfterIneligibles.size + distributionCountSteps.size
+  override def size: Int
 
   override def isEmpty: Boolean = false
 
-  override def isDefinedAt(count: Count): Boolean = count.asInt >= 0 && count.asInt <= size - 1
+  override def isDefinedAt(count: Count): Boolean
 
-  override def apply(count: Count): CountStep[C] = {
-    count match {
-      case Count.ofInitialAllocation => initialAllocation
-      case Count.ofIneligibleCandidateHandling =>
-        allocationAfterIneligibles.getOrElse(throw new IndexOutOfBoundsException(count.asInt.toString))
-      case _ => distributionCountSteps(count.asInt - numStepsBeforeDistributionSteps)
-    }
-  }
+  override def apply(count: Count): CountStep[C]
 
-  def truncateAfter(count: Count): CountSteps[C] = {
-    count match {
-      case Count.ofInitialAllocation => this.copy(allocationAfterIneligibles = None, distributionCountSteps = Nil)
-      case Count.ofIneligibleCandidateHandling => this.copy(distributionCountSteps = Nil)
-      case _ => this.copy(distributionCountSteps = this.distributionCountSteps.take(count.asInt - 1))
-    }
-  }
+  def truncateAfter(count: Count): CountSteps[C]
 }
 
 object CountSteps {
+  sealed trait AllowingAppending[C] extends CountSteps[C] {
+    def append(distributionCountStep: DistributionCountStep[C]): DuringDistributions[C]
+
+    def append(finalElectionCountStep: FinalElectionCountStep[C]): AfterFinalElections[C]
+  }
+
+  final case class Initial[C](initialAllocation: InitialAllocation[C]) extends CountSteps[C] {
+    override def last: InitialAllocation[C] = initialAllocation
+
+    override def iterator: Iterator[CountStep[C]] = Iterator(initialAllocation)
+
+    override def size: Int = 1
+
+    override def isDefinedAt(count: Count): Boolean = count == Count.ofInitialAllocation
+
+    override def apply(count: Count): CountStep[C] = count match {
+      case Count.ofInitialAllocation => initialAllocation
+      case _ => throw new IndexOutOfBoundsException(count.asInt.toString)
+    }
+
+    override def truncateAfter(count: Count): CountSteps[C] = this
+
+    def append(allocationAfterIneligibles: AllocationAfterIneligibles[C]): AfterIneligibleHandling[C] =
+      AfterIneligibleHandling(initialAllocation, allocationAfterIneligibles)
+  }
+
+  final case class AfterIneligibleHandling[C](
+                                               initialAllocation: InitialAllocation[C],
+                                               allocationAfterIneligibles: AllocationAfterIneligibles[C],
+                                             ) extends AllowingAppending[C] {
+    override def last: AllocationAfterIneligibles[C] = allocationAfterIneligibles
+
+    override def iterator: Iterator[CountStep[C]] = Iterator(initialAllocation, allocationAfterIneligibles)
+
+    override def size: Int = numStepsBeforeDistributionSteps
+
+    override def isDefinedAt(count: Count): Boolean =
+      count >= Count.ofInitialAllocation && count <= Count.ofIneligibleCandidateHandling
+
+    override def apply(count: Count): CountStep[C] = count match {
+      case Count.ofInitialAllocation => initialAllocation
+      case Count.ofIneligibleCandidateHandling => allocationAfterIneligibles
+      case _ => throw new IndexOutOfBoundsException(count.asInt.toString)
+    }
+
+    override def truncateAfter(count: Count): CountSteps[C] = count match {
+      case Count.ofInitialAllocation => Initial(initialAllocation)
+      case _ => this
+    }
+
+    override def append(distributionCountStep: DistributionCountStep[C]): DuringDistributions[C] =
+      DuringDistributions(initialAllocation, allocationAfterIneligibles, List(distributionCountStep))
+
+    override def append(finalElectionCountStep: FinalElectionCountStep[C]): AfterFinalElections[C] =
+      AfterFinalElections(initialAllocation, allocationAfterIneligibles, Nil, finalElectionCountStep)
+  }
+
+  final case class DuringDistributions[C](
+                                           initialAllocation: InitialAllocation[C],
+                                           allocationAfterIneligibles: AllocationAfterIneligibles[C],
+                                           distributionCountSteps: List[DistributionCountStep[C]],
+                                         ) extends AllowingAppending[C] {
+    require(distributionCountSteps.nonEmpty)
+
+    private val lastCount: Count = Count(distributionCountSteps.size + 1)
+
+    override def last: DistributionCountStep[C] = distributionCountSteps.last
+
+    override def iterator: Iterator[CountStep[C]] =
+      Iterator(initialAllocation, allocationAfterIneligibles) ++ distributionCountSteps.iterator
+
+    override def size: Int = distributionCountSteps.size + numStepsBeforeDistributionSteps
+
+    override def isDefinedAt(count: Count): Boolean = count >= Count.ofInitialAllocation && count <= lastCount
+
+    override def apply(count: Count): CountStep[C] = count match {
+      case Count.ofInitialAllocation => initialAllocation
+      case Count.ofIneligibleCandidateHandling => allocationAfterIneligibles
+      case c if c <= lastCount => distributionCountSteps(c.asInt - numStepsBeforeDistributionSteps)
+      case _ => throw new IndexOutOfBoundsException(count.asInt.toString)
+    }
+
+    override def truncateAfter(count: Count): CountSteps[C] = count match {
+      case Count.ofInitialAllocation => Initial(initialAllocation)
+      case Count.ofIneligibleCandidateHandling => AfterIneligibleHandling(initialAllocation, allocationAfterIneligibles)
+      case _: Count => this.copy(distributionCountSteps = this.distributionCountSteps.take(count.asInt - 1))
+    }
+
+    override def append(distributionCountStep: DistributionCountStep[C]): DuringDistributions[C] =
+      this.copy(distributionCountSteps = distributionCountSteps :+ distributionCountStep)
+
+    override def append(finalElectionCountStep: FinalElectionCountStep[C]): AfterFinalElections[C] =
+      AfterFinalElections(initialAllocation, allocationAfterIneligibles, distributionCountSteps, finalElectionCountStep)
+  }
+
+  final case class AfterFinalElections[C](
+                                           initialAllocation: InitialAllocation[C],
+                                           allocationAfterIneligibles: AllocationAfterIneligibles[C],
+                                           distributionCountSteps: List[DistributionCountStep[C]],
+                                           finalElectionCountStep: FinalElectionCountStep[C],
+                                         ) extends CountSteps[C] {
+
+    private val lastCount: Count = Count(distributionCountSteps.size + 2)
+
+    override def last: FinalElectionCountStep[C] = finalElectionCountStep
+
+    override def iterator: Iterator[CountStep[C]] =
+      Iterator(initialAllocation, allocationAfterIneligibles) ++
+        distributionCountSteps.iterator ++
+        Iterator(finalElectionCountStep)
+
+    override def size: Int = numStepsBeforeDistributionSteps + distributionCountSteps.size + 1
+
+    override def isDefinedAt(count: Count): Boolean = count >= Count.ofInitialAllocation && count <= lastCount
+
+    override def apply(count: Count): CountStep[C] = count match {
+      case Count.ofInitialAllocation => initialAllocation
+      case Count.ofIneligibleCandidateHandling => allocationAfterIneligibles
+      case c if c < lastCount => distributionCountSteps(c.asInt - numStepsBeforeDistributionSteps)
+      case c if c == lastCount => finalElectionCountStep
+      case _ => throw new IndexOutOfBoundsException(count.asInt.toString)
+    }
+
+    override def truncateAfter(count: Count): CountSteps[C] = count match {
+      case Count.ofInitialAllocation => Initial(initialAllocation)
+      case Count.ofIneligibleCandidateHandling => AfterIneligibleHandling(initialAllocation, allocationAfterIneligibles)
+      case c if c < lastCount => DuringDistributions(initialAllocation, allocationAfterIneligibles, distributionCountSteps.take(count.asInt - 1))
+      case _: Count => this
+    }
+  }
+
   private val numStepsBeforeDistributionSteps = 2
 }

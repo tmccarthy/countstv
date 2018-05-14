@@ -1,7 +1,7 @@
 package au.id.tmm.countstv.counting
 
-import au.id.tmm.countstv.model.values.NumVotes
-import au.id.tmm.countstv.model.{CandidateStatuses, CandidateVoteCounts}
+import au.id.tmm.countstv.model.values.{Count, NumVotes, Ordinal}
+import au.id.tmm.countstv.model.{CandidateStatus, CandidateStatuses, CandidateVoteCounts}
 import au.id.tmm.utilities.collection.DupelessSeq
 import au.id.tmm.utilities.probabilities.{ProbabilityMeasure, TieSensitiveSorting}
 
@@ -76,5 +76,25 @@ private[counting] object ElectedCandidateComputations {
       ProbabilityMeasure.always(DupelessSeq.empty)
 
     }
+  }
+
+  def newCandidateStatusesAfterElectionOf[C](
+                                              newlyElectedCandidates: DupelessSeq[C],
+                                              count: Count,
+                                              oldCandidateStatuses: CandidateStatuses[C],
+                                            ): CandidateStatuses[C] = {
+    val numCandidatesPreviouslyElected = oldCandidateStatuses.electedCandidates.size
+
+    val statusesForNewlyElectedCandidates = newlyElectedCandidates
+      .zipWithIndex
+      .map { case (newlyElectedCandidate, indexElectedThisStep) =>
+        newlyElectedCandidate -> (numCandidatesPreviouslyElected + indexElectedThisStep)
+      }
+      .map { case (newlyElectedCandidate, ordinalElected) =>
+        newlyElectedCandidate -> CandidateStatus.Elected(Ordinal(ordinalElected), count)
+      }
+      .toMap
+
+    oldCandidateStatuses.updateFrom(statusesForNewlyElectedCandidates)
   }
 }

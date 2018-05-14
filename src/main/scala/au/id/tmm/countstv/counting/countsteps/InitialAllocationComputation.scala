@@ -17,17 +17,17 @@ private[counting] object InitialAllocationComputation {
                                 initialCandidateStatuses: CandidateStatuses[C],
                                 rootPaperBundle: RootPaperBundle[C],
                                 numVacancies: Int,
-                              ): CountContext[C] = {
+                              ): CountContext[C, CountSteps.Initial[C]] = {
     val numFormalPapers = rootPaperBundle.numPapers
     val quota = QuotaComputation.computeQuota(numVacancies, numFormalPapers)
 
     val firstSetOfPaperBundles = rootPaperBundle.distribute
 
-    CountContext[C](
+    CountContext[C, CountSteps.Initial[C]](
       numFormalPapers = numFormalPapers,
       numVacancies = numVacancies,
       paperBundles = firstSetOfPaperBundles,
-      previousCountSteps = CountSteps(
+      previousCountSteps = CountSteps.Initial(
         InitialAllocation(
           candidateStatuses = initialCandidateStatuses,
           candidateVoteCounts = VoteCounting.countVotes(
@@ -37,10 +37,7 @@ private[counting] object InitialAllocationComputation {
             paperBundles = firstSetOfPaperBundles,
           )
         ),
-        allocationAfterIneligibles = None,
-        distributionCountSteps = Nil,
       ),
-      currentDistribution = None,
     )
 
   }

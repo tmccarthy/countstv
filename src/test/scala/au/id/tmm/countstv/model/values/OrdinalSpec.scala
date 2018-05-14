@@ -64,5 +64,10 @@ class OrdinalSpec extends ImprovedFlatSpec {
     assert(Ordinal.tenth === Ordinal(9))
   }
 
+  it can "be constructed for the next element in a collection" in {
+    val list = List(1, 2, 3, 4, 5)
+
+    assert(Ordinal.ofNextAdditionTo(list) === Ordinal.sixth)
+  }
 
 }
