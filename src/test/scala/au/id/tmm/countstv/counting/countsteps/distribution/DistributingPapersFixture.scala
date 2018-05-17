@@ -131,4 +131,14 @@ object DistributingPapersFixture {
     )
   }
 
+  object WithVotelessCandidate extends DistributingPapersFixture {
+    override def ballots: Vector[Vector[Fruit]] = WithFinalElection.ballots.map { ballot =>
+      if (ballot.head == Watermelon) {
+        ballot.tail
+      } else {
+        ballot
+      }
+    }
+  }
+
 }

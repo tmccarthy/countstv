@@ -17,7 +17,6 @@ private[counting] final case class CountContext[C, +T_COUNT_STEPS <: CountSteps[
                                                                                      numVacancies: Int,
 
                                                                                      paperBundles: PaperBundles[C],
-                                                                                     candidateStatuses: CandidateStatuses[C],
                                                                                      previousCountSteps: T_COUNT_STEPS,
                                                                                    ) {
 
@@ -28,29 +27,17 @@ private[counting] final case class CountContext[C, +T_COUNT_STEPS <: CountSteps[
   lazy val previousCandidateVoteCounts: List[CandidateVoteCounts[C]] =
     previousCountSteps.toList.map(_.candidateVoteCounts)
 
-  def allVacanciesNowFilled: Boolean = candidateStatuses.electedCandidates.size == numVacancies || (
-    numVacancies > candidateStatuses.eligibleCandidates.size && candidateStatuses.electedCandidates.size == candidateStatuses.eligibleCandidates.size
-    )
+  def allVacanciesNowFilled: Boolean = {
+    val candidateStatuses = mostRecentCountStep.candidateStatuses
+
+    candidateStatuses.electedCandidates.size == numVacancies || (
+      numVacancies > candidateStatuses.eligibleCandidates.size && candidateStatuses.electedCandidates.size == candidateStatuses.eligibleCandidates.size
+      )
+  }
 
 }
 
 object CountContext {
-
-  def apply[C, T_COUNT_STEPS <: CountSteps[C]](
-                                                numFormalPapers: NumPapers,
-                                                numVacancies: Int,
-
-                                                paperBundles: PaperBundles[C],
-                                                previousCountSteps: T_COUNT_STEPS,
-                                              ): CountContext[C, T_COUNT_STEPS] = {
-    new CountContext(
-      numFormalPapers,
-      numVacancies,
-      paperBundles,
-      previousCountSteps.last.candidateStatuses,
-      previousCountSteps,
-    )
-  }
 
   final case class CurrentDistribution[C](
                                            candidateBeingDistributed: C,

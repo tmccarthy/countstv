@@ -46,6 +46,8 @@ final case class AllocationAfterIneligibles[C](
   override def count: Count = Count.ofIneligibleCandidateHandling
 }
 
+sealed trait DistributionPhaseCountStep[C] extends CountStep[C]
+
 /**
   * A normal count step, where papers are distributed away from an elected or ineligible candidate.
   */
@@ -54,7 +56,18 @@ final case class DistributionCountStep[C](
                                            candidateStatuses: CandidateStatuses[C],
                                            candidateVoteCounts: CandidateVoteCounts[C],
                                            distributionSource: DistributionCountStep.Source[C],
-                                         ) extends CountStep[C]
+                                         ) extends DistributionPhaseCountStep[C]
+
+/**
+  * A count step during the distribution phase where no distribution happens because a candidate was excluded with no
+  * votes.
+  */
+final case class ExcludedNoVotesCountStep[C](
+                                              count: Count,
+                                              candidateStatuses: CandidateStatuses[C],
+                                              candidateVoteCounts: CandidateVoteCounts[C],
+                                              excludedCandidate: C,
+                                            ) extends DistributionPhaseCountStep[C]
 
 final case class FinalElectionCountStep[C](
                                             count: Count,

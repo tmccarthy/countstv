@@ -26,7 +26,7 @@ sealed trait CountSteps[C] extends Iterable[CountStep[C]] with PartialFunction[C
 
 object CountSteps {
   sealed trait AllowingAppending[C] extends CountSteps[C] {
-    def append(distributionCountStep: DistributionCountStep[C]): DuringDistributions[C]
+    def append(distributionCountStep: DistributionPhaseCountStep[C]): DuringDistributions[C]
 
     def append(finalElectionCountStep: FinalElectionCountStep[C]): AfterFinalElections[C]
   }
@@ -75,7 +75,7 @@ object CountSteps {
       case _ => this
     }
 
-    override def append(distributionCountStep: DistributionCountStep[C]): DuringDistributions[C] =
+    override def append(distributionCountStep: DistributionPhaseCountStep[C]): DuringDistributions[C] =
       DuringDistributions(initialAllocation, allocationAfterIneligibles, List(distributionCountStep))
 
     override def append(finalElectionCountStep: FinalElectionCountStep[C]): AfterFinalElections[C] =
@@ -85,13 +85,13 @@ object CountSteps {
   final case class DuringDistributions[C](
                                            initialAllocation: InitialAllocation[C],
                                            allocationAfterIneligibles: AllocationAfterIneligibles[C],
-                                           distributionCountSteps: List[DistributionCountStep[C]],
+                                           distributionCountSteps: List[DistributionPhaseCountStep[C]],
                                          ) extends AllowingAppending[C] {
     require(distributionCountSteps.nonEmpty)
 
     private val lastCount: Count = Count(distributionCountSteps.size + 1)
 
-    override def last: DistributionCountStep[C] = distributionCountSteps.last
+    override def last: DistributionPhaseCountStep[C] = distributionCountSteps.last
 
     override def iterator: Iterator[CountStep[C]] =
       Iterator(initialAllocation, allocationAfterIneligibles) ++ distributionCountSteps.iterator
@@ -113,7 +113,7 @@ object CountSteps {
       case _: Count => this.copy(distributionCountSteps = this.distributionCountSteps.take(count.asInt - 1))
     }
 
-    override def append(distributionCountStep: DistributionCountStep[C]): DuringDistributions[C] =
+    override def append(distributionCountStep: DistributionPhaseCountStep[C]): DuringDistributions[C] =
       this.copy(distributionCountSteps = distributionCountSteps :+ distributionCountStep)
 
     override def append(finalElectionCountStep: FinalElectionCountStep[C]): AfterFinalElections[C] =
@@ -123,7 +123,7 @@ object CountSteps {
   final case class AfterFinalElections[C](
                                            initialAllocation: InitialAllocation[C],
                                            allocationAfterIneligibles: AllocationAfterIneligibles[C],
-                                           distributionCountSteps: List[DistributionCountStep[C]],
+                                           distributionCountSteps: List[DistributionPhaseCountStep[C]],
                                            finalElectionCountStep: FinalElectionCountStep[C],
                                          ) extends CountSteps[C] {
 

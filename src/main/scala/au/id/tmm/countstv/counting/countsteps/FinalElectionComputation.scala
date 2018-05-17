@@ -13,7 +13,7 @@ object FinalElectionComputation {
     ElectedCandidateComputations.finallyElected(
       countContext.mostRecentCountStep.candidateVoteCounts,
       countContext.previousCandidateVoteCounts.init,
-      countContext.candidateStatuses,
+      countContext.mostRecentCountStep.candidateStatuses,
       countContext.numVacancies,
       countContext.quota,
     ) match {
@@ -22,12 +22,15 @@ object FinalElectionComputation {
         p.map { newlyElectedCandidates =>
           val count = countContext.mostRecentCountStep.count.increment
 
-          val newCandidateStatuses = ElectedCandidateComputations.newCandidateStatusesAfterElectionOf(newlyElectedCandidates, count, countContext.candidateStatuses)
+          val newCandidateStatuses = ElectedCandidateComputations.newCandidateStatusesAfterElectionOf(
+            newlyElectedCandidates,
+            count,
+            countContext.mostRecentCountStep.candidateStatuses,
+          )
 
           val newCountStep = FinalElectionCountStep(count, newCandidateStatuses, countContext.mostRecentCountStep.candidateVoteCounts)
 
           countContext.copy(
-            candidateStatuses = newCandidateStatuses,
             previousCountSteps = countContext.previousCountSteps.append(newCountStep)
           )
         }

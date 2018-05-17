@@ -3,7 +3,8 @@ package au.id.tmm.countstv.counting.countsteps.distribution
 import au.id.tmm.countstv.counting._
 import au.id.tmm.countstv.counting.countsteps.CountContext
 import au.id.tmm.countstv.counting.countsteps.distribution.NextDistributionComputation.DistributionTarget
-import au.id.tmm.countstv.model.countsteps.{CountSteps, DistributionCountStep}
+import au.id.tmm.countstv.model.CandidateDistributionReason.Exclusion
+import au.id.tmm.countstv.model.countsteps.{CountSteps, DistributionCountStep, ExcludedNoVotesCountStep}
 import au.id.tmm.countstv.model.values.{Count, NumVotes, Ordinal, TransferValue}
 import au.id.tmm.countstv.model.{CandidateDistributionReason, CandidateStatus, CandidateStatuses, CandidateVoteCounts}
 import au.id.tmm.utilities.probabilities.ProbabilityMeasure
@@ -62,14 +63,28 @@ private[counting] object DistributingPapers {
                                                bundlesToDistribute: Queue[ParSet[AssignedPaperBundle[C]]],
                                              ): ProbabilityMeasure[CountContext[C, CountSteps.DuringDistributions[C]]] = {
 
-    require(bundlesToDistribute.nonEmpty)
-
     val count = countContext.mostRecentCountStep.count.increment
     val candidateStatusesDuringStep = updateStatusOfAnyNewlyExcluded(
       count,
       countContext.mostRecentCountStep.candidateStatuses,
       distributionTarget,
     )
+
+    if (bundlesToDistribute.isEmpty && distributionTarget.reason == Exclusion) {
+
+      val newCountStep = ExcludedNoVotesCountStep(
+          count,
+          candidateStatusesDuringStep,
+          countContext.mostRecentCountStep.candidateVoteCounts,
+          distributionTarget.candidate,
+        )
+
+      val newContext = countContext.copy(
+        previousCountSteps = countContext.previousCountSteps.append(newCountStep)
+      )
+
+      return ProbabilityMeasure.Always(newContext)
+    }
 
     val (bundlesToDistributeNow, bundlesToDistributeLater) = bundlesToDistribute.dequeue
 
@@ -112,7 +127,6 @@ private[counting] object DistributingPapers {
 
       countContext.copy(
         paperBundles = paperBundlesAfterDistribution,
-        candidateStatuses = candidateStatusesAtEndOfStep,
         previousCountSteps = countContext.previousCountSteps.append(newCountStep),
       )
     }

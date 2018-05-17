@@ -45,7 +45,6 @@ class CountContextSpec extends ImprovedFlatSpec {
             candidateStatuses = candidateStatuses,
           ),
         ),
-        candidateStatuses = candidateStatuses,
       )
 
     assert(contextWithAllVacanciesFilled.allVacanciesNowFilled === true)
@@ -73,7 +72,6 @@ class CountContextSpec extends ImprovedFlatSpec {
             candidateStatuses = candidateStatuses,
           ),
         ),
-        candidateStatuses = candidateStatuses,
       )
 
     assert(contextWithAllVacanciesFilled.allVacanciesNowFilled === true)
