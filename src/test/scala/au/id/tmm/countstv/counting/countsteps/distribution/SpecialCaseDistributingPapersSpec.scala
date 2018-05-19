@@ -1,9 +1,10 @@
 package au.id.tmm.countstv.counting.countsteps.distribution
 
+import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
 import au.id.tmm.countstv.model.CandidateStatus._
-import au.id.tmm.countstv.model.countsteps.ExcludedNoVotesCountStep
-import au.id.tmm.countstv.model.values.{Count, Ordinal}
+import au.id.tmm.countstv.model.countsteps.{ElectedNoSurplusCountStep, ExcludedNoVotesCountStep}
+import au.id.tmm.countstv.model.values.{Count, NumPapers, NumVotes, Ordinal}
 import au.id.tmm.countstv.model.{CandidateStatuses, CandidateVoteCounts, VoteCount}
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
@@ -46,4 +47,38 @@ class SpecialCaseDistributingPapersSpec extends ImprovedFlatSpec {
 
   }
 
+  "an election where a candidate is elected with no surplus" should "elect that candidate in a step without distributing anything" in {
+    import DistributingPapersFixture.WithElectionSansSurplus._
+
+    val expectedCountStep = ElectedNoSurplusCountStep(
+      count = Count(5),
+      candidateStatuses = CandidateStatuses[Fruit](
+        Apple -> Elected(Ordinal.first,Count(4)),
+        Banana -> Excluded(Ordinal.third,Count(4)),
+        Mango -> Remaining,
+        Pear -> Remaining,
+        Raspberry -> Remaining,
+        Strawberry -> Excluded(Ordinal.second,Count(3)),
+        Watermelon -> Excluded(Ordinal.first,Count(2)),
+      ),
+      candidateVoteCounts = CandidateVoteCounts[Fruit](
+        perCandidate = Map(
+          Apple -> VoteCount(NumPapers(0), NumVotes(17)),
+          Banana -> VoteCount(NumPapers(0), NumVotes(0)),
+          Mango -> VoteCount(NumPapers(11), NumVotes(11)),
+          Pear -> VoteCount(NumPapers(11), NumVotes(11)),
+          Raspberry -> VoteCount(NumPapers(11), NumVotes(11)),
+          Strawberry -> VoteCount(NumPapers(0), NumVotes(0)),
+          Watermelon -> VoteCount(NumPapers(0), NumVotes(0)),
+        ),
+        exhausted = VoteCount.zero,
+        roundingError = VoteCount(NumPapers(-17), NumVotes(0)) // TODO the missing papers aren't really a rounding error
+      ),
+      electedCandidate = Apple,
+    )
+
+    val actualCountStep = actualContextAfterCount(Count(5)).mostRecentCountStep
+
+    assert(actualCountStep === expectedCountStep)
+  }
 }

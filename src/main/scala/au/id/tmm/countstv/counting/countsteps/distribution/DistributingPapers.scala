@@ -4,8 +4,8 @@ import au.id.tmm.countstv.counting._
 import au.id.tmm.countstv.counting.countsteps.CountContext
 import au.id.tmm.countstv.counting.countsteps.distribution.NextDistributionComputation.DistributionTarget
 import au.id.tmm.countstv.model.CandidateDistributionReason.Exclusion
-import au.id.tmm.countstv.model.countsteps.{CountSteps, DistributionCountStep, ExcludedNoVotesCountStep}
-import au.id.tmm.countstv.model.values.{Count, NumVotes, Ordinal, TransferValue}
+import au.id.tmm.countstv.model.countsteps.{CountSteps, DistributionCountStep, ElectedNoSurplusCountStep, ExcludedNoVotesCountStep}
+import au.id.tmm.countstv.model.values._
 import au.id.tmm.countstv.model.{CandidateDistributionReason, CandidateStatus, CandidateStatuses, CandidateVoteCounts}
 import au.id.tmm.utilities.probabilities.ProbabilityMeasure
 
@@ -28,7 +28,65 @@ private[counting] object DistributingPapers {
                                              countContext: CountContext[C, _ <: CountSteps.AllowingAppending[C]],
                                              distributionTarget: DistributionTarget[C],
                                            ): ProbabilityMeasure[CountContext[C, CountSteps.DuringDistributions[C]]] = {
+
+    val candidateElectedNoSurplus = distributionTarget.reason == CandidateDistributionReason.Election &&
+      distributionTarget.transferValueCoefficient == TransferValueCoefficient(0)
+
+    if (candidateElectedNoSurplus) {
+      val count = countContext.mostRecentCountStep.count.increment
+
+      val newPaperBundles = countContext.paperBundles.filterNot(_.assignedCandidate contains distributionTarget.candidate)
+
+      val newCandidateStatuses = countContext.mostRecentCountStep.candidateStatuses
+
+      val newVoteCounts = VoteCounting.countVotes(
+        countContext.numFormalPapers,
+        countContext.quota,
+        candidateStatuses = newCandidateStatuses,
+        newPaperBundles,
+      )
+
+      val newCountStep = ElectedNoSurplusCountStep(
+        count,
+        newCandidateStatuses,
+        newVoteCounts,
+        distributionTarget.candidate,
+      )
+
+      val newContext = countContext.copy(
+        paperBundles = newPaperBundles,
+        previousCountSteps = countContext.previousCountSteps.append(newCountStep),
+      )
+
+      return ProbabilityMeasure.always(newContext)
+    }
+
     val bundlesToDistribute = computeBundlesToDistribute(countContext, distributionTarget)
+
+    val candidateExcludedNoPapers = bundlesToDistribute.isEmpty && distributionTarget.reason == Exclusion
+
+    if (candidateExcludedNoPapers) {
+      val count = countContext.mostRecentCountStep.count.increment
+
+      val newCandidateStatuses = updateStatusOfAnyNewlyExcluded(
+        count,
+        countContext.mostRecentCountStep.candidateStatuses,
+        distributionTarget,
+      )
+
+      val newCountStep = ExcludedNoVotesCountStep(
+        count,
+        newCandidateStatuses,
+        countContext.mostRecentCountStep.candidateVoteCounts,
+        distributionTarget.candidate,
+      )
+
+      val newContext = countContext.copy(
+        previousCountSteps = countContext.previousCountSteps.append(newCountStep)
+      )
+
+      return ProbabilityMeasure.Always(newContext)
+    }
 
     appendDistributionCountSteps(countContext, distributionTarget, bundlesToDistribute)
   }
@@ -37,8 +95,6 @@ private[counting] object DistributingPapers {
                                              countContext: CountContext[C, _ <: CountSteps.AllowingAppending[C]],
                                              distributionTarget: DistributionTarget[C],
                                            ): Queue[ParSet[AssignedPaperBundle[C]]] = {
-    // TODO what if there are no bundles?
-
     val bundlesPerTransferValue =
       new mutable.TreeMap[TransferValue, mutable.Set[AssignedPaperBundle[C]]]()(TransferValue.ordering.reverse)
 
@@ -69,22 +125,6 @@ private[counting] object DistributingPapers {
       countContext.mostRecentCountStep.candidateStatuses,
       distributionTarget,
     )
-
-    if (bundlesToDistribute.isEmpty && distributionTarget.reason == Exclusion) {
-
-      val newCountStep = ExcludedNoVotesCountStep(
-          count,
-          candidateStatusesDuringStep,
-          countContext.mostRecentCountStep.candidateVoteCounts,
-          distributionTarget.candidate,
-        )
-
-      val newContext = countContext.copy(
-        previousCountSteps = countContext.previousCountSteps.append(newCountStep)
-      )
-
-      return ProbabilityMeasure.Always(newContext)
-    }
 
     val (bundlesToDistributeNow, bundlesToDistributeLater) = bundlesToDistribute.dequeue
 

@@ -77,57 +77,57 @@ trait DistributingPapersFixture {
 object DistributingPapersFixture {
 
   object WithFinalElection extends DistributingPapersFixture {
-    override def ballots = Vector(
-      Vector(Apple, Banana, Strawberry, Pear, Raspberry, Mango, Watermelon),
-      Vector(Apple, Pear, Mango, Strawberry, Banana, Raspberry, Watermelon),
-      Vector(Apple, Pear, Mango, Strawberry, Raspberry, Watermelon, Banana),
-      Vector(Apple, Mango, Watermelon, Pear, Banana, Strawberry, Raspberry),
-      Vector(Apple, Raspberry, Mango, Strawberry, Pear, Banana, Watermelon),
-      Vector(Apple, Raspberry, Mango, Pear, Strawberry, Banana, Watermelon),
-      Vector(Apple, Strawberry, Pear, Raspberry, Watermelon, Mango, Banana),
-      Vector(Apple, Strawberry, Watermelon, Raspberry, Pear, Mango, Banana),
-      Vector(Apple, Strawberry, Mango, Raspberry, Watermelon, Pear, Banana),
-      Vector(Apple, Watermelon, Banana, Pear, Strawberry, Mango, Raspberry), // 10 votes for Apple
-      Vector(Banana, Apple, Strawberry, Mango, Raspberry, Watermelon, Pear),
-      Vector(Banana, Apple, Raspberry, Mango, Watermelon, Pear, Strawberry),
-      Vector(Banana, Apple, Watermelon, Raspberry, Pear, Strawberry, Mango),
-      Vector(Banana, Raspberry, Pear, Mango, Strawberry, Apple, Watermelon),
-      Vector(Banana, Strawberry, Apple, Watermelon, Raspberry, Pear, Mango),
-      Vector(Banana, Watermelon, Apple, Mango, Raspberry, Strawberry, Pear), // 6 votes for Banana
-      Vector(Pear, Apple, Banana, Mango, Watermelon, Raspberry, Strawberry),
-      Vector(Pear, Banana, Apple, Mango, Strawberry, Watermelon, Raspberry),
-      Vector(Pear, Raspberry, Banana, Strawberry, Watermelon, Apple, Mango),
-      Vector(Pear, Raspberry, Strawberry, Mango, Watermelon, Apple, Banana),
-      Vector(Pear, Strawberry, Raspberry, Banana, Apple, Mango, Watermelon),
-      Vector(Pear, Strawberry, Apple, Mango, Watermelon, Banana, Raspberry),
-      Vector(Pear, Strawberry, Raspberry, Banana, Mango, Apple, Watermelon),
-      Vector(Pear, Watermelon, Banana, Mango, Strawberry, Raspberry, Apple),
-      Vector(Pear, Watermelon, Mango, Apple, Strawberry, Banana, Raspberry), // 9 votes for Pear
-      Vector(Mango, Apple, Pear, Strawberry, Banana, Raspberry, Watermelon),
-      Vector(Mango, Apple, Watermelon, Raspberry, Pear, Strawberry, Banana),
-      Vector(Mango, Apple, Pear, Raspberry, Watermelon, Banana, Strawberry),
-      Vector(Mango, Apple, Watermelon, Raspberry, Strawberry, Pear, Banana),
-      Vector(Mango, Banana, Apple, Pear, Watermelon, Strawberry, Raspberry),
-      Vector(Mango, Banana, Strawberry, Pear, Apple, Raspberry, Watermelon),
-      Vector(Mango, Pear, Raspberry, Strawberry, Watermelon, Banana, Apple),
-      Vector(Mango, Watermelon, Pear, Raspberry, Apple, Banana, Strawberry),
-      Vector(Mango, Watermelon, Pear, Banana, Strawberry, Raspberry, Apple), // 9 votes for Mango
-      Vector(Raspberry, Banana, Watermelon, Strawberry, Pear, Apple, Mango),
-      Vector(Raspberry, Mango, Pear, Watermelon, Banana, Apple, Strawberry),
-      Vector(Raspberry, Mango, Apple, Pear, Banana, Watermelon, Strawberry),
-      Vector(Raspberry, Mango, Banana, Apple, Watermelon, Strawberry, Pear),
-      Vector(Raspberry, Strawberry, Apple, Pear, Watermelon, Mango, Banana),
-      Vector(Raspberry, Watermelon, Strawberry, Apple, Banana, Pear, Mango),
-      Vector(Raspberry, Watermelon, Pear, Apple, Banana, Strawberry, Mango), // 7 votes for Raspberry
-      Vector(Strawberry, Apple, Pear, Watermelon, Mango, Raspberry, Banana),
-      Vector(Strawberry, Banana, Apple, Mango, Watermelon, Raspberry, Pear),
-      Vector(Strawberry, Banana, Mango, Pear, Apple, Watermelon, Raspberry),
-      Vector(Strawberry, Raspberry, Apple, Banana, Mango, Pear, Watermelon),
-      Vector(Strawberry, Watermelon, Raspberry, Mango, Apple, Pear, Banana), // 5 votes for Strawberry
-      Vector(Watermelon, Apple, Raspberry, Mango, Banana, Pear, Strawberry),
-      Vector(Watermelon, Pear, Apple, Banana, Raspberry, Mango, Strawberry),
-      Vector(Watermelon, Pear, Apple, Mango, Raspberry, Banana, Strawberry),
-      Vector(Watermelon, Mango, Pear, Raspberry, Apple, Banana, Strawberry), // 4 votes for Watermelon
+    override def ballots: Vector[Vector[Fruit]] = Vector[Vector[Fruit]](
+      Vector[Fruit](Apple, Banana, Strawberry, Pear, Raspberry, Mango, Watermelon),
+      Vector[Fruit](Apple, Pear, Mango, Strawberry, Banana, Raspberry, Watermelon),
+      Vector[Fruit](Apple, Pear, Mango, Strawberry, Raspberry, Watermelon, Banana),
+      Vector[Fruit](Apple, Mango, Watermelon, Pear, Banana, Strawberry, Raspberry),
+      Vector[Fruit](Apple, Raspberry, Mango, Strawberry, Pear, Banana, Watermelon),
+      Vector[Fruit](Apple, Raspberry, Mango, Pear, Strawberry, Banana, Watermelon),
+      Vector[Fruit](Apple, Strawberry, Pear, Raspberry, Watermelon, Mango, Banana),
+      Vector[Fruit](Apple, Strawberry, Watermelon, Raspberry, Pear, Mango, Banana),
+      Vector[Fruit](Apple, Strawberry, Mango, Raspberry, Watermelon, Pear, Banana),
+      Vector[Fruit](Apple, Watermelon, Banana, Pear, Strawberry, Mango, Raspberry), // 10 votes for Apple
+      Vector[Fruit](Banana, Apple, Strawberry, Mango, Raspberry, Watermelon, Pear),
+      Vector[Fruit](Banana, Apple, Raspberry, Mango, Watermelon, Pear, Strawberry),
+      Vector[Fruit](Banana, Apple, Watermelon, Raspberry, Pear, Strawberry, Mango),
+      Vector[Fruit](Banana, Raspberry, Pear, Mango, Strawberry, Apple, Watermelon),
+      Vector[Fruit](Banana, Strawberry, Apple, Watermelon, Raspberry, Pear, Mango),
+      Vector[Fruit](Banana, Watermelon, Apple, Mango, Raspberry, Strawberry, Pear), // 6 votes for Banana
+      Vector[Fruit](Pear, Apple, Banana, Mango, Watermelon, Raspberry, Strawberry),
+      Vector[Fruit](Pear, Banana, Apple, Mango, Strawberry, Watermelon, Raspberry),
+      Vector[Fruit](Pear, Raspberry, Banana, Strawberry, Watermelon, Apple, Mango),
+      Vector[Fruit](Pear, Raspberry, Strawberry, Mango, Watermelon, Apple, Banana),
+      Vector[Fruit](Pear, Strawberry, Raspberry, Banana, Apple, Mango, Watermelon),
+      Vector[Fruit](Pear, Strawberry, Apple, Mango, Watermelon, Banana, Raspberry),
+      Vector[Fruit](Pear, Strawberry, Raspberry, Banana, Mango, Apple, Watermelon),
+      Vector[Fruit](Pear, Watermelon, Banana, Mango, Strawberry, Raspberry, Apple),
+      Vector[Fruit](Pear, Watermelon, Mango, Apple, Strawberry, Banana, Raspberry), // 9 votes for Pear
+      Vector[Fruit](Mango, Apple, Pear, Strawberry, Banana, Raspberry, Watermelon),
+      Vector[Fruit](Mango, Apple, Watermelon, Raspberry, Pear, Strawberry, Banana),
+      Vector[Fruit](Mango, Apple, Pear, Raspberry, Watermelon, Banana, Strawberry),
+      Vector[Fruit](Mango, Apple, Watermelon, Raspberry, Strawberry, Pear, Banana),
+      Vector[Fruit](Mango, Banana, Apple, Pear, Watermelon, Strawberry, Raspberry),
+      Vector[Fruit](Mango, Banana, Strawberry, Pear, Apple, Raspberry, Watermelon),
+      Vector[Fruit](Mango, Pear, Raspberry, Strawberry, Watermelon, Banana, Apple),
+      Vector[Fruit](Mango, Watermelon, Pear, Raspberry, Apple, Banana, Strawberry),
+      Vector[Fruit](Mango, Watermelon, Pear, Banana, Strawberry, Raspberry, Apple), // 9 votes for Mango
+      Vector[Fruit](Raspberry, Banana, Watermelon, Strawberry, Pear, Apple, Mango),
+      Vector[Fruit](Raspberry, Mango, Pear, Watermelon, Banana, Apple, Strawberry),
+      Vector[Fruit](Raspberry, Mango, Apple, Pear, Banana, Watermelon, Strawberry),
+      Vector[Fruit](Raspberry, Mango, Banana, Apple, Watermelon, Strawberry, Pear),
+      Vector[Fruit](Raspberry, Strawberry, Apple, Pear, Watermelon, Mango, Banana),
+      Vector[Fruit](Raspberry, Watermelon, Strawberry, Apple, Banana, Pear, Mango),
+      Vector[Fruit](Raspberry, Watermelon, Pear, Apple, Banana, Strawberry, Mango), // 7 votes for Raspberry
+      Vector[Fruit](Strawberry, Apple, Pear, Watermelon, Mango, Raspberry, Banana),
+      Vector[Fruit](Strawberry, Banana, Apple, Mango, Watermelon, Raspberry, Pear),
+      Vector[Fruit](Strawberry, Banana, Mango, Pear, Apple, Watermelon, Raspberry),
+      Vector[Fruit](Strawberry, Raspberry, Apple, Banana, Mango, Pear, Watermelon),
+      Vector[Fruit](Strawberry, Watermelon, Raspberry, Mango, Apple, Pear, Banana), // 5 votes for Strawberry
+      Vector[Fruit](Watermelon, Apple, Raspberry, Mango, Banana, Pear, Strawberry),
+      Vector[Fruit](Watermelon, Pear, Apple, Banana, Raspberry, Mango, Strawberry),
+      Vector[Fruit](Watermelon, Pear, Apple, Mango, Raspberry, Banana, Strawberry),
+      Vector[Fruit](Watermelon, Mango, Pear, Raspberry, Apple, Banana, Strawberry), // 4 votes for Watermelon
     )
   }
 
@@ -135,6 +135,16 @@ object DistributingPapersFixture {
     override def ballots: Vector[Vector[Fruit]] = WithFinalElection.ballots.map { ballot =>
       if (ballot.head == Watermelon) {
         ballot.tail
+      } else {
+        ballot
+      }
+    }
+  }
+
+  object WithElectionSansSurplus extends DistributingPapersFixture {
+    override def ballots: Vector[NormalisedBallot[Fruit]] = WithFinalElection.ballots.map { ballot =>
+      if (ballot.take(2) == Vector(Watermelon, Apple)) {
+        ballot.head +: ballot.drop(2)
       } else {
         ballot
       }

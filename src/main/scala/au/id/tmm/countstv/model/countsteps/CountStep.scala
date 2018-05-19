@@ -69,6 +69,20 @@ final case class ExcludedNoVotesCountStep[C](
                                               excludedCandidate: C,
                                             ) extends DistributionPhaseCountStep[C]
 
+/**
+  * A count step during the distribution phase where no distribution happens because a candidate was elected with no
+  * surplus.
+  */
+final case class ElectedNoSurplusCountStep[C](
+                                             count: Count,
+                                             candidateStatuses: CandidateStatuses[C],
+                                             candidateVoteCounts: CandidateVoteCounts[C],
+                                             electedCandidate: C,
+                                             ) extends DistributionPhaseCountStep[C]
+
+/**
+  * A count step where candidates have been elected according to final election conditions.
+  */
 final case class FinalElectionCountStep[C](
                                             count: Count,
                                             candidateStatuses: CandidateStatuses[C],
