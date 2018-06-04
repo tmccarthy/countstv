@@ -6,6 +6,7 @@ import au.id.tmm.countstv.counting.PaperBundle.Origin.IneligibleCandidate
 import au.id.tmm.countstv.model.values._
 import au.id.tmm.countstv.model.{CandidateStatus, CandidateStatuses, PreferenceTree}
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
+import org.scalatest.Assertion
 
 class PaperBundleSpec extends ImprovedFlatSpec {
 
@@ -75,7 +76,7 @@ class PaperBundleSpec extends ImprovedFlatSpec {
                                 originalTransferValue: TransferValue = TransferValue(1d),
                                 expectedBundlesAfterDistribution: Set[PaperBundle[Fruit]] = Set.empty[PaperBundle[Fruit]],
                                 expectBundleUnchanged: Boolean = false,
-                              ): Unit = {
+                              ): Assertion = {
     val candidateStatuses = CandidateStatuses[Fruit](
       Fruit.Apple -> appleStatus,
       Fruit.Banana -> bananaStatus,

@@ -108,7 +108,7 @@ object FullCountComputation {
     val stepType = countContext.mostRecentCountStep match {
       case _: InitialAllocation[C] => "initial"
       case _: AllocationAfterIneligibles[C] => "after_ineligibles"
-      case _: DistributionCountStep[C] => "distribution"
+      case _: DistributionPhaseCountStep[C] => "distribution"
       case _: FinalElectionCountStep[C] => "final_election"
     }
 

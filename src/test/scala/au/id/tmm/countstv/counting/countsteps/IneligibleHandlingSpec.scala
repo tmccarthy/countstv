@@ -2,7 +2,7 @@ package au.id.tmm.countstv.counting.countsteps
 
 import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
-import au.id.tmm.countstv.counting.{AssignedPaperBundle, ExhaustedPaperBundle, PaperBundle, QuotaComputation}
+import au.id.tmm.countstv.counting.{AssignedPaperBundle, ExhaustedPaperBundle, PaperBundle}
 import au.id.tmm.countstv.model.CandidateStatus.{Remaining, _}
 import au.id.tmm.countstv.model._
 import au.id.tmm.countstv.model.countsteps.AllocationAfterIneligibles
@@ -43,9 +43,7 @@ class IneligibleHandlingSpec extends ImprovedFlatSpec {
   )
 
   "the step for handling ineligible candidates" should "mark candidates elected when there are no ineligible candidates" in {
-    val numFormalPapers = NumPapers(25)
     val numVacancies = 2
-    val quota = QuotaComputation.computeQuota(numVacancies, numFormalPapers)
 
     val candidateStatuses = CandidateStatuses[Fruit](
       Apple -> Remaining,
@@ -53,13 +51,6 @@ class IneligibleHandlingSpec extends ImprovedFlatSpec {
       Pear -> Remaining,
       Strawberry -> Remaining,
     )
-
-    val paperBundles = PaperBundle.rootBundleFor[Fruit](testPreferenceTree)
-      .distributeToRemainingCandidates(
-        PaperBundle.Origin.InitialAllocation,
-        Count(1),
-        candidateStatuses,
-      )
 
     val initialContext = InitialAllocationComputation.computeInitialContext[Fruit](
       candidateStatuses,
@@ -88,9 +79,7 @@ class IneligibleHandlingSpec extends ImprovedFlatSpec {
   }
 
   it should "distribute away from ineligible candidates" in {
-    val numFormalPapers = NumPapers(25)
     val numVacancies = 2
-    val quota = QuotaComputation.computeQuota(numVacancies, numFormalPapers)
 
     val candidateStatuses = CandidateStatuses[Fruit](
       Apple -> Remaining,

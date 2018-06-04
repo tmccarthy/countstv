@@ -8,6 +8,7 @@ import au.id.tmm.countstv.model.{CandidateStatuses, CandidateVoteCounts, VoteCou
 import au.id.tmm.utilities.collection.DupelessSeq
 import au.id.tmm.utilities.probabilities.ProbabilityMeasure
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
+import org.scalatest.Assertion
 
 class ElectedCandidateComputationsSpec extends ImprovedFlatSpec {
 
@@ -17,7 +18,7 @@ class ElectedCandidateComputationsSpec extends ImprovedFlatSpec {
                                        currentCandidateVoteCounts: Map[Fruit, Int],
                                        previousCandidateVoteCounts: List[Map[Fruit, Int]] = List.empty,
                                        expectedResult: ProbabilityMeasure[DupelessSeq[Fruit]],
-                                     ): Unit = {
+                                     ): Assertion = {
     val parsedCurrentCandidateVoteCounts = CandidateVoteCounts[Fruit](
       perCandidate = currentCandidateVoteCounts.map { case (f, c) => f -> VoteCount(c) },
       exhausted = VoteCount.zero,
@@ -53,7 +54,7 @@ class ElectedCandidateComputationsSpec extends ImprovedFlatSpec {
                                   currentCandidateVoteCounts: Map[Fruit, Int],
                                   previousCandidateVoteCounts: List[Map[Fruit, Int]] = List.empty,
                                   expectedResult: ProbabilityMeasure[DupelessSeq[Fruit]],
-                                ): Unit = {
+                                ): Assertion = {
     val parsedCurrentCandidateVoteCounts = CandidateVoteCounts[Fruit](
       perCandidate = currentCandidateVoteCounts.map { case (f, c) => f -> VoteCount(c) },
       exhausted = VoteCount.zero,

@@ -3,10 +3,11 @@ package au.id.tmm.countstv.counting
 import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
 import au.id.tmm.countstv.model.CandidateStatus._
-import au.id.tmm.countstv.model.values.{Count, NumPapers, Ordinal}
+import au.id.tmm.countstv.model.values.{Count, Ordinal}
 import au.id.tmm.countstv.model.{CandidateStatuses, CandidateVoteCounts, VoteCount}
 import au.id.tmm.utilities.probabilities.ProbabilityMeasure
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
+import org.scalatest.Assertion
 
 class ExcludedCandidateComputationsSpec extends ImprovedFlatSpec {
 
@@ -15,7 +16,7 @@ class ExcludedCandidateComputationsSpec extends ImprovedFlatSpec {
                                    currentCandidateVoteCounts: Map[Fruit, Int],
                                    previousCandidateVoteCounts: List[Map[Fruit, Int]] = List.empty,
                                    expectedResult: ProbabilityMeasure[Fruit],
-                                 ): Unit = {
+                                 ): Assertion = {
     val parsedCurrentCandidateVoteCounts = CandidateVoteCounts[Fruit](
       perCandidate = currentCandidateVoteCounts.map { case (f, c) => f -> VoteCount(c) },
       exhausted = VoteCount.zero,
@@ -29,8 +30,6 @@ class ExcludedCandidateComputationsSpec extends ImprovedFlatSpec {
         roundingError = VoteCount.zero,
       )
     }
-
-    val numFormalPapers = NumPapers(currentCandidateVoteCounts.values.sum)
 
     val actualResult = ExcludedCandidateComputations.computeExcluded(
       parsedCurrentCandidateVoteCounts,

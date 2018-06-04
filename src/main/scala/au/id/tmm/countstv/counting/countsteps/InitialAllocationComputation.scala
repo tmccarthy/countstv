@@ -6,9 +6,6 @@ import au.id.tmm.countstv.model.countsteps.{CountSteps, InitialAllocation}
 
 private[counting] object InitialAllocationComputation {
 
-  private val allowedCandidateStatuses: Set[CandidateStatus] =
-    Set(CandidateStatus.Remaining, CandidateStatus.Ineligible)
-
   /**
     * Computes the initial context by distributing papers to their first preferences, including to ineligible
     * candidates.
