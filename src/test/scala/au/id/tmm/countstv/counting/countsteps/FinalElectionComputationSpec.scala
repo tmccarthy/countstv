@@ -2,6 +2,7 @@ package au.id.tmm.countstv.counting.countsteps
 
 import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
+import au.id.tmm.countstv.counting.fixtures.{CountContextFixtures, CountStepFixtures}
 import au.id.tmm.countstv.model.CandidateStatus._
 import au.id.tmm.countstv.model.countsteps.FinalElectionCountStep
 import au.id.tmm.countstv.model.values.{Count, NumPapers, NumVotes, Ordinal}
@@ -10,17 +11,12 @@ import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
 class FinalElectionComputationSpec extends ImprovedFlatSpec {
 
-  import distribution.DistributingPapersFixture.WithFinalElection._
-
   "the count after step 5, after apple has been distributed" should "not return a final election" in {
-    assert(FinalElectionComputation.contextAfterFinalElection(actualContextAfterCount(Count(5))) === None)
+    assert(FinalElectionComputation.contextAfterFinalElection(CountContextFixtures.DuringDistributions.whereElectedCandidatePartiallyDistributed) === None)
   }
 
   "count 8, where Pear is elected to the remaining vacancy" should "have produced the correct count step" in {
-    val contextAfterStep7 = actualContextAfterCount(Count(7))
-
-    val actualContext = FinalElectionComputation.contextAfterFinalElection(contextAfterStep7)
-    val actualCountStep = actualContext.map(_.onlyOutcome.previousCountSteps.last)
+    val actualCountStep = CountStepFixtures.AfterFinalStep.whereCandidateElectedToRemainingVacancy
 
     val expectedCountStep = FinalElectionCountStep[Fruit](
       count = Count(8),
@@ -48,15 +44,13 @@ class FinalElectionComputationSpec extends ImprovedFlatSpec {
       ),
     )
 
-    assert(actualCountStep === Some(expectedCountStep))
+    assert(actualCountStep === expectedCountStep)
   }
 
   it should "be marked as complete" in {
-    val contextAfterStep7 = actualContextAfterCount(Count(7))
+    val actualContext = CountContextFixtures.AfterFinalStep.whereCandidateElectedToRemainingVacancy
 
-    val actualContext = FinalElectionComputation.contextAfterFinalElection(contextAfterStep7)
-
-    assert(actualContext.map(_.onlyOutcome.allVacanciesNowFilled) === Some(true))
+    assert(actualContext.allVacanciesNowFilled === true)
   }
 
 }

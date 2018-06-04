@@ -3,9 +3,10 @@ package au.id.tmm.countstv.counting.countsteps.distribution
 import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
 import au.id.tmm.countstv.counting.countsteps.distribution.NextDistributionComputation.DistributionTarget
+import au.id.tmm.countstv.counting.fixtures.CountFixture
 import au.id.tmm.countstv.model.CandidateDistributionReason.{Election, Exclusion}
 import au.id.tmm.countstv.model.CandidateStatus._
-import au.id.tmm.countstv.model.countsteps.{AllocationAfterIneligibles, CountSteps}
+import au.id.tmm.countstv.model.countsteps.{AllocationAfterIneligibles, CountSteps, InitialAllocation}
 import au.id.tmm.countstv.model.values._
 import au.id.tmm.countstv.model.{CandidateStatuses, CandidateVoteCounts, VoteCount}
 import au.id.tmm.utilities.probabilities.ProbabilityMeasure
@@ -13,7 +14,12 @@ import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
 class NextDistributionComputationSpec extends ImprovedFlatSpec {
 
-  import au.id.tmm.countstv.counting.countsteps.CountContextFixture._
+  private val countFixture: CountFixture = CountFixture.withFourCandidates
+
+  private val testContext = countFixture.contextAfterIneligibles
+
+  private val initialAllocation = countFixture
+    .initialContext.mostRecentCountStep.asInstanceOf[InitialAllocation[Fruit]]
 
   "the next distribution target" should
     "be computed correctly when there are more than one elected candidates waiting for distribution" in {
@@ -34,7 +40,7 @@ class NextDistributionComputationSpec extends ImprovedFlatSpec {
     )
 
     val actualDistributionTarget = NextDistributionComputation.nextCandidateToDistribute(localTestContext)
-    val expectedDistributionTarget = DistributionTarget(Apple, Election, TransferValueCoefficient(0.3))
+    val expectedDistributionTarget = DistributionTarget(Apple, Election, TransferValueCoefficient(12d / 19d))
 
     assert(actualDistributionTarget === ProbabilityMeasure.always(expectedDistributionTarget))
   }

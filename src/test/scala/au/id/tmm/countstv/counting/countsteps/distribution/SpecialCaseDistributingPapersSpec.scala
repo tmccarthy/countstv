@@ -2,6 +2,7 @@ package au.id.tmm.countstv.counting.countsteps.distribution
 
 import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
+import au.id.tmm.countstv.counting.fixtures.CountStepFixtures
 import au.id.tmm.countstv.model.CandidateStatus._
 import au.id.tmm.countstv.model.countsteps.{ElectedNoSurplusCountStep, ExcludedNoVotesCountStep}
 import au.id.tmm.countstv.model.values.{Count, NumPapers, NumVotes, Ordinal}
@@ -11,8 +12,6 @@ import au.id.tmm.utilities.testing.ImprovedFlatSpec
 class SpecialCaseDistributingPapersSpec extends ImprovedFlatSpec {
 
   "an election where a candidate has zero votes" should "exclude that candidate in a step without distributing anything" in {
-
-    import DistributingPapersFixture.WithVotelessCandidate._
 
     val expectedCountStep = ExcludedNoVotesCountStep(
       Count(2),
@@ -41,15 +40,13 @@ class SpecialCaseDistributingPapersSpec extends ImprovedFlatSpec {
       excludedCandidate = Watermelon,
     )
 
-    val actualCountStep = actualContextAfterCount(Count(2)).mostRecentCountStep
+    val actualCountStep = CountStepFixtures.DuringDistributions.whereCandidateExcludedWithoutVotes
 
     assert(actualCountStep === expectedCountStep)
 
   }
 
   "an election where a candidate is elected with no surplus" should "elect that candidate in a step without distributing anything" in {
-    import DistributingPapersFixture.WithElectionSansSurplus._
-
     val expectedCountStep = ElectedNoSurplusCountStep(
       count = Count(5),
       candidateStatuses = CandidateStatuses[Fruit](
@@ -77,7 +74,7 @@ class SpecialCaseDistributingPapersSpec extends ImprovedFlatSpec {
       electedCandidate = Apple,
     )
 
-    val actualCountStep = actualContextAfterCount(Count(5)).mostRecentCountStep
+    val actualCountStep = CountStepFixtures.DuringDistributions.whereCandidateElectedWithoutSurplus
 
     assert(actualCountStep === expectedCountStep)
   }

@@ -2,6 +2,7 @@ package au.id.tmm.countstv.counting.countsteps.distribution
 
 import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
+import au.id.tmm.countstv.counting.fixtures.{CountContextFixtures, CountFixture, CountStepFixtures}
 import au.id.tmm.countstv.counting.{AssignedPaperBundle, PaperBundle}
 import au.id.tmm.countstv.model.CandidateStatus._
 import au.id.tmm.countstv.model._
@@ -11,67 +12,67 @@ import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
 class DistributingPapersSpec extends ImprovedFlatSpec {
 
-  import DistributingPapersFixture.WithFinalElection._
-
   "count step 2, when Watermelon is excluded" should "have the correct number of formal papers" in {
-    val actualContext = actualContextAfterCount(Count(2))
+    val actualContext = CountContextFixtures.DuringDistributions.whereExcludedCandidateDistributed
 
-    assert(actualContext.numFormalPapers === rootBundle.numPapers)
+    assert(actualContext.numFormalPapers === CountFixture.withFinalElection.numPapers)
   }
 
   it should "have the correct number of vacancies" in {
-    val actualContext = actualContextAfterCount(Count(2))
+    val actualContext = CountContextFixtures.DuringDistributions.whereExcludedCandidateDistributed
 
-    assert(actualContext.numVacancies === numVacancies)
+    assert(actualContext.numVacancies === CountFixture.withFinalElection.numVacancies)
   }
 
   it should "have the correct paper bundles" in {
-    val actualContext = actualContextAfterCount(Count(2))
+    val actualContext = CountContextFixtures.DuringDistributions.whereExcludedCandidateDistributed
+
+    val preferenceTree = CountFixture.withFinalElection.preferenceTree
 
     val expectedPaperBundles = Set[PaperBundle[Fruit]](
       AssignedPaperBundle[Fruit](
         TransferValue(1.0),
-        testPreferenceTree.childFor(Apple).get,
+        preferenceTree.childFor(Apple).get,
         PaperBundle.Origin.InitialAllocation,
       ),
       AssignedPaperBundle[Fruit](
         TransferValue(1.0),
-        testPreferenceTree.childFor(Strawberry).get,
+        preferenceTree.childFor(Strawberry).get,
         PaperBundle.Origin.InitialAllocation,
       ),
       AssignedPaperBundle[Fruit](
         TransferValue(1.0),
-        testPreferenceTree.childFor(Pear).get,
+        preferenceTree.childFor(Pear).get,
         PaperBundle.Origin.InitialAllocation,
       ),
       AssignedPaperBundle[Fruit](
         TransferValue(1.0),
-        testPreferenceTree.childFor(Watermelon, Pear).get,
+        preferenceTree.childFor(Watermelon, Pear).get,
         PaperBundle.Origin.ExcludedCandidate(Watermelon, Count(2)),
       ),
       AssignedPaperBundle[Fruit](
         TransferValue(1.0),
-        testPreferenceTree.childFor(Raspberry).get,
+        preferenceTree.childFor(Raspberry).get,
         PaperBundle.Origin.InitialAllocation,
       ),
       AssignedPaperBundle[Fruit](
         TransferValue(1.0),
-        testPreferenceTree.childFor(Mango).get,
+        preferenceTree.childFor(Mango).get,
         PaperBundle.Origin.InitialAllocation,
       ),
       AssignedPaperBundle[Fruit](
         TransferValue(1.0),
-        testPreferenceTree.childFor(Watermelon, Apple).get,
+        preferenceTree.childFor(Watermelon, Apple).get,
         PaperBundle.Origin.ExcludedCandidate(Watermelon, Count(2)),
       ),
       AssignedPaperBundle[Fruit](
         TransferValue(1.0),
-        testPreferenceTree.childFor(Banana).get,
+        preferenceTree.childFor(Banana).get,
         PaperBundle.Origin.InitialAllocation,
       ),
       AssignedPaperBundle[Fruit](
         TransferValue(1.0),
-        testPreferenceTree.childFor(Watermelon, Mango).get,
+        preferenceTree.childFor(Watermelon, Mango).get,
         PaperBundle.Origin.ExcludedCandidate(Watermelon, Count(2)),
       ),
     )
@@ -80,7 +81,7 @@ class DistributingPapersSpec extends ImprovedFlatSpec {
   }
 
   it should "have produced the correct distribution step" in {
-    val actualContext = actualContextAfterCount(Count(2))
+    val actualCountStep = CountStepFixtures.DuringDistributions.whereExcludedCandidateDistributed
 
     val expectedCountStep = DistributionCountStep[Fruit](
       count = Count(2),
@@ -114,71 +115,73 @@ class DistributingPapersSpec extends ImprovedFlatSpec {
       )
     )
 
-    assert(actualContext.mostRecentCountStep === expectedCountStep)
+    assert(actualCountStep === expectedCountStep)
   }
 
   "count step 3, when Strawberry is excluded" should "have the correct paper bundles" in {
-    val actualContext = actualContextAfterCount(Count(3))
+    val actualContext = CountContextFixtures.DuringDistributions.whereExcludedCandidateDistributed2
+
+    val preferenceTree = CountFixture.withFinalElection.preferenceTree
 
     val expectedPaperBundles = Set[PaperBundle[Fruit]](
       AssignedPaperBundle[Fruit](
         TransferValue(1.0),
-        testPreferenceTree.childFor(Pear).get,
+        preferenceTree.childFor(Pear).get,
         PaperBundle.Origin.InitialAllocation,
       ),
       AssignedPaperBundle[Fruit](
         TransferValue(1.0),
-        testPreferenceTree.childFor(Apple).get,
+        preferenceTree.childFor(Apple).get,
         PaperBundle.Origin.InitialAllocation,
       ),
       AssignedPaperBundle[Fruit](
         TransferValue(1.0),
-        testPreferenceTree.childFor(Strawberry, Raspberry).get,
+        preferenceTree.childFor(Strawberry, Raspberry).get,
         PaperBundle.Origin.ExcludedCandidate(Strawberry,Count(3)),
       ),
       AssignedPaperBundle[Fruit](
         TransferValue(1.0),
-        testPreferenceTree.childFor(Raspberry).get,
+        preferenceTree.childFor(Raspberry).get,
         PaperBundle.Origin.InitialAllocation,
       ),
       AssignedPaperBundle[Fruit](
         TransferValue(1.0),
-        testPreferenceTree.childFor(Watermelon, Apple).get,
+        preferenceTree.childFor(Watermelon, Apple).get,
         PaperBundle.Origin.ExcludedCandidate(Watermelon,Count(2)),
       ),
       AssignedPaperBundle[Fruit](
         TransferValue(1.0),
-        testPreferenceTree.childFor(Banana).get,
+        preferenceTree.childFor(Banana).get,
         PaperBundle.Origin.InitialAllocation,
       ),
       AssignedPaperBundle[Fruit](
         TransferValue(1.0),
-        testPreferenceTree.childFor(Mango).get,
+        preferenceTree.childFor(Mango).get,
         PaperBundle.Origin.InitialAllocation,
       ),
       AssignedPaperBundle[Fruit](
         TransferValue(1.0),
-        testPreferenceTree.childFor(Strawberry, Apple).get,
+        preferenceTree.childFor(Strawberry, Apple).get,
         PaperBundle.Origin.ExcludedCandidate(Strawberry,Count(3)),
       ),
       AssignedPaperBundle[Fruit](
         TransferValue(1.0),
-        testPreferenceTree.childFor(Strawberry, Watermelon, Raspberry).get,
+        preferenceTree.childFor(Strawberry, Watermelon, Raspberry).get,
         PaperBundle.Origin.ExcludedCandidate(Strawberry,Count(3)),
       ),
       AssignedPaperBundle[Fruit](
         TransferValue(1.0),
-        testPreferenceTree.childFor(Watermelon, Mango).get,
+        preferenceTree.childFor(Watermelon, Mango).get,
         PaperBundle.Origin.ExcludedCandidate(Watermelon,Count(2)),
       ),
       AssignedPaperBundle[Fruit](
         TransferValue(1.0),
-        testPreferenceTree.childFor(Watermelon, Pear).get,
+        preferenceTree.childFor(Watermelon, Pear).get,
         PaperBundle.Origin.ExcludedCandidate(Watermelon,Count(2)),
       ),
       AssignedPaperBundle[Fruit](
         TransferValue(1.0),
-        testPreferenceTree.childFor(Strawberry, Banana).get,
+        preferenceTree.childFor(Strawberry, Banana).get,
         PaperBundle.Origin.ExcludedCandidate(Strawberry,Count(3)),
       ),
     )
@@ -187,7 +190,7 @@ class DistributingPapersSpec extends ImprovedFlatSpec {
   }
 
   it should "have produced the correct count step" in {
-    val actualCountStep = getActualCountStep(Count(3))
+    val actualCountStep = CountStepFixtures.DuringDistributions.whereExcludedCandidateDistributed2
 
     val expectedCountStep = DistributionCountStep[Fruit](
       count = Count(3),
@@ -225,7 +228,7 @@ class DistributingPapersSpec extends ImprovedFlatSpec {
   }
 
   "count 4, where Apple is elected" should "have produced the correct count step" in {
-    val actualCountStep = getActualCountStep(Count(4))
+    val actualCountStep = CountStepFixtures.DuringDistributions.whereExcludedCandidateDistributedAndCandidateElected
 
     val expectedCountStep = DistributionCountStep[Fruit](
       count = Count(4),
@@ -263,7 +266,7 @@ class DistributingPapersSpec extends ImprovedFlatSpec {
   }
 
   "count 5, where Apple is being distributed" should "have produced the correct count step" in {
-    val actualCountStep = getActualCountStep(Count(5))
+    val actualCountStep = CountStepFixtures.DuringDistributions.whereElectedCandidatePartiallyDistributed
 
     val expectedCountStep = DistributionCountStep[Fruit](
       count = Count(5),
@@ -301,7 +304,8 @@ class DistributingPapersSpec extends ImprovedFlatSpec {
   }
 
   "count 6, where Raspberry is excluded" should "have produced the correct count step" in {
-    val actualCountStep = getActualCountStep(Count(6))
+    val actualCountStep =
+      CountStepFixtures.DuringDistributions.whereElectedCandidatePartiallyDistributedAtFractionalTransferValue
 
     val expectedCountStep = DistributionCountStep[Fruit](
       count = Count(6),
@@ -332,44 +336,6 @@ class DistributingPapersSpec extends ImprovedFlatSpec {
         CandidateDistributionReason.Exclusion,
         sourceCounts = Set(Count(0), Count(3), Count(4)),
         transferValue = TransferValue(1),
-      ),
-    )
-
-    assert(actualCountStep === expectedCountStep)
-  }
-
-  "count 7, where Raspberry's ballots are still being distributed" should "have produced the correct count step" in {
-    val actualCountStep = getActualCountStep(Count(7))
-
-    val expectedCountStep = DistributionCountStep[Fruit](
-      count = Count(7),
-      candidateStatuses = CandidateStatuses[Fruit](
-        Apple -> Elected(Ordinal.first,Count(4)),
-        Banana -> Excluded(Ordinal.third,Count(4)),
-        Mango -> Remaining,
-        Pear -> Remaining,
-        Raspberry -> Excluded(Ordinal.fourth,Count(6)),
-        Strawberry -> Excluded(Ordinal.second,Count(3)),
-        Watermelon -> Excluded(Ordinal.first,Count(2)),
-      ),
-      candidateVoteCounts = CandidateVoteCounts[Fruit](
-        perCandidate = Map(
-          Apple -> VoteCount(NumPapers(0), NumVotes(17)),
-          Banana -> VoteCount(NumPapers(0), NumVotes(0)),
-          Mango -> VoteCount(NumPapers(25), NumVotes(16)),
-          Pear -> VoteCount(NumPapers(25), NumVotes(16)),
-          Raspberry -> VoteCount(NumPapers(0), NumVotes(0)),
-          Strawberry -> VoteCount(NumPapers(0), NumVotes(0)),
-          Watermelon -> VoteCount(NumPapers(0), NumVotes(0)),
-        ),
-        exhausted = VoteCount.zero,
-        roundingError = VoteCount(NumPapers(0), NumVotes(-1))
-      ),
-      distributionSource = DistributionCountStep.Source(
-        Raspberry,
-        CandidateDistributionReason.Exclusion,
-        sourceCounts = Set(Count(5)),
-        transferValue = TransferValue(1d / 18d),
       ),
     )
 

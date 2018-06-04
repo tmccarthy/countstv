@@ -2,10 +2,11 @@ package au.id.tmm.countstv.counting.countsteps
 
 import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
-import au.id.tmm.countstv.counting.{AssignedPaperBundle, QuotaComputation}
+import au.id.tmm.countstv.counting.fixtures.CountFixture
+import au.id.tmm.countstv.counting.{AssignedPaperBundle, PaperBundle, QuotaComputation}
 import au.id.tmm.countstv.model.CandidateStatus._
 import au.id.tmm.countstv.model._
-import au.id.tmm.countstv.model.countsteps.CountSteps
+import au.id.tmm.countstv.model.countsteps.{AllocationAfterIneligibles, CountSteps, InitialAllocation}
 import au.id.tmm.countstv.model.values._
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
@@ -14,9 +15,24 @@ import scala.collection.parallel.immutable.ParSet
 
 class CountContextSpec extends ImprovedFlatSpec {
 
-  import CountContextFixture._
+  private val countFixture: CountFixture = CountFixture.withFourCandidates
+
+  private val testContext = countFixture.contextAfterIneligibles
+
+  private val initialAllocation = countFixture
+    .initialContext.mostRecentCountStep.asInstanceOf[InitialAllocation[Fruit]]
+
+  private val allocationAfterIneligibles = countFixture
+    .contextAfterIneligibles.mostRecentCountStep.asInstanceOf[AllocationAfterIneligibles[Fruit]]
+
+  private val testBundle = AssignedPaperBundle(
+    transferValue = TransferValue(1.0d),
+    countFixture.preferenceTree.childFor(Apple).get,
+    PaperBundle.Origin.InitialAllocation,
+  )
 
   "a count context" should "have the right quota" in {
+
     assert(testContext.quota === QuotaComputation.computeQuota(testContext.numVacancies, testContext.numFormalPapers))
   }
 
