@@ -2,114 +2,109 @@ package au.id.tmm.countstv.counting.countsteps
 
 import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
-import au.id.tmm.countstv.counting.PaperBundle
+import au.id.tmm.countstv.counting.fixtures.CountFixture
+import au.id.tmm.countstv.counting.{AssignedPaperBundle, PaperBundle}
 import au.id.tmm.countstv.model.CandidateStatus._
 import au.id.tmm.countstv.model._
 import au.id.tmm.countstv.model.countsteps.{CountSteps, InitialAllocation}
-import au.id.tmm.countstv.model.values.{Count, NumPapers, Ordinal}
+import au.id.tmm.countstv.model.values.{NumPapers, TransferValue}
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
+
+import scala.collection.parallel.immutable.ParSet
 
 class InitialAllocationComputationSpec extends ImprovedFlatSpec {
 
-  private val testPreferenceTree = PreferenceTree.from[Fruit](
-    Vector(Apple, Banana, Pear, Strawberry),
-    Vector(Apple, Banana, Strawberry, Pear),
-    Vector(Apple, Banana, Strawberry, Pear),
-    Vector(Apple, Pear, Banana),
-    Vector(Apple, Pear, Banana, Strawberry),
-    Vector(Apple, Strawberry, Pear),
-    Vector(Banana),
-    Vector(Banana, Apple),
-    Vector(Banana, Apple, Strawberry, Pear),
-    Vector(Banana, Strawberry, Apple, Pear),
-    Vector(Banana, Strawberry, Pear, Apple),
-    Vector(Banana, Strawberry, Pear, Apple),
-    Vector(Pear, Apple),
-    Vector(Pear, Apple, Banana, Strawberry),
-    Vector(Pear, Apple, Banana, Strawberry),
-    Vector(Pear, Banana, Apple, Strawberry),
-    Vector(Pear, Banana, Strawberry, Apple),
-    Vector(Pear, Banana, Strawberry, Apple),
-    Vector(Pear, Strawberry, Banana, Apple),
-    Vector(Pear, Strawberry, Banana, Apple),
-    Vector(Strawberry),
-    Vector(Strawberry, Apple, Pear),
-    Vector(Strawberry, Apple, Pear, Banana),
-    Vector(Strawberry, Banana, Apple, Pear),
-    Vector(Strawberry, Pear, Apple, Banana),
-  )
+  "an initial allocation" can "be computed when there are no ineligible candidates" in {
+    val fixture = CountFixture.withFinalElection
 
-  private val candidateStatuses = CandidateStatuses[Fruit](
-    Apple -> Remaining,
-    Banana -> Remaining,
-    Pear -> Remaining,
-    Strawberry -> Remaining,
-  )
+    val actualContext = fixture.initialContext
 
-  private val rootBundle = PaperBundle.rootBundleFor[Fruit](testPreferenceTree)
-
-  private val numVacancies: Int = 2
-
-  "an initial allocation" can "not be computed if a candidate is elected" in {
-    val candidateStatuses = CandidateStatuses[Fruit](
-      Apple -> Ineligible,
-      Banana -> Elected(Ordinal.first, electedAtCount = Count(1)),
-      Pear -> Remaining,
-      Strawberry -> Remaining,
-    )
-
-    intercept[IllegalArgumentException] {
-      InitialAllocationComputation.computeInitialContext(
-        candidateStatuses,
-        rootBundle,
-        numVacancies,
-      )
-    }
-  }
-
-  it can "not be computed if a candidate is excluded" in {
-    val candidateStatuses = CandidateStatuses[Fruit](
-      Apple -> Ineligible,
-      Banana -> Excluded(Ordinal.first, excludedAtCount = Count(1)),
-      Pear -> Remaining,
-      Strawberry -> Remaining,
-    )
-
-    intercept[IllegalArgumentException] {
-      InitialAllocationComputation.computeInitialContext(
-        candidateStatuses,
-        rootBundle,
-        numVacancies,
-      )
-    }
-  }
-
-  it should "produce the correct context" in {
-    val actualContext = InitialAllocationComputation.computeInitialContext(
-      candidateStatuses,
-      rootBundle,
-      numVacancies,
-    )
-
-    val expectedContext = CountContext(
-      numFormalPapers = NumPapers(25),
+    val expectedContext = CountContext.Initial(
+      NumPapers(50),
       numVacancies = 2,
-      paperBundles = rootBundle.distribute,
-      previousCountSteps = CountSteps.Initial(
+      paperBundles = ParSet[PaperBundle[Fruit]](
+        AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Apple).get, PaperBundle.Origin.InitialAllocation),
+        AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Banana).get, PaperBundle.Origin.InitialAllocation),
+        AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Mango).get, PaperBundle.Origin.InitialAllocation),
+        AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Pear).get, PaperBundle.Origin.InitialAllocation),
+        AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Raspberry).get, PaperBundle.Origin.InitialAllocation),
+        AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Strawberry).get, PaperBundle.Origin.InitialAllocation),
+        AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Watermelon).get, PaperBundle.Origin.InitialAllocation),
+      ),
+      previousCountSteps = CountSteps.Initial[Fruit](
         InitialAllocation(
-          candidateStatuses = candidateStatuses,
+          candidateStatuses = CandidateStatuses[Fruit](
+            Apple -> Remaining,
+            Banana -> Remaining,
+            Mango -> Remaining,
+            Pear -> Remaining,
+            Raspberry -> Remaining,
+            Strawberry -> Remaining,
+            Watermelon -> Remaining,
+          ),
           candidateVoteCounts = CandidateVoteCounts[Fruit](
             perCandidate = Map(
-              Apple -> VoteCount(6),
+              Apple -> VoteCount(10),
               Banana -> VoteCount(6),
-              Pear -> VoteCount(8),
+              Mango -> VoteCount(9),
+              Pear -> VoteCount(9),
+              Raspberry -> VoteCount(7),
               Strawberry -> VoteCount(5),
+              Watermelon -> VoteCount(4),
             ),
             exhausted = VoteCount.zero,
-            roundingError = VoteCount.zero
-          ),
-        ),
+            roundingError = VoteCount.zero,
+          )
+        )
+      )
+    )
+
+    assert(actualContext === expectedContext)
+  }
+
+  it can "be computed when there are ineligible candidates" in {
+    val fixture = CountFixture.withTwoIneligibleCandidates
+
+    val actualContext = fixture.initialContext
+
+    val expectedContext = CountContext.Initial(
+      NumPapers(50),
+      numVacancies = 2,
+      paperBundles = ParSet[PaperBundle[Fruit]](
+        AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Apple).get, PaperBundle.Origin.InitialAllocation),
+        AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Banana).get, PaperBundle.Origin.InitialAllocation),
+        AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Mango).get, PaperBundle.Origin.InitialAllocation),
+        AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Pear).get, PaperBundle.Origin.InitialAllocation),
+        AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Raspberry).get, PaperBundle.Origin.InitialAllocation),
+        AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Strawberry).get, PaperBundle.Origin.InitialAllocation),
+        AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Watermelon).get, PaperBundle.Origin.InitialAllocation),
       ),
+      previousCountSteps = CountSteps.Initial[Fruit](
+        InitialAllocation(
+          candidateStatuses = CandidateStatuses[Fruit](
+            Apple -> Ineligible,
+            Banana -> Remaining,
+            Mango -> Remaining,
+            Pear -> Remaining,
+            Raspberry -> Remaining,
+            Strawberry -> Ineligible,
+            Watermelon -> Remaining,
+          ),
+          candidateVoteCounts = CandidateVoteCounts[Fruit](
+            perCandidate = Map(
+              Apple -> VoteCount(10),
+              Banana -> VoteCount(6),
+              Mango -> VoteCount(9),
+              Pear -> VoteCount(9),
+              Raspberry -> VoteCount(7),
+              Strawberry -> VoteCount(5),
+              Watermelon -> VoteCount(4),
+            ),
+            exhausted = VoteCount.zero,
+            roundingError = VoteCount.zero,
+          )
+        )
+      )
     )
 
     assert(actualContext === expectedContext)

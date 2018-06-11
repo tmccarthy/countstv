@@ -1,4 +1,4 @@
-package au.id.tmm.countstv.counting.countsteps.distribution
+package au.id.tmm.countstv.counting.countsteps
 
 import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
@@ -21,8 +21,8 @@ class SpecialCaseDistributingPapersSpec extends ImprovedFlatSpec {
         Mango -> Remaining,
         Pear -> Remaining,
         Raspberry -> Remaining,
-        Strawberry -> Remaining,
-        Watermelon -> Excluded(Ordinal.first, Count(2)),
+        Strawberry -> Excluded(Ordinal.second, Count(2)),
+        Watermelon -> Excluded(Ordinal.first, Count(1)),
       ),
       candidateVoteCounts = CandidateVoteCounts(
         perCandidate = Map(
@@ -51,12 +51,12 @@ class SpecialCaseDistributingPapersSpec extends ImprovedFlatSpec {
       count = Count(5),
       candidateStatuses = CandidateStatuses[Fruit](
         Apple -> Elected(Ordinal.first,Count(4)),
-        Banana -> Excluded(Ordinal.third,Count(4)),
+        Banana -> Excluded(Ordinal.third,Count(3)),
         Mango -> Remaining,
         Pear -> Remaining,
-        Raspberry -> Remaining,
-        Strawberry -> Excluded(Ordinal.second,Count(3)),
-        Watermelon -> Excluded(Ordinal.first,Count(2)),
+        Raspberry -> Excluded(Ordinal.fourth, Count(5)),
+        Strawberry -> Excluded(Ordinal.second,Count(2)),
+        Watermelon -> Excluded(Ordinal.first,Count(1)),
       ),
       candidateVoteCounts = CandidateVoteCounts[Fruit](
         perCandidate = Map(

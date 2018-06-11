@@ -1,7 +1,8 @@
 package au.id.tmm.countstv.counting.fixtures
 
 import au.id.tmm.countstv.Fruit
-import au.id.tmm.countstv.counting.countsteps.FinalElectionComputation
+import au.id.tmm.countstv.counting.CountAction
+import au.id.tmm.countstv.counting.countsteps.{CountContext, FinalElectionComputation}
 import au.id.tmm.countstv.model.countsteps._
 import au.id.tmm.countstv.model.values.Count
 import org.scalatest.Assertions
@@ -19,54 +20,63 @@ object CountStepFixtures {
   }
 
   object InitialAllocations {
-    val withoutIneligibleCandidates: InitialAllocation[Fruit] = assertCountStepType[InitialAllocation[Fruit]] {
+    def withoutIneligibleCandidates: InitialAllocation[Fruit] = assertCountStepType[InitialAllocation[Fruit]] {
       CountFixture.withFinalElection.initialContext.mostRecentCountStep
     }
   }
 
   object AllocationsAfterIneligibles {
-    val whereCandidateExcluded: AllocationAfterIneligibles[Fruit] = assertCountStepType[AllocationAfterIneligibles[Fruit]] {
+    def whereCandidateExcluded: AllocationAfterIneligibles[Fruit] = assertCountStepType[AllocationAfterIneligibles[Fruit]] {
       CountFixture.withFinalElection.contextAfterIneligibles.mostRecentCountStep
     }
   }
 
   object DuringDistributions {
-    val whereExcludedCandidateDistributed: DistributionCountStep[Fruit] = assertCountStepType[DistributionCountStep[Fruit]] {
+    def whereExcludedCandidateDistributed: DistributionCountStep[Fruit] = assertCountStepType[DistributionCountStep[Fruit]] {
       CountFixture.withFinalElection.getActualCountStep(Count(2))
     }
 
-    val whereExcludedCandidateDistributed2: DistributionCountStep[Fruit] = assertCountStepType[DistributionCountStep[Fruit]] {
+    def whereExcludedCandidateDistributed2: DistributionCountStep[Fruit] = assertCountStepType[DistributionCountStep[Fruit]] {
       CountFixture.withFinalElection.getActualCountStep(Count(3))
     }
 
-    val whereExcludedCandidateDistributedAndCandidateElected: DistributionCountStep[Fruit] = assertCountStepType[DistributionCountStep[Fruit]] {
+    def whereExcludedCandidateDistributedAndCandidateElected: DistributionCountStep[Fruit] = assertCountStepType[DistributionCountStep[Fruit]] {
       CountFixture.withFinalElection.getActualCountStep(Count(4))
     }
 
-    val whereElectedCandidatePartiallyDistributed: DistributionCountStep[Fruit] = assertCountStepType[DistributionCountStep[Fruit]] {
+    def whereElectedCandidateDistributedAtFractionalTransferValue: DistributionCountStep[Fruit] = assertCountStepType[DistributionCountStep[Fruit]] {
       CountFixture.withFinalElection.getActualCountStep(Count(5))
     }
 
-    val whereElectedCandidatePartiallyDistributedAtFractionalTransferValue: DistributionCountStep[Fruit] = assertCountStepType[DistributionCountStep[Fruit]] {
+    def whereExcludedCandidateDistributed3: DistributionCountStep[Fruit] = assertCountStepType[DistributionCountStep[Fruit]] {
       CountFixture.withFinalElection.getActualCountStep(Count(6))
     }
 
-    val whereCandidateExcludedWithoutVotes: ExcludedNoVotesCountStep[Fruit] = assertCountStepType[ExcludedNoVotesCountStep[Fruit]] {
+    def whereCandidateExcludedWithoutVotes: ExcludedNoVotesCountStep[Fruit] = assertCountStepType[ExcludedNoVotesCountStep[Fruit]] {
       CountFixture.withVotelessCandidate.getActualCountStep(Count(2))
     }
 
-    val whereCandidateElectedWithoutSurplus: ElectedNoSurplusCountStep[Fruit] = assertCountStepType[ElectedNoSurplusCountStep[Fruit]] {
+    def whereCandidateElectedWithoutSurplus: ElectedNoSurplusCountStep[Fruit] = assertCountStepType[ElectedNoSurplusCountStep[Fruit]] {
       CountFixture.withElectionSansSurplus.getActualCountStep(Count(5))
     }
   }
 
   object AfterFinalStep {
-    val whereCandidateElectedToRemainingVacancy: FinalElectionCountStep[Fruit] = assertCountStepType[FinalElectionCountStep[Fruit]] {
-      val contextAfterStep7 = CountFixture.withFinalElection.actualContextAfterCount(Count(7))
+    def whereCandidateElectedToRemainingVacancy: FinalElectionCountStep[Fruit] = assertCountStepType[FinalElectionCountStep[Fruit]] {
+      CountContextFixtures.AfterFinalStep.whereCandidateElectedToRemainingVacancy.mostRecentCountStep
+    }
 
-      val actualContext = FinalElectionComputation.contextAfterFinalElection(contextAfterStep7)
+    def whereAllRemainingCandidatesMarkedElected: FinalElectionCountStep[Fruit] = assertCountStepType[FinalElectionCountStep[Fruit]] {
+      val contextAfterStep1: CountContext.AfterIneligibleHandling[Fruit] =
+        CountFixture.withAVacancyForEachCandidate.contextAfterIneligibles
 
-      actualContext.getOrElse(throw new AssertionError("Expected final election")).onlyOutcome.mostRecentCountStep
+      contextAfterStep1.nextAction match {
+        case CountAction.ElectAllRemainingCandidates =>
+          FinalElectionComputation.contextAfterElectingAllRemainingCandidates(contextAfterStep1).onlyOutcome
+            .asInstanceOf[CountContext.Terminal[Fruit]]
+            .mostRecentCountStep
+        case _ => throw new AssertionError("Expected final election")
+      }
     }
   }
 

@@ -135,6 +135,28 @@ class CountStepsSpec extends ImprovedFlatSpec {
     assert(testCountStepsInitial.append(testAllocationAfterIneligibles) === testCountStepsAfterIneligibleHandling)
   }
 
+  it should "have a sensible toString" in {
+    val expectedToString = "Initial(" +
+      "InitialAllocation(" +
+      "CandidateStatuses(" +
+      "Map(" +
+      "Apple -> Remaining, " +
+      "Banana -> Remaining, " +
+      "Pear -> Ineligible, " +
+      "Strawberry -> Ineligible" +
+      "))," +
+      "CandidateVoteCounts(" +
+      "Map(" +
+      "Apple -> VoteCount(NumPapers(32),NumVotes(42)), " +
+      "Banana -> VoteCount(NumPapers(32),NumVotes(42)), " +
+      "Pear -> VoteCount(NumPapers(32),NumVotes(42)), " +
+      "Strawberry -> VoteCount(NumPapers(32),NumVotes(42)))," +
+      "VoteCount(NumPapers(0),NumVotes(0))," +
+      "VoteCount(NumPapers(0),NumVotes(0)))))"
+
+    assert(testCountStepsInitial.toString === expectedToString)
+  }
+
   behaviour of "a CountSteps instance after ineligible handling"
 
   standardTests(testCountStepsAfterIneligibleHandling)(

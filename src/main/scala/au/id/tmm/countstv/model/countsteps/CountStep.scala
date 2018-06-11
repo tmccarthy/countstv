@@ -1,5 +1,6 @@
 package au.id.tmm.countstv.model.countsteps
 
+import au.id.tmm.countstv.model.countsteps.AllocationAfterIneligibles.TransfersDueToIneligibles
 import au.id.tmm.countstv.model.values.{Count, TransferValue}
 import au.id.tmm.countstv.model.{CandidateDistributionReason, CandidateStatus, CandidateStatuses, CandidateVoteCounts}
 
@@ -41,9 +42,13 @@ final case class InitialAllocation[C](
 final case class AllocationAfterIneligibles[C](
                                                 candidateStatuses: CandidateStatuses[C],
                                                 candidateVoteCounts: CandidateVoteCounts[C],
-                                                transfersDueToIneligibles: Map[C, CandidateVoteCounts[C]],
+                                                transfersDueToIneligibles: TransfersDueToIneligibles[C],
                                               ) extends CountStep[C] {
   override def count: Count = Count.ofIneligibleCandidateHandling
+}
+
+object AllocationAfterIneligibles {
+  type TransfersDueToIneligibles[C] = Map[C, CandidateVoteCounts[C]]
 }
 
 sealed trait DistributionPhaseCountStep[C] extends CountStep[C]

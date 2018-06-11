@@ -2,7 +2,9 @@ package au.id.tmm.countstv.model.countsteps
 
 import au.id.tmm.countstv.model.values.Count
 
-sealed trait CountSteps[C] extends Iterable[CountStep[C]] with PartialFunction[Count, CountStep[C]] {
+import scala.runtime.ScalaRunTime
+
+sealed trait CountSteps[C] extends Iterable[CountStep[C]] with PartialFunction[Count, CountStep[C]] with Product {
   def initialAllocation: InitialAllocation[C]
 
   override def head: CountStep[C] = initialAllocation
@@ -22,15 +24,11 @@ sealed trait CountSteps[C] extends Iterable[CountStep[C]] with PartialFunction[C
   override def apply(count: Count): CountStep[C]
 
   def truncateAfter(count: Count): CountSteps[C]
+
+  override def toString(): String = ScalaRunTime._toString(this)
 }
 
 object CountSteps {
-  sealed trait AllowingAppending[C] extends CountSteps[C] {
-    def append(distributionCountStep: DistributionPhaseCountStep[C]): DuringDistributions[C]
-
-    def append(finalElectionCountStep: FinalElectionCountStep[C]): AfterFinalElections[C]
-  }
-
   final case class Initial[C](initialAllocation: InitialAllocation[C]) extends CountSteps[C] {
     override def last: InitialAllocation[C] = initialAllocation
 
@@ -49,6 +47,12 @@ object CountSteps {
 
     def append(allocationAfterIneligibles: AllocationAfterIneligibles[C]): AfterIneligibleHandling[C] =
       AfterIneligibleHandling(initialAllocation, allocationAfterIneligibles)
+  }
+
+  sealed trait AllowingAppending[C] extends CountSteps[C] {
+    def append(distributionCountStep: DistributionPhaseCountStep[C]): DuringDistributions[C]
+
+    def append(finalElectionCountStep: FinalElectionCountStep[C]): AfterFinalElections[C]
   }
 
   final case class AfterIneligibleHandling[C](
@@ -82,11 +86,13 @@ object CountSteps {
       AfterFinalElections(initialAllocation, allocationAfterIneligibles, Nil, finalElectionCountStep)
   }
 
+  sealed trait DistributionPhase[C] extends CountSteps[C]
+
   final case class DuringDistributions[C](
                                            initialAllocation: InitialAllocation[C],
                                            allocationAfterIneligibles: AllocationAfterIneligibles[C],
                                            distributionCountSteps: List[DistributionPhaseCountStep[C]],
-                                         ) extends AllowingAppending[C] {
+                                         ) extends AllowingAppending[C] with DistributionPhase[C] {
     require(distributionCountSteps.nonEmpty)
 
     private val lastCount: Count = Count(distributionCountSteps.size + 1)
@@ -125,7 +131,7 @@ object CountSteps {
                                            allocationAfterIneligibles: AllocationAfterIneligibles[C],
                                            distributionCountSteps: List[DistributionPhaseCountStep[C]],
                                            finalElectionCountStep: FinalElectionCountStep[C],
-                                         ) extends CountSteps[C] {
+                                         ) extends CountSteps[C] with DistributionPhase[C] {
 
     private val lastCount: Count = Count(distributionCountSteps.size + 2)
 

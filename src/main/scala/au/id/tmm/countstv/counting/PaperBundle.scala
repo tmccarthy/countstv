@@ -65,10 +65,10 @@ private[counting] final case class RootPaperBundle[C](preferenceTree: Preference
   * along with the origin of the papers in the count and their transfer value.
   */
 private[counting] final case class AssignedPaperBundle[C](
-                                         transferValue: TransferValue,
-                                         preferenceTreeNode: PreferenceTreeNode[C],
-                                         origin: PaperBundle.Origin[C]
-                                       ) extends PaperBundle[C] {
+                                                           transferValue: TransferValue,
+                                                           preferenceTreeNode: PreferenceTreeNode[C],
+                                                           origin: PaperBundle.Origin[C]
+                                                         ) extends PaperBundle[C] {
 
   override def assignedCandidate: Option[C] = Some(preferenceTreeNode.associatedCandidate)
 

@@ -60,4 +60,17 @@ class CandidateVoteCountsSpec extends ImprovedFlatSpec {
 
     assert((newCandidateVoteCounts diff testCandidateVoteCounts) === expectedDiff)
   }
+
+  it can "have its total vote count computed" in {
+    assert(testCandidateVoteCounts.total === VoteCount(NumPapers(48), NumVotes(61)))
+  }
+
+  it can "have its total vote count computed if there are no votes for candidates" in {
+    val testCandidateVoteCounts = CandidateVoteCounts[Fruit](
+      perCandidate = Map.empty,
+      exhausted = VoteCount(2),
+      roundingError = VoteCount(3),
+    )
+    assert(testCandidateVoteCounts.total === VoteCount(5))
+  }
 }

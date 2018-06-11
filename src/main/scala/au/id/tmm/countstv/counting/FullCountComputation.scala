@@ -1,11 +1,11 @@
 package au.id.tmm.countstv.counting
 
-import au.id.tmm.countstv.counting.countsteps.distribution.DistributingPapers
-import au.id.tmm.countstv.counting.countsteps.{CountContext, FinalElectionComputation, IneligibleHandling, InitialAllocationComputation}
+import au.id.tmm.countstv.counting.countsteps.{CountContext, InitialAllocationComputation}
 import au.id.tmm.countstv.model._
 import au.id.tmm.countstv.model.countsteps._
-import au.id.tmm.utilities.logging.{LoggedEvent, Logger}
+import au.id.tmm.utilities.logging.Logger
 import au.id.tmm.utilities.probabilities.ProbabilityMeasure
+import au.id.tmm.utilities.probabilities.ProbabilityMeasure.{Always, Varied}
 
 import scala.annotation.tailrec
 
@@ -23,110 +23,55 @@ object FullCountComputation {
                    preferenceTree: PreferenceTree[C],
                  ): ProbabilityMeasure[CountSteps[C]] = {
 
-    require(ineligibleCandidates.subsetOf(candidates))
-
     val rootPaperBundle = PaperBundle.rootBundleFor(preferenceTree)
 
-    val initialCandidateStatuses = CandidateStatuses(
-      asMap = candidates.map { candidate =>
-        val candidateStatus = {
-          if (ineligibleCandidates contains candidate) {
-            CandidateStatus.Ineligible
-          } else {
-            CandidateStatus.Remaining
-          }
-        }
-
-        candidate -> candidateStatus
-      }
-        .toMap
-    )
-
-    val initialContext = computeContextAndLog {
-      ProbabilityMeasure.always {
-        InitialAllocationComputation.computeInitialContext(
-          initialCandidateStatuses,
-          rootPaperBundle,
-          numVacancies,
-        )
-      }
-    }
-
-    val contextAfterIneligibles = computeContextAndLog {
-      IneligibleHandling.computeContextAfterIneligibles(initialContext.onlyOutcome)
+    val initialContextPossibilities = ProbabilityMeasure.Always {
+      InitialAllocationComputation.computeInitialContext(
+        candidates,
+        ineligibleCandidates,
+        numVacancies,
+        rootPaperBundle,
+      )
     }
 
 
+    val contextAfterIneligiblesPossibilities = initialContextPossibilities.flatMap { initialContext =>
+      CountActionInterpreter.applyActionToContext(initialContext)
+    }
 
+    val finalContexts = contextAfterIneligiblesPossibilities.flatMap(computeContextUntilFinal)
 
-    contextAfterIneligibles.flatMap(allCountStepsFrom)
+    finalContexts.map(_.previousCountSteps)
   }
 
   @tailrec
-  private def allCountStepsFrom[C](previousContext: CountContext[C, CountSteps.AllowingAppending[C]]): ProbabilityMeasure[CountSteps[C]] = {
-    if (previousContext.allVacanciesNowFilled) {
-      return ProbabilityMeasure.Always(previousContext.previousCountSteps)
-    }
+  private def computeContextUntilFinal[C](context: CountContext.AllowingAppending[C]): ProbabilityMeasure[CountContext[C]] = {
+    val nextContextPossibilities = CountActionInterpreter.applyActionToContext(context)
 
-    FinalElectionComputation.contextAfterFinalElection(previousContext)
-      .map(computeContextAndLog(_)) match {
-      case Some(finalCountStepPossibilities) => finalCountStepPossibilities.map(_.previousCountSteps)
-      case None => {
-        val nextContextPossibilities = computeContextAndLog(DistributingPapers.contextAfterNextCandidateDistribution(previousContext))
-
-        nextContextPossibilities match {
-          case ProbabilityMeasure.Always(nextContext) => allCountStepsFrom[C](nextContext)
-          case nextContextPossibilities: ProbabilityMeasure.Varied[CountContext[C, CountSteps.DuringDistributions[C]]] => {
-            nextContextPossibilities.flatMap(nonRecursiveAllCountStepsFrom[C](_))
+    nextContextPossibilities match {
+      case Always(onlyOutcome) => onlyOutcome match {
+        case allowingAppending: CountContext.AllowingAppending[C] =>
+          if (allowingAppending.nextAction == CountAction.NoAction) {
+            ProbabilityMeasure.Always(allowingAppending)
+          } else {
+            computeContextUntilFinal(allowingAppending)
           }
-        }
+        case terminal: CountContext.Terminal[C] => ProbabilityMeasure.Always(terminal)
+      }
+      case possibilities @ Varied(_) => possibilities.flatMap {
+        case allowingAppending: CountContext.AllowingAppending[C] =>
+          if (allowingAppending.nextAction == CountAction.NoAction) {
+            ProbabilityMeasure.Always(allowingAppending)
+          } else {
+            nonRecursiveComputeContextUntilFinal(allowingAppending)
+          }
+        case terminal: CountContext.Terminal[C] => ProbabilityMeasure.Always(terminal)
       }
     }
   }
 
-  private def nonRecursiveAllCountStepsFrom[C](previousContext: CountContext[C, CountSteps.AllowingAppending[C]]): ProbabilityMeasure[CountSteps[C]] = {
-    allCountStepsFrom(previousContext)
-  }
-
-  private def computeContextAndLog[C, T_COUNT_STEPS <: CountSteps[C]](
-                                                                       countContext: => ProbabilityMeasure[CountContext[C, T_COUNT_STEPS]],
-                                                                     ): ProbabilityMeasure[CountContext[C, T_COUNT_STEPS]] = {
-    val loggedEvent = LoggedEvent("COUNT_STEP_COMPUTATION")
-
-    val contextToReturn = loggedEvent.logWithTimeOnceFinished {
-      val contextToReturn = countContext
-
-      augmentLoggedEventWith(loggedEvent, contextToReturn.anyOutcome) // TODO log all possibilities
-
-      contextToReturn
-    }
-
-    contextToReturn
-  }
-
-  private def augmentLoggedEventWith[C](loggedEvent: LoggedEvent, countContext: CountContext[C, _]): Unit = {
-    val stepType = countContext.mostRecentCountStep match {
-      case _: InitialAllocation[C] => "initial"
-      case _: AllocationAfterIneligibles[C] => "after_ineligibles"
-      case _: DistributionPhaseCountStep[C] => "distribution"
-      case _: FinalElectionCountStep[C] => "final_election"
-    }
-
-    loggedEvent.kvPairs += "count" -> countContext.mostRecentCountStep.count
-    loggedEvent.kvPairs += "step_type" -> stepType
-    loggedEvent.kvPairs += "num_paper_bundles" -> countContext.paperBundles.size
-
-    countContext.mostRecentCountStep match {
-      case DistributionCountStep(_, _, _, source) => {
-        loggedEvent.kvPairs ++= List(
-          "distribution_candidate" -> source.candidate,
-          "distribution_reason" -> source.candidateDistributionReason,
-          "distribution_transfer_value" -> source.transferValue.factor,
-        )
-      }
-      case _ =>
-    }
-
-  }
+  private def nonRecursiveComputeContextUntilFinal[C](
+                                                       context: CountContext.AllowingAppending[C],
+                                                     ): ProbabilityMeasure[CountContext[C]] = computeContextUntilFinal(context)
 
 }

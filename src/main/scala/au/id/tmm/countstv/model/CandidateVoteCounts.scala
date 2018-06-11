@@ -21,4 +21,9 @@ final case class CandidateVoteCounts[C](
     )
   }
 
+  def total: VoteCount = {
+    val votesForCandidates = perCandidate.valuesIterator.reduceOption(_ + _).getOrElse(VoteCount.zero)
+
+    votesForCandidates + exhausted + roundingError
+  }
 }

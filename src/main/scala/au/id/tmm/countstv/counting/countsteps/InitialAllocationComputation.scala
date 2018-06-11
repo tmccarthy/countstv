@@ -1,8 +1,8 @@
 package au.id.tmm.countstv.counting.countsteps
 
 import au.id.tmm.countstv.counting.{QuotaComputation, RootPaperBundle, VoteCounting}
-import au.id.tmm.countstv.model._
 import au.id.tmm.countstv.model.countsteps.{CountSteps, InitialAllocation}
+import au.id.tmm.countstv.model.{CandidateStatus, CandidateStatuses}
 
 private[counting] object InitialAllocationComputation {
 
@@ -11,16 +11,27 @@ private[counting] object InitialAllocationComputation {
     * candidates.
     */
   def computeInitialContext[C](
-                                initialCandidateStatuses: CandidateStatuses[C],
-                                rootPaperBundle: RootPaperBundle[C],
+                                allCandidates: Set[C],
+                                ineligibleCandidates: Set[C],
                                 numVacancies: Int,
-                              ): CountContext[C, CountSteps.Initial[C]] = {
+                                rootPaperBundle: RootPaperBundle[C],
+                              ): CountContext.Initial[C] = {
     val numFormalPapers = rootPaperBundle.numPapers
     val quota = QuotaComputation.computeQuota(numVacancies, numFormalPapers)
 
     val firstSetOfPaperBundles = rootPaperBundle.distribute
 
-    CountContext[C, CountSteps.Initial[C]](
+    val initialCandidateStatuses = CandidateStatuses(
+      allCandidates.map { candidate =>
+        if (ineligibleCandidates contains candidate) {
+          candidate -> CandidateStatus.Ineligible
+        } else {
+          candidate -> CandidateStatus.Remaining
+        }
+      }.toMap
+    )
+
+    CountContext.Initial[C](
       numFormalPapers = numFormalPapers,
       numVacancies = numVacancies,
       paperBundles = firstSetOfPaperBundles,

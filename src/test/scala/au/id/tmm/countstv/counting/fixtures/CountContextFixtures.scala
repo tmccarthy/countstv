@@ -1,49 +1,56 @@
 package au.id.tmm.countstv.counting.fixtures
 
 import au.id.tmm.countstv.Fruit
+import au.id.tmm.countstv.counting.CountAction
 import au.id.tmm.countstv.counting.countsteps.{CountContext, FinalElectionComputation}
-import au.id.tmm.countstv.model.countsteps.CountSteps
 import au.id.tmm.countstv.model.values.Count
 
 object CountContextFixtures {
 
   object InitialAllocations {
-    val withoutIneligibleCandidates: CountContext[Fruit, CountSteps.Initial[Fruit]] =
+    def withoutIneligibleCandidates: CountContext.Initial[Fruit] =
       CountFixture.withFinalElection.initialContext
+
+    def withTwoIneligibleCandidates: CountContext.Initial[Fruit] =
+      CountFixture.withTwoIneligibleCandidates.initialContext
   }
 
   object AllocationsAfterIneligibles {
-    val whereCandidateExcluded: CountContext[Fruit, CountSteps.AfterIneligibleHandling[Fruit]] =
+    def whereCandidateExcluded: CountContext.AfterIneligibleHandling[Fruit] =
       CountFixture.withFinalElection.contextAfterIneligibles
   }
 
   object DuringDistributions {
-    val whereExcludedCandidateDistributed: CountContext[Fruit, CountSteps.DuringDistributions[Fruit]] =
-      CountFixture.withFinalElection.actualContextAfterCount(Count(2))
+    def whereExcludedCandidateDistributed: CountContext.DuringDistributions[Fruit] =
+      CountFixture.withFinalElection.actualDistributionContextAfterCount(Count(2))
 
-    val whereExcludedCandidateDistributed2: CountContext[Fruit, CountSteps.DuringDistributions[Fruit]] =
-      CountFixture.withFinalElection.actualContextAfterCount(Count(3))
+    def whereExcludedCandidateDistributed2: CountContext.DuringDistributions[Fruit] =
+      CountFixture.withFinalElection.actualDistributionContextAfterCount(Count(3))
 
-    val whereExcludedCandidateDistributedAndCandidateElected: CountContext[Fruit, CountSteps.DuringDistributions[Fruit]] =
-      CountFixture.withFinalElection.actualContextAfterCount(Count(4))
+    def whereExcludedCandidateDistributedAndCandidateElected: CountContext.DuringDistributions[Fruit] =
+      CountFixture.withFinalElection.actualDistributionContextAfterCount(Count(4))
 
-    val whereElectedCandidatePartiallyDistributed: CountContext[Fruit, CountSteps.DuringDistributions[Fruit]] =
-      CountFixture.withFinalElection.actualContextAfterCount(Count(5))
+    def whereElectedCandidatePartiallyDistributed: CountContext.DuringDistributions[Fruit] =
+      CountFixture.withFinalElection.actualDistributionContextAfterCount(Count(5))
 
-    val whereCandidateExcludedWithoutVotes: CountContext[Fruit, CountSteps.DuringDistributions[Fruit]] =
-      CountFixture.withVotelessCandidate.actualContextAfterCount(Count(2))
+    def whereCandidateExcludedWithoutVotes: CountContext.DuringDistributions[Fruit] =
+      CountFixture.withVotelessCandidate.actualDistributionContextAfterCount(Count(2))
 
-    val whereCandidateElectedWithoutSurplus: CountContext[Fruit, CountSteps.DuringDistributions[Fruit]] =
-      CountFixture.withElectionSansSurplus.actualContextAfterCount(Count(5))
+    def whereCandidateElectedWithoutSurplus: CountContext.DuringDistributions[Fruit] =
+      CountFixture.withElectionSansSurplus.actualDistributionContextAfterCount(Count(5))
   }
 
   object AfterFinalStep {
-    val whereCandidateElectedToRemainingVacancy: CountContext[Fruit, CountSteps.AfterFinalElections[Fruit]] = {
-      val contextAfterStep7 = CountFixture.withFinalElection.actualContextAfterCount(Count(7))
+    def whereCandidateElectedToRemainingVacancy: CountContext.Terminal[Fruit] = {
+      val contextAfterStep7: CountContext.DuringDistributions[Fruit] =
+        CountFixture.withFinalElection.actualDistributionContextAfterCount(Count(7))
 
-      val actualContext = FinalElectionComputation.contextAfterFinalElection(contextAfterStep7)
-
-      actualContext.getOrElse(throw new AssertionError("Expected final election")).onlyOutcome
+      contextAfterStep7.nextAction match {
+        case CountAction.MarkCandidateFinallyElected(c) =>
+          FinalElectionComputation.contextAfterMarkingCandidateFinallyElected(contextAfterStep7, c).onlyOutcome
+            .asInstanceOf[CountContext.Terminal[Fruit]]
+        case _ => throw new AssertionError("Expected final election")
+      }
     }
   }
 

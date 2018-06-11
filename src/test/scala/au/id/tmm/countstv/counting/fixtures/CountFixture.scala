@@ -2,13 +2,15 @@ package au.id.tmm.countstv.counting.fixtures
 
 import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
-import au.id.tmm.countstv.counting.countsteps.distribution.DistributingPapers
-import au.id.tmm.countstv.counting.countsteps.{CountContext, IneligibleHandling, InitialAllocationComputation}
-import au.id.tmm.countstv.counting.{PaperBundle, RootPaperBundle}
-import au.id.tmm.countstv.model.CandidateStatus._
-import au.id.tmm.countstv.model.countsteps.{CountSteps, DistributionPhaseCountStep}
+import au.id.tmm.countstv.counting.countsteps.CountContext.{DuringDistributions, Terminal}
+import au.id.tmm.countstv.counting.countsteps.{CountContext, InitialAllocationComputation}
+import au.id.tmm.countstv.counting.{CountActionInterpreter, PaperBundle, RootPaperBundle}
+import au.id.tmm.countstv.model.PreferenceTree
+import au.id.tmm.countstv.model.countsteps.DistributionPhaseCountStep
 import au.id.tmm.countstv.model.values.{Count, NumPapers}
-import au.id.tmm.countstv.model.{CandidateStatuses, PreferenceTree}
+import org.scalatest.Assertions
+
+import scala.annotation.tailrec
 
 case class CountFixture(
                          allBallots: Vector[Vector[Fruit]],
@@ -29,34 +31,28 @@ case class CountFixture(
 
   lazy val preferenceTree: PreferenceTree[Fruit] = PreferenceTree.from(allBallots)
 
-  lazy val initialContext: CountContext[Fruit, CountSteps.Initial[Fruit]] = {
+  lazy val initialContext: CountContext.Initial[Fruit] = {
     val rootBundle: RootPaperBundle[Fruit] = PaperBundle.rootBundleFor[Fruit](preferenceTree)
 
-    val initialCandidateStatuses = CandidateStatuses(
-      candidates.map { candidate =>
-        if (ineligibleCandidates contains candidate) {
-          candidate -> Ineligible
-        } else {
-          candidate -> Remaining
-        }
-      }.toMap
-    )
-
-    InitialAllocationComputation.computeInitialContext(initialCandidateStatuses, rootBundle, numVacancies)
+    InitialAllocationComputation.computeInitialContext(candidates, ineligibleCandidates, numVacancies, rootBundle)
   }
 
-  lazy val contextAfterIneligibles: CountContext[Fruit, CountSteps.AfterIneligibleHandling[Fruit]] =
-    IneligibleHandling.computeContextAfterIneligibles(
-      initialContext,
-    ).onlyOutcome
+  lazy val contextAfterIneligibles: CountContext.AfterIneligibleHandling[Fruit] = {
+    CountActionInterpreter.applyActionToContext(initialContext).onlyOutcome
+  }
 
   def getActualCountStep(count: Count): DistributionPhaseCountStep[Fruit] = {
     firstContextAfterCount(count).previousCountSteps(count).asInstanceOf[DistributionPhaseCountStep[Fruit]]
   }
 
-  // TODO this should be generalised for all countsteps types, and provide a specific method for distributions
-  // (with an assertion)
-  def actualContextAfterCount(count: Count): CountContext[Fruit, CountSteps.DuringDistributions[Fruit]] = {
+  def actualDistributionContextAfterCount(count: Count): CountContext.DuringDistributions[Fruit] = {
+    actualContextAfterCount(count) match {
+      case c: DuringDistributions[Fruit] => c
+      case _: Terminal[Fruit] => Assertions.fail(s"The first context after count $count is a terminal context")
+    }
+  }
+
+  def actualContextAfterCount(count: Count): CountContext.DistributionPhase[Fruit] = {
     val candidateContext = firstContextAfterCount(count)
 
     if (candidateContext.mostRecentCountStep.count == count) {
@@ -66,17 +62,20 @@ case class CountFixture(
     }
   }
 
-  private def firstContextAfterCount(count: Count): CountContext[Fruit, CountSteps.DuringDistributions[Fruit]] = {
-    require(count.asInt > 1)
+  @tailrec
+  private def firstContextAfterCount(count: Count, previousContext: CountContext.AllowingAppending[Fruit] = contextAfterIneligibles): CountContext.DistributionPhase[Fruit] = {
+    require(count > Count.ofIneligibleCandidateHandling)
 
-    var newContext: CountContext[Fruit, CountSteps.DuringDistributions[Fruit]] =
-      DistributingPapers.contextAfterNextCandidateDistribution(contextAfterIneligibles).onlyOutcome
-
-    while (newContext.mostRecentCountStep.count.asInt < count.asInt) {
-      newContext = DistributingPapers.contextAfterNextCandidateDistribution(newContext).onlyOutcome
+    CountActionInterpreter.applyActionToContext(previousContext).onlyOutcome match {
+      case newContext: CountContext.DuringDistributions[Fruit] => {
+        if (newContext.mostRecentCountStep.count >= count) {
+          newContext
+        } else {
+          firstContextAfterCount(count, newContext)
+        }
+      }
+      case _: Terminal[Fruit] => Assertions.fail(s"There is no context for $count in this count")
     }
-
-    newContext
   }
 
   def afterEditingBallots(editBallots: Vector[Vector[Fruit]] => Vector[Vector[Fruit]]): CountFixture = {
@@ -91,7 +90,7 @@ object CountFixture {
 
   def apply(allBallots: Vector[Fruit]*): CountFixture = new CountFixture(allBallots.toVector)
 
-  val withFinalElection = CountFixture(
+  def withFinalElection = CountFixture(
     Vector[Fruit](Apple, Banana, Strawberry, Pear, Raspberry, Mango, Watermelon),
     Vector[Fruit](Apple, Pear, Mango, Strawberry, Banana, Raspberry, Watermelon),
     Vector[Fruit](Apple, Pear, Mango, Strawberry, Raspberry, Watermelon, Banana),
@@ -144,7 +143,7 @@ object CountFixture {
     Vector[Fruit](Watermelon, Mango, Pear, Raspberry, Apple, Banana, Strawberry), // 4 votes for Watermelon
   )
 
-  val withVotelessCandidate: CountFixture = withFinalElection.afterEditingBallots { ballots =>
+  def withVotelessCandidate: CountFixture = withFinalElection.afterEditingBallots { ballots =>
     // Delete the first preference of any ballot that preferences Watermelon first
     ballots.map { ballot =>
       if (ballot.head == Watermelon) {
@@ -155,7 +154,7 @@ object CountFixture {
     }
   }
 
-  val withElectionSansSurplus: CountFixture = withFinalElection.afterEditingBallots { ballots =>
+  def withElectionSansSurplus: CountFixture = withFinalElection.afterEditingBallots { ballots =>
     //** Find the ballot that preferences Watermelon and then Apple, and drop the preference for Apple.
     ballots.map { ballot =>
       if (ballot.take(2) == Vector(Watermelon, Apple)) {
@@ -166,7 +165,7 @@ object CountFixture {
     }
   }
 
-  val withOneRemainingCandidate = CountFixture(
+  def withOneRemainingCandidate = CountFixture(
     Vector(Apple, Banana, Strawberry, Pear, Raspberry, Mango, Watermelon),
     Vector(Apple, Pear, Mango, Strawberry, Banana, Raspberry, Watermelon),
     Vector(Apple, Pear, Mango, Strawberry, Raspberry, Watermelon, Banana),
@@ -219,18 +218,32 @@ object CountFixture {
     Vector(Watermelon, Mango, Pear, Raspberry, Apple, Banana, Strawberry), // 4
   )
 
-  val withOneIneligibleCandidate: CountFixture =
+  def withOneIneligibleCandidate: CountFixture =
     withOneRemainingCandidate.copy(ineligibleCandidates = Set(Apple))
 
-  val withATie: CountFixture =
+  def withTwoIneligibleCandidates: CountFixture =
+    withFinalElection.copy(ineligibleCandidates = Set(Apple, Strawberry))
+
+  def withATieAtTheIneligibleHandling: CountFixture =
     withOneRemainingCandidate.afterEditingBallots { ballots =>
       ballots.tail :+ Vector(Watermelon, Apple, Raspberry, Mango, Banana, Pear, Strawberry)
     }
 
-  val withInvalidIneligibleCandidates: CountFixture =
+  def withATieDuringTheDistributionPhase: CountFixture =
+    withFinalElection.afterEditingBallots { ballots =>
+      ballots.flatMap { ballot =>
+        if (ballot == Vector(Raspberry, Watermelon, Pear, Apple, Banana, Strawberry, Mango)) {
+          Nil
+        } else {
+          Vector(ballot)
+        }
+      }
+    }
+
+  def withInvalidIneligibleCandidates: CountFixture =
     withOneRemainingCandidate.copy(ineligibleCandidates = Set(Peach))
 
-  val withFourCandidates: CountFixture = CountFixture(
+  def withFourCandidates: CountFixture = CountFixture(
     allBallots = Vector(
       Vector[Fruit](Apple, Pear, Banana, Strawberry),
       Vector[Fruit](Apple, Pear, Banana, Strawberry),
@@ -260,5 +273,15 @@ object CountFixture {
       Strawberry,
     ),
   )
+
+  def withAVacancyForEachCandidate: CountFixture = withFinalElection.afterEditingBallots { ballots =>
+    ballots.map { ballot =>
+      if (ballot == Vector[Fruit](Pear, Watermelon, Banana, Mango, Strawberry, Raspberry, Apple)) {
+        Vector[Fruit](Apple, Watermelon, Banana, Mango, Strawberry, Raspberry, Pear)
+      } else {
+        ballot
+      }
+    }
+  }.copy(numVacancies = 7)
 
 }
