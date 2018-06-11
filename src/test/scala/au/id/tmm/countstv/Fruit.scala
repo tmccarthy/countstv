@@ -13,4 +13,6 @@ object Fruit {
   case object Raspberry extends Fruit
   case object Strawberry extends Fruit
   case object Watermelon extends Fruit
+
+  implicit val ordering: Ordering[Fruit] = Ordering.by(_.toString)
 }

@@ -47,7 +47,12 @@ object FinalElectionComputation {
       countContext.mostRecentCountStep.candidateStatuses,
     )
 
-    val newCountStep = FinalElectionCountStep(count, newCandidateStatuses, countContext.mostRecentCountStep.candidateVoteCounts)
+    val newCountStep = FinalElectionCountStep(
+      count,
+      newCandidateStatuses,
+      countContext.mostRecentCountStep.candidateVoteCounts,
+      newlyElectedCandidates,
+    )
 
     countContext.updated(
       newCountStep,

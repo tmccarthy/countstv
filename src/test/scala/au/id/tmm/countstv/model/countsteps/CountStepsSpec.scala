@@ -5,6 +5,7 @@ import au.id.tmm.countstv.Fruit._
 import au.id.tmm.countstv.model.CandidateStatus._
 import au.id.tmm.countstv.model._
 import au.id.tmm.countstv.model.values._
+import au.id.tmm.utilities.collection.DupelessSeq
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
 class CountStepsSpec extends ImprovedFlatSpec {
@@ -105,6 +106,10 @@ class CountStepsSpec extends ImprovedFlatSpec {
       ),
       exhausted = VoteCount.zero,
       roundingError = VoteCount.zero,
+    ),
+    electedCandidates = DupelessSeq(
+      Apple,
+      Banana,
     ),
   )
 

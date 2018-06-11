@@ -83,7 +83,9 @@ object DistributionComputation {
                                             ): ProbabilityMeasure[CountContext.DistributionPhase[C]] = {
     val count = countContext.mostRecentCountStep.count.increment
 
-    val newPaperBundles = countContext.paperBundles.filterNot(_.assignedCandidate contains candidate)
+    val paperBundlesForCandidate: PaperBundles[C] = countContext.paperBundles.filter(_.assignedCandidate contains candidate)
+
+    val newPaperBundles = countContext.paperBundles diff paperBundlesForCandidate
 
     val oldCandidateStatuses = countContext.mostRecentCountStep.candidateStatuses
 
@@ -99,6 +101,7 @@ object DistributionComputation {
       oldCandidateStatuses,
       newVoteCounts,
       candidate,
+      sourceCounts = paperBundlesForCandidate.map(_.origin.count).seq,
     )
 
     val proposedCountSteps = countContext.previousCountSteps.append(proposedCountStep)

@@ -3,6 +3,7 @@ package au.id.tmm.countstv.model.countsteps
 import au.id.tmm.countstv.model.countsteps.AllocationAfterIneligibles.TransfersDueToIneligibles
 import au.id.tmm.countstv.model.values.{Count, TransferValue}
 import au.id.tmm.countstv.model.{CandidateDistributionReason, CandidateStatus, CandidateStatuses, CandidateVoteCounts}
+import au.id.tmm.utilities.collection.DupelessSeq
 
 /**
   * A representation of the state of a count after a step.
@@ -79,10 +80,11 @@ final case class ExcludedNoVotesCountStep[C](
   * surplus.
   */
 final case class ElectedNoSurplusCountStep[C](
-                                             count: Count,
-                                             candidateStatuses: CandidateStatuses[C],
-                                             candidateVoteCounts: CandidateVoteCounts[C],
-                                             electedCandidate: C,
+                                               count: Count,
+                                               candidateStatuses: CandidateStatuses[C],
+                                               candidateVoteCounts: CandidateVoteCounts[C],
+                                               electedCandidate: C,
+                                               sourceCounts: Set[Count],
                                              ) extends DistributionPhaseCountStep[C]
 
 /**
@@ -92,6 +94,7 @@ final case class FinalElectionCountStep[C](
                                             count: Count,
                                             candidateStatuses: CandidateStatuses[C],
                                             candidateVoteCounts: CandidateVoteCounts[C],
+                                            electedCandidates: DupelessSeq[C],
                                           ) extends CountStep[C]
 
 object DistributionCountStep {

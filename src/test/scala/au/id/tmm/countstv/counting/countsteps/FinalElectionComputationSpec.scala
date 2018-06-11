@@ -1,12 +1,13 @@
 package au.id.tmm.countstv.counting.countsteps
 
 import au.id.tmm.countstv.Fruit
-import au.id.tmm.countstv.Fruit._
+import au.id.tmm.countstv.Fruit.{Mango, _}
 import au.id.tmm.countstv.counting.fixtures.CountStepFixtures
 import au.id.tmm.countstv.model.CandidateStatus._
 import au.id.tmm.countstv.model.countsteps.FinalElectionCountStep
 import au.id.tmm.countstv.model.values.{Count, NumPapers, NumVotes, Ordinal}
 import au.id.tmm.countstv.model.{CandidateStatuses, CandidateVoteCounts, VoteCount}
+import au.id.tmm.utilities.collection.DupelessSeq
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
 class FinalElectionComputationSpec extends ImprovedFlatSpec {
@@ -37,6 +38,9 @@ class FinalElectionComputationSpec extends ImprovedFlatSpec {
         ),
         exhausted = VoteCount.zero,
         roundingError = VoteCount(NumPapers(0), NumVotes(-1))
+      ),
+      electedCandidates = DupelessSeq(
+        Pear,
       ),
     )
 
@@ -69,6 +73,15 @@ class FinalElectionComputationSpec extends ImprovedFlatSpec {
         ),
         exhausted = VoteCount.zero,
         roundingError = VoteCount(NumPapers(0), NumVotes(0))
+      ),
+      electedCandidates = DupelessSeq(
+        Apple,
+        Mango,
+        Pear,
+        Raspberry,
+        Banana,
+        Strawberry,
+        Watermelon,
       ),
     )
 

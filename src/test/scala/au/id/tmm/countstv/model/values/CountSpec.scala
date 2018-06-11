@@ -8,12 +8,8 @@ class CountSpec extends ImprovedFlatSpec {
     assert(Count(0).increment === Count(1))
   }
 
-  "the count for the initial allocation" should "be zero" in {
-    assert(Count.ofInitialAllocation === Count(0))
-  }
-
-  "the count for the allocation away from ineligibles" should "be one" in {
-    assert(Count.ofIneligibleCandidateHandling === Count(1))
+  it can "be decremented" in {
+    assert(Count(2).decrement === Count(1))
   }
 
   it can "be compared to another" in {
@@ -34,5 +30,13 @@ class CountSpec extends ImprovedFlatSpec {
     assert(Count.ordering.compare(Count(6), Count(3)) > 0)
     assert(Count.ordering.compare(Count(3), Count(6)) < 0)
     assert(Count.ordering.compare(Count(3), Count(3)) === 0)
+  }
+
+  "the count for the initial allocation" should "be zero" in {
+    assert(Count.ofInitialAllocation === Count(0))
+  }
+
+  "the count for the allocation away from ineligibles" should "be one" in {
+    assert(Count.ofIneligibleCandidateHandling === Count(1))
   }
 }

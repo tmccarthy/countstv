@@ -72,6 +72,7 @@ class SpecialCaseDistributingPapersSpec extends ImprovedFlatSpec {
         roundingError = VoteCount(NumPapers(-17), NumVotes(0)) // TODO the missing papers aren't really a rounding error
       ),
       electedCandidate = Apple,
+      sourceCounts = Set(Count(0), Count(3), Count(4)),
     )
 
     val actualCountStep = CountStepFixtures.DuringDistributions.whereCandidateElectedWithoutSurplus

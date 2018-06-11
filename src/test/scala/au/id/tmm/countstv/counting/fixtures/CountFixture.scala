@@ -4,10 +4,10 @@ import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
 import au.id.tmm.countstv.counting.countsteps.CountContext.{DuringDistributions, Terminal}
 import au.id.tmm.countstv.counting.countsteps.{CountContext, InitialAllocationComputation}
-import au.id.tmm.countstv.counting.{CountActionInterpreter, PaperBundle, RootPaperBundle}
+import au.id.tmm.countstv.counting.{CountActionInterpreter, PaperBundle, QuotaComputation, RootPaperBundle}
 import au.id.tmm.countstv.model.PreferenceTree
 import au.id.tmm.countstv.model.countsteps.DistributionPhaseCountStep
-import au.id.tmm.countstv.model.values.{Count, NumPapers}
+import au.id.tmm.countstv.model.values.{Count, NumPapers, NumVotes}
 import org.scalatest.Assertions
 
 import scala.annotation.tailrec
@@ -28,6 +28,8 @@ case class CountFixture(
                        ) {
 
   val numPapers: NumPapers = NumPapers(allBallots.size)
+
+  val quota: NumVotes = QuotaComputation.computeQuota(numVacancies, numPapers)
 
   lazy val preferenceTree: PreferenceTree[Fruit] = PreferenceTree.from(allBallots)
 
