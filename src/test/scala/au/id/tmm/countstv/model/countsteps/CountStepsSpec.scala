@@ -354,6 +354,14 @@ class CountStepsSpec extends ImprovedFlatSpec {
         assert(testInstance.truncateAfter(count) === expectedTruncated)
       }
     }
+
+    it should "start its counts at 0" in {
+      assert(testInstance.counts.next() === Count(0))
+    }
+
+    it should s"have ${expectedSize - 1} as its last count" in {
+      assert(testInstance.counts.toList.last === Count(expectedSize - 1))
+    }
   }
 
 }

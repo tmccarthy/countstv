@@ -4,15 +4,14 @@ import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
 import au.id.tmm.countstv.counting.fixtures.CountFixture
 import au.id.tmm.countstv.model.CandidateStatus._
-import au.id.tmm.countstv.model.CandidateStatuses
-import au.id.tmm.countstv.model.countsteps.CountSteps
 import au.id.tmm.countstv.model.values.{Count, Ordinal}
+import au.id.tmm.countstv.model.{CandidateStatuses, CompletedCount}
 import au.id.tmm.utilities.probabilities.ProbabilityMeasure
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
 class FullCountComputationSpec extends ImprovedFlatSpec {
 
-  private def runFullCountFor(countFixture: CountFixture): ProbabilityMeasure[CountSteps[Fruit]] = {
+  private def runFullCountFor(countFixture: CountFixture): ProbabilityMeasure[CompletedCount[Fruit]] = {
     FullCountComputation.runCount(
       countFixture.candidates,
       countFixture.ineligibleCandidates,
@@ -22,7 +21,7 @@ class FullCountComputationSpec extends ImprovedFlatSpec {
   }
 
   "a full vote count" should "produce the correct outcome" in {
-    val countSteps = runFullCountFor(CountFixture.withOneRemainingCandidate).onlyOutcome
+    val completedCount = runFullCountFor(CountFixture.withOneRemainingCandidate).onlyOutcome
 
     val expectedFinalOutcomes = CandidateStatuses[Fruit](
       Apple -> Elected(Ordinal.first,Count(4)),
@@ -34,11 +33,11 @@ class FullCountComputationSpec extends ImprovedFlatSpec {
       Watermelon -> Excluded(Ordinal.first,Count(1)),
     )
 
-    assert(countSteps.last.candidateStatuses === expectedFinalOutcomes)
+    assert(completedCount.outcomes === expectedFinalOutcomes)
   }
 
   it should "produce the correct outcome when we have ineligible candidates" in {
-    val countSteps = runFullCountFor(CountFixture.withOneIneligibleCandidate).onlyOutcome
+    val completedCount = runFullCountFor(CountFixture.withOneIneligibleCandidate).onlyOutcome
 
     val expectedFinalOutcomes = CandidateStatuses[Fruit](
       Apple -> Ineligible,
@@ -50,11 +49,11 @@ class FullCountComputationSpec extends ImprovedFlatSpec {
       Watermelon -> Excluded(Ordinal.first, Count(1)),
     )
 
-    assert(countSteps.last.candidateStatuses === expectedFinalOutcomes)
+    assert(completedCount.outcomes === expectedFinalOutcomes)
   }
 
   it should "produce the correct outcome when there is a tie after the ineligible handling" in {
-    val countSteps = runFullCountFor(CountFixture.withATieAtTheIneligibleHandling)
+    val completedCount = runFullCountFor(CountFixture.withATieAtTheIneligibleHandling)
 
     val expectedFinalOutcomes = ProbabilityMeasure.evenly(
       CandidateStatuses(
@@ -77,11 +76,11 @@ class FullCountComputationSpec extends ImprovedFlatSpec {
       ),
     )
 
-    assert(countSteps.map(_.last.candidateStatuses) === expectedFinalOutcomes)
+    assert(completedCount.map(_.outcomes) === expectedFinalOutcomes)
   }
 
   it should "produce the correct outcome when there is a tie during distribution" in {
-    val countSteps = runFullCountFor(CountFixture.withATieDuringTheDistributionPhase)
+    val completedCount = runFullCountFor(CountFixture.withATieDuringTheDistributionPhase)
 
     val expectedFinalOutcomes = ProbabilityMeasure.evenly(
       CandidateStatuses(
@@ -104,11 +103,11 @@ class FullCountComputationSpec extends ImprovedFlatSpec {
       ),
     )
 
-    assert(countSteps.map(_.last.candidateStatuses) === expectedFinalOutcomes)
+    assert(completedCount.map(_.outcomes) === expectedFinalOutcomes)
   }
 
   it should "produce the correct outcome when there is a final election step" in {
-    val actualOutcome = runFullCountFor(CountFixture.withFinalElection).map(_.last.candidateStatuses)
+    val actualOutcome = runFullCountFor(CountFixture.withFinalElection).map(_.outcomes)
 
     val expectedFinalOutcome = ProbabilityMeasure.Always(
       CandidateStatuses[Fruit](
@@ -126,7 +125,7 @@ class FullCountComputationSpec extends ImprovedFlatSpec {
   }
 
   it should "produce the correct outcome when there is a final election step electing all remaining candidates" in {
-    val actualOutcome = runFullCountFor(CountFixture.withAVacancyForEachCandidate).map(_.last.candidateStatuses)
+    val actualOutcome = runFullCountFor(CountFixture.withAVacancyForEachCandidate).map(_.outcomes)
 
     val expectedFinalOutcome = ProbabilityMeasure.Always(
       CandidateStatuses[Fruit](

@@ -4,12 +4,14 @@ import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
 import au.id.tmm.countstv.counting.FullCountComputation
 import au.id.tmm.countstv.counting.fixtures.CountFixture
-import au.id.tmm.countstv.counting.render.CountStepRenderer.StepComment
-import au.id.tmm.countstv.model.CandidateDistributionReason.{Election, Exclusion}
+import au.id.tmm.countstv.counting.render.CountStepRenderer.StepCandidate._
+import au.id.tmm.countstv.counting.render.CountStepRenderer.StepComment._
+import au.id.tmm.countstv.counting.render.CountStepRenderer._
+import au.id.tmm.countstv.model.CandidateDistributionReason._
 import au.id.tmm.countstv.model.CandidateStatus._
 import au.id.tmm.countstv.model.VoteCount
 import au.id.tmm.countstv.model.countsteps.DistributionCountStep
-import au.id.tmm.countstv.model.values.{Count, TransferValue}
+import au.id.tmm.countstv.model.values._
 import au.id.tmm.utilities.collection.DupelessSeq
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 import org.scalatest.Assertion
@@ -82,7 +84,7 @@ class CountStepRendererSpec extends ImprovedFlatSpec {
       Set.empty,
       fixture.numVacancies,
       fixture.preferenceTree,
-    ).onlyOutcome
+    ).onlyOutcome.countSteps
 
     val stepPrior = countSteps.lift(count.decrement)
     val step = countSteps(count)
@@ -144,4 +146,39 @@ class CountStepRendererSpec extends ImprovedFlatSpec {
     assert(actualRenderedStep === expectedRenderedStep)
   }
 
+  it can "render all rows for a completed count" in {
+    val fixture = CountFixture.withFourCandidates
+
+    val completedCount = FullCountComputation.runCount(
+      fixture.candidates,
+      Set.empty,
+      fixture.numVacancies,
+      fixture.preferenceTree,
+    ).onlyOutcome
+
+    val actualRenderedRows = CountStepRenderer.renderRowsFor(completedCount).toList
+
+    val expectedRenderedRows = List(
+      RenderedRow(2,NumPapers(20),NumVotes(7),Count(0),Candidate(Apple),VoteCount(NumPapers(19),NumVotes(19)),VoteCount(NumPapers(19),NumVotes(19)),TransferValue(1.0),Remaining,false,InitialAllocation),
+      RenderedRow(2,NumPapers(20),NumVotes(7),Count(0),Candidate(Banana),VoteCount(NumPapers(1),NumVotes(1)),VoteCount(NumPapers(1),NumVotes(1)),TransferValue(1.0),Remaining,false,InitialAllocation),
+      RenderedRow(2,NumPapers(20),NumVotes(7),Count(0),Candidate(Pear),VoteCount(NumPapers(0),NumVotes(0)),VoteCount(NumPapers(0),NumVotes(0)),TransferValue(1.0),Remaining,false,InitialAllocation),
+      RenderedRow(2,NumPapers(20),NumVotes(7),Count(0),Candidate(Strawberry),VoteCount(NumPapers(0),NumVotes(0)),VoteCount(NumPapers(0),NumVotes(0)),TransferValue(1.0),Remaining,false,InitialAllocation),
+      RenderedRow(2,NumPapers(20),NumVotes(7),Count(0),Exhausted,VoteCount(NumPapers(0),NumVotes(0)),VoteCount(NumPapers(0),NumVotes(0)),TransferValue(1.0),Remaining,false,InitialAllocation),
+      RenderedRow(2,NumPapers(20),NumVotes(7),Count(0),RoundingError,VoteCount(NumPapers(0),NumVotes(0)),VoteCount(NumPapers(0),NumVotes(0)),TransferValue(1.0),Remaining,false,InitialAllocation),
+      RenderedRow(2,NumPapers(20),NumVotes(7),Count(1),Candidate(Apple),VoteCount(NumPapers(0),NumVotes(0)),VoteCount(NumPapers(19),NumVotes(19)),TransferValue(1.0),Elected(Ordinal(0),Count(1)),true,NextStepDistributing(Apple,Election,Count(2),TransferValue(0.631578947368421),Set(Count(0)))),
+      RenderedRow(2,NumPapers(20),NumVotes(7),Count(1),Candidate(Banana),VoteCount(NumPapers(0),NumVotes(0)),VoteCount(NumPapers(1),NumVotes(1)),TransferValue(1.0),Remaining,false,NextStepDistributing(Apple,Election,Count(2),TransferValue(0.631578947368421),Set(Count(0)))),
+      RenderedRow(2,NumPapers(20),NumVotes(7),Count(1),Candidate(Pear),VoteCount(NumPapers(0),NumVotes(0)),VoteCount(NumPapers(0),NumVotes(0)),TransferValue(1.0),Remaining,false,NextStepDistributing(Apple,Election,Count(2),TransferValue(0.631578947368421),Set(Count(0)))),
+      RenderedRow(2,NumPapers(20),NumVotes(7),Count(1),Candidate(Strawberry),VoteCount(NumPapers(0),NumVotes(0)),VoteCount(NumPapers(0),NumVotes(0)),TransferValue(1.0),Remaining,false,NextStepDistributing(Apple,Election,Count(2),TransferValue(0.631578947368421),Set(Count(0)))),
+      RenderedRow(2,NumPapers(20),NumVotes(7),Count(1),Exhausted,VoteCount(NumPapers(0),NumVotes(0)),VoteCount(NumPapers(0),NumVotes(0)),TransferValue(1.0),Remaining,false,NextStepDistributing(Apple,Election,Count(2),TransferValue(0.631578947368421),Set(Count(0)))),
+      RenderedRow(2,NumPapers(20),NumVotes(7),Count(1),RoundingError,VoteCount(NumPapers(0),NumVotes(0)),VoteCount(NumPapers(0),NumVotes(0)),TransferValue(1.0),Remaining,false,NextStepDistributing(Apple,Election,Count(2),TransferValue(0.631578947368421),Set(Count(0)))),
+      RenderedRow(2,NumPapers(20),NumVotes(7),Count(2),Candidate(Apple),VoteCount(NumPapers(-19),NumVotes(-12)),VoteCount(NumPapers(0),NumVotes(7)),TransferValue(0.631578947368421),Elected(Ordinal(0),Count(1)),false,AllVacanciesFilled),
+      RenderedRow(2,NumPapers(20),NumVotes(7),Count(2),Candidate(Banana),VoteCount(NumPapers(1),NumVotes(0)),VoteCount(NumPapers(2),NumVotes(1)),TransferValue(0.631578947368421),Remaining,false,AllVacanciesFilled),
+      RenderedRow(2,NumPapers(20),NumVotes(7),Count(2),Candidate(Pear),VoteCount(NumPapers(18),NumVotes(11)),VoteCount(NumPapers(18),NumVotes(11)),TransferValue(0.631578947368421),Elected(Ordinal(1),Count(2)),true,AllVacanciesFilled),
+      RenderedRow(2,NumPapers(20),NumVotes(7),Count(2),Candidate(Strawberry),VoteCount(NumPapers(0),NumVotes(0)),VoteCount(NumPapers(0),NumVotes(0)),TransferValue(0.631578947368421),Remaining,false,AllVacanciesFilled),
+      RenderedRow(2,NumPapers(20),NumVotes(7),Count(2),Exhausted,VoteCount(NumPapers(0),NumVotes(0)),VoteCount(NumPapers(0),NumVotes(0)),TransferValue(0.631578947368421),Remaining,false,AllVacanciesFilled),
+      RenderedRow(2,NumPapers(20),NumVotes(7),Count(2),RoundingError,VoteCount(NumPapers(0),NumVotes(-1)),VoteCount(NumPapers(0),NumVotes(-1)),TransferValue(0.631578947368421),Remaining,false,AllVacanciesFilled)
+    )
+
+    assert(actualRenderedRows === expectedRenderedRows)
+  }
 }

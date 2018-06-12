@@ -95,7 +95,9 @@ private[counting] object CountContext {
       )
   }
 
-  sealed trait DistributionPhase[C] extends CountContext[C]
+  sealed trait DistributionPhase[C] extends CountContext[C] {
+    override def previousCountSteps: CountSteps.DistributionPhase[C]
+  }
 
   final case class DuringDistributions[C](
                                            numFormalPapers: NumPapers,

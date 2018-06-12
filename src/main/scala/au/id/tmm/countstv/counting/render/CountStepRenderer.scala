@@ -5,7 +5,7 @@ import au.id.tmm.countstv.model.CandidateStatus.Remaining
 import au.id.tmm.countstv.model.countsteps.DistributionCountStep._
 import au.id.tmm.countstv.model.countsteps._
 import au.id.tmm.countstv.model.values.{Count, NumPapers, NumVotes, TransferValue}
-import au.id.tmm.countstv.model.{CandidateDistributionReason, CandidateStatus, VoteCount}
+import au.id.tmm.countstv.model.{CandidateDistributionReason, CandidateStatus, CompletedCount, VoteCount}
 import au.id.tmm.utilities.collection.DupelessSeq
 
 /**
@@ -13,6 +13,25 @@ import au.id.tmm.utilities.collection.DupelessSeq
   * results
   */
 object CountStepRenderer {
+
+  def renderRowsFor[C](completedCount: CompletedCount[C])(implicit ordering: Ordering[C]): Iterator[RenderedRow[C]] = {
+    val liftedCountSteps = completedCount.countSteps.lift
+
+    def renderCountStep(count: Count) = {
+      val previousStep = liftedCountSteps(count.decrement)
+      val thisStep = completedCount.countSteps(count)
+      val nextStep = liftedCountSteps(count.increment)
+
+      CountStepRenderer.renderRowsFor(
+        completedCount.numVacancies,
+        completedCount.numFormalPapers,
+        completedCount.quota,
+      )(previousStep, thisStep, nextStep)
+    }
+
+    completedCount.countSteps.counts
+      .flatMap(renderCountStep)
+  }
 
   def renderRowsFor[C](
                         numVacancies: Int,
@@ -99,7 +118,7 @@ object CountStepRenderer {
 
   final case class RenderedRow[+C](
                                     numVacancies: Int,
-                                    totalFormalPapers: NumPapers,
+                                    numFormalPapers: NumPapers,
                                     quota: NumVotes,
                                     count: Count,
                                     candidate: StepCandidate[C],

@@ -2,7 +2,6 @@ package au.id.tmm.countstv.counting
 
 import au.id.tmm.countstv.counting.countsteps.{CountContext, InitialAllocationComputation}
 import au.id.tmm.countstv.model._
-import au.id.tmm.countstv.model.countsteps._
 import au.id.tmm.utilities.logging.Logger
 import au.id.tmm.utilities.probabilities.ProbabilityMeasure
 import au.id.tmm.utilities.probabilities.ProbabilityMeasure.{Always, Varied}
@@ -21,7 +20,7 @@ object FullCountComputation {
                    ineligibleCandidates: Set[C],
                    numVacancies: Int,
                    preferenceTree: PreferenceTree[C],
-                 ): ProbabilityMeasure[CountSteps[C]] = {
+                 ): ProbabilityMeasure[CompletedCount[C]] = {
 
     val rootPaperBundle = PaperBundle.rootBundleFor(preferenceTree)
 
@@ -34,18 +33,24 @@ object FullCountComputation {
       )
     }
 
-
     val contextAfterIneligiblesPossibilities = initialContextPossibilities.flatMap { initialContext =>
       CountActionInterpreter.applyActionToContext(initialContext)
     }
 
     val finalContexts = contextAfterIneligiblesPossibilities.flatMap(computeContextUntilFinal)
 
-    finalContexts.map(_.previousCountSteps)
+    finalContexts.map { finalContext =>
+      CompletedCount(
+        numVacancies,
+        finalContext.numFormalPapers,
+        finalContext.quota,
+        finalContext.previousCountSteps,
+      )
+    }
   }
 
   @tailrec
-  private def computeContextUntilFinal[C](context: CountContext.AllowingAppending[C]): ProbabilityMeasure[CountContext[C]] = {
+  private def computeContextUntilFinal[C](context: CountContext.AllowingAppending[C]): ProbabilityMeasure[CountContext.DistributionPhase[C]] = {
     val nextContextPossibilities = CountActionInterpreter.applyActionToContext(context)
 
     nextContextPossibilities match {
@@ -72,6 +77,7 @@ object FullCountComputation {
 
   private def nonRecursiveComputeContextUntilFinal[C](
                                                        context: CountContext.AllowingAppending[C],
-                                                     ): ProbabilityMeasure[CountContext[C]] = computeContextUntilFinal(context)
+                                                     ): ProbabilityMeasure[CountContext.DistributionPhase[C]] =
+    computeContextUntilFinal(context)
 
 }

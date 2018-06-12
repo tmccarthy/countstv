@@ -23,6 +23,8 @@ sealed trait CountSteps[C] extends Iterable[CountStep[C]] with PartialFunction[C
 
   override def apply(count: Count): CountStep[C]
 
+  def counts: Iterator[Count] = (0 until size).iterator.map(Count(_))
+
   def truncateAfter(count: Count): CountSteps[C]
 
   override def toString(): String = ScalaRunTime._toString(this)
