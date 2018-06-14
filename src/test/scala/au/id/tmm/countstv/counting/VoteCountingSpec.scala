@@ -85,7 +85,7 @@ class VoteCountingSpec extends ImprovedFlatSpec {
         Strawberry -> VoteCount(NumPapers(2), NumVotes(1)),
       ),
       exhausted = VoteCount.zero,
-      roundingError = VoteCount(NumPapers(0), NumVotes(-1)),
+      roundingError = VoteCount(NumPapers(0), NumVotes(1)),
     )
 
     assert(actualVoteCounts === expectedVoteCounts)

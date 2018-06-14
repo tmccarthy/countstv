@@ -69,7 +69,7 @@ class SpecialCaseDistributingPapersSpec extends ImprovedFlatSpec {
           Watermelon -> VoteCount(NumPapers(0), NumVotes(0)),
         ),
         exhausted = VoteCount.zero,
-        roundingError = VoteCount(NumPapers(-17), NumVotes(0)) // TODO the missing papers aren't really a rounding error
+        roundingError = VoteCount(NumPapers(17), NumVotes(0)) // TODO the missing papers aren't really a rounding error
       ),
       electedCandidate = Apple,
       sourceCounts = Set(Count(0), Count(3), Count(4)),

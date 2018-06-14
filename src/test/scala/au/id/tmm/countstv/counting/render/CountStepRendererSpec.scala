@@ -176,7 +176,7 @@ class CountStepRendererSpec extends ImprovedFlatSpec {
       RenderedRow(2,NumPapers(20),NumVotes(7),Count(2),Candidate(Pear),VoteCount(NumPapers(18),NumVotes(11)),VoteCount(NumPapers(18),NumVotes(11)),TransferValue(0.631578947368421),Elected(Ordinal(1),Count(2)),true,AllVacanciesFilled),
       RenderedRow(2,NumPapers(20),NumVotes(7),Count(2),Candidate(Strawberry),VoteCount(NumPapers(0),NumVotes(0)),VoteCount(NumPapers(0),NumVotes(0)),TransferValue(0.631578947368421),Remaining,false,AllVacanciesFilled),
       RenderedRow(2,NumPapers(20),NumVotes(7),Count(2),Exhausted,VoteCount(NumPapers(0),NumVotes(0)),VoteCount(NumPapers(0),NumVotes(0)),TransferValue(0.631578947368421),Remaining,false,AllVacanciesFilled),
-      RenderedRow(2,NumPapers(20),NumVotes(7),Count(2),RoundingError,VoteCount(NumPapers(0),NumVotes(-1)),VoteCount(NumPapers(0),NumVotes(-1)),TransferValue(0.631578947368421),Remaining,false,AllVacanciesFilled)
+      RenderedRow(2,NumPapers(20),NumVotes(7),Count(2),RoundingError,VoteCount(NumPapers(0),NumVotes(1)),VoteCount(NumPapers(0),NumVotes(1)),TransferValue(0.631578947368421),Remaining,false,AllVacanciesFilled)
     )
 
     assert(actualRenderedRows === expectedRenderedRows)

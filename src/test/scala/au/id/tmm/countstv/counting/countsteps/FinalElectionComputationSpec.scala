@@ -37,7 +37,7 @@ class FinalElectionComputationSpec extends ImprovedFlatSpec {
           Watermelon -> VoteCount(NumPapers(0), NumVotes(0)),
         ),
         exhausted = VoteCount.zero,
-        roundingError = VoteCount(NumPapers(0), NumVotes(-1))
+        roundingError = VoteCount(NumPapers(0), NumVotes(1))
       ),
       electedCandidates = DupelessSeq(
         Pear,

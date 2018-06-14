@@ -212,7 +212,7 @@ class DistributingPapersSpec extends ImprovedFlatSpec {
           Watermelon -> VoteCount(NumPapers(0), NumVotes(0)),
         ),
         exhausted = VoteCount.zero,
-        roundingError = VoteCount(NumPapers(0), NumVotes(-1))
+        roundingError = VoteCount(NumPapers(0), NumVotes(1))
       ),
       distributionSource = DistributionCountStep.Source(
         Apple,
@@ -251,7 +251,7 @@ class DistributingPapersSpec extends ImprovedFlatSpec {
           Watermelon -> VoteCount(NumPapers(0), NumVotes(0)),
         ),
         exhausted = VoteCount.zero,
-        roundingError = VoteCount(NumPapers(0), NumVotes(-1))
+        roundingError = VoteCount(NumPapers(0), NumVotes(1))
       ),
       distributionSource = DistributionCountStep.Source(
         Raspberry,

@@ -39,7 +39,7 @@ object VoteCounting {
     )
 
     val totalVoteCount = countIncorporatingElectedCandidates.perCandidate.valuesIterator.fold(VoteCount.zero)(_ + _)
-    val roundingError = (totalVoteCount + countIncorporatingElectedCandidates.exhausted) - initialVoteCount
+    val roundingError = initialVoteCount - (totalVoteCount + countIncorporatingElectedCandidates.exhausted)
 
     countIncorporatingElectedCandidates.copy(
       roundingError = roundingError

@@ -4,7 +4,7 @@ import au.id.tmm.countstv.counting.NextActionComputation.NewStatusesAndNextActio
 import au.id.tmm.countstv.counting._
 import au.id.tmm.countstv.model.CandidateDistributionReason._
 import au.id.tmm.countstv.model.countsteps.{DistributionCountStep, ElectedNoSurplusCountStep, ExcludedNoVotesCountStep}
-import au.id.tmm.countstv.model.values.{Count, NumVotes, TransferValue, TransferValueCoefficient}
+import au.id.tmm.countstv.model.values._
 import au.id.tmm.countstv.model.{CandidateDistributionReason, CandidateStatuses, CandidateVoteCounts}
 import au.id.tmm.utilities.probabilities.ProbabilityMeasure
 import au.id.tmm.utilities.probabilities.ProbabilityMeasure.{Always, Varied}
@@ -23,7 +23,7 @@ object DistributionComputation {
                                     ): ProbabilityMeasure[CountContext.DistributionPhase[C]] = {
     val transferValueCoefficient = computeTransferValueCoefficient(countContext, candidate, distributionReason)
 
-    val bundlesToDistribute = computeBundlesToDistribute(countContext, candidate)
+    val bundlesToDistribute = computeBundlesToDistribute(countContext, candidate, distributionReason)
 
     if (distributionReason == Election && transferValueCoefficient == TransferValueCoefficient(0)) {
       applyElectionWithoutSurplus(countContext, candidate)
@@ -59,22 +59,32 @@ object DistributionComputation {
   private def computeBundlesToDistribute[C](
                                              countContext: CountContext.AllowingAppending[C],
                                              candidateToDistribute: C,
+                                             distributionReason: CandidateDistributionReason,
                                            ): Queue[ParSet[AssignedPaperBundle[C]]] = {
-    val bundlesPerTransferValue =
-      new mutable.TreeMap[TransferValue, mutable.Set[AssignedPaperBundle[C]]]()(TransferValue.ordering.reverse)
+    distributionReason match {
+      case Election => Queue(
+        countContext.paperBundles.collect {
+          case b: AssignedPaperBundle[C] if b.assignedCandidate.contains(candidateToDistribute) => b
+        }
+      )
+      case Exclusion => {
+        val bundlesPerTransferValue =
+          new mutable.TreeMap[TransferValue, mutable.Set[AssignedPaperBundle[C]]]()(TransferValue.ordering.reverse)
 
-    for (bundle <- countContext.paperBundles.seq) {
-      bundle match {
-        case b: AssignedPaperBundle[C] if b.assignedCandidate.contains(candidateToDistribute) =>
-          bundlesPerTransferValue.getOrElseUpdate(b.transferValue, mutable.Set.empty) += b
-        case _ =>
+        for (bundle <- countContext.paperBundles.seq) {
+          bundle match {
+            case b: AssignedPaperBundle[C] if b.assignedCandidate.contains(candidateToDistribute) =>
+              bundlesPerTransferValue.getOrElseUpdate(b.transferValue, mutable.Set.empty) += b
+            case _ =>
+          }
+        }
+
+        bundlesPerTransferValue
+          .valuesIterator
+          .map(_.to[ParSet])
+          .to[Queue]
       }
     }
-
-    bundlesPerTransferValue
-      .valuesIterator
-      .map(_.to[ParSet])
-      .to[Queue]
   }
 
   private def applyElectionWithoutSurplus[C](
@@ -199,7 +209,12 @@ object DistributionComputation {
       candidateToDistribute,
       distributionReason,
       bundlesToDistributeNow.map(_.origin.count).seq,
-      transferValueCoefficient * bundlesToDistributeNow.head.transferValue,
+      transferValue = if (distributionReason == Exclusion) {
+        // All the transfer values are the same so we don't have to compute the weighted value
+        transferValueCoefficient * bundlesToDistributeNow.head.transferValue
+      } else {
+        transferValueCoefficient * transferValueOf(bundlesToDistributeNow)
+      },
     )
 
     if (bundlesToDistributeLater.nonEmpty) {
@@ -260,13 +275,13 @@ object DistributionComputation {
 
       NextActionComputation.computeNextAction(countContext.numVacancies, countContext.quota, proposedCountSteps)
         .map { case NewStatusesAndNextAction(newStatuses, nextAction) =>
-            val newCountStep = proposedCountStep.copy(candidateStatuses = newStatuses)
+          val newCountStep = proposedCountStep.copy(candidateStatuses = newStatuses)
 
-            countContext.updated(
-              paperBundlesAfterDistribution,
-              newCountStep,
-              nextAction,
-            )
+          countContext.updated(
+            paperBundlesAfterDistribution,
+            newCountStep,
+            nextAction,
+          )
         }
     }
 
@@ -318,4 +333,19 @@ object DistributionComputation {
     }
   }
 
+  private def transferValueOf[C](paperBundles: ParSet[AssignedPaperBundle[C]]): TransferValue = {
+    val (sumWeightXValue, sumWeight) = paperBundles
+      .foldLeft((0d, 0l)) { case ((sumWeightXValue, sumWeight), bundle) =>
+        (
+          sumWeightXValue + (bundle.numPapers.asLong * bundle.transferValue.factor),
+          sumWeight + bundle.numPapers.asLong,
+        )
+      }
+
+    if (sumWeight == 0) {
+      TransferValue(1)
+    } else {
+      TransferValue(sumWeightXValue / sumWeight)
+    }
+  }
 }
