@@ -9,21 +9,24 @@ final case class CandidateVoteCounts[C](
                                          roundingError: VoteCount,
                                        ) {
 
-  def diff(that: CandidateVoteCounts[C]): CandidateVoteCounts[C] = {
+  def + (that: CandidateVoteCounts[C]): CandidateVoteCounts[C] = this.combineWith(that)(_ + _)
+  def - (that: CandidateVoteCounts[C]): CandidateVoteCounts[C] = this.combineWith(that)(_ - _)
+
+  private def combineWith(that: CandidateVoteCounts[C])(op: (VoteCount, VoteCount) => VoteCount): CandidateVoteCounts[C] = {
     CandidateVoteCounts(
       perCandidate = this.perCandidate.map { case (candidate, voteCountFromThis) =>
         val voteCountFromThat = that.perCandidate(candidate)
 
-        candidate -> (voteCountFromThis - voteCountFromThat)
+        candidate -> op(voteCountFromThis, voteCountFromThat)
       },
-      exhausted = this.exhausted - that.exhausted,
-      roundingError = this.roundingError - that.roundingError,
+      exhausted = op(this.exhausted, that.exhausted),
+      roundingError = op(this.roundingError, that.roundingError),
     )
   }
 
-  def total: VoteCount = {
-    val votesForCandidates = perCandidate.valuesIterator.reduceOption(_ + _).getOrElse(VoteCount.zero)
+  def totalVotesForCandidates: VoteCount = perCandidate.valuesIterator.reduceOption(_ + _).getOrElse(VoteCount.zero)
 
-    votesForCandidates + exhausted + roundingError
+  def total: VoteCount = {
+    totalVotesForCandidates + exhausted + roundingError
   }
 }

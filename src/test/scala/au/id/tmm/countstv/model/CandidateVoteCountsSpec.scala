@@ -58,7 +58,44 @@ class CandidateVoteCountsSpec extends ImprovedFlatSpec {
       roundingError = VoteCount(NumPapers(0), NumVotes(-11)),
     )
 
-    assert((newCandidateVoteCounts diff testCandidateVoteCounts) === expectedDiff)
+    assert((newCandidateVoteCounts - testCandidateVoteCounts) === expectedDiff)
+  }
+
+  it can "be added to another instance" in {
+    val left = CandidateVoteCounts[Fruit](
+      perCandidate = Map(
+        Apple -> VoteCount(7),
+        Banana -> VoteCount(1),
+        Pear -> VoteCount(5),
+        Strawberry -> VoteCount(2),
+      ),
+      exhausted = VoteCount(70),
+      roundingError = VoteCount(NumPapers(0), NumVotes(2)),
+    )
+
+    val right = CandidateVoteCounts[Fruit](
+      perCandidate = Map(
+        Apple -> VoteCount(2),
+        Banana -> VoteCount(4),
+        Pear -> VoteCount(1),
+        Strawberry -> VoteCount(6),
+      ),
+      exhausted = VoteCount(17),
+      roundingError = VoteCount(NumPapers(0), NumVotes(8)),
+    )
+
+    val expectedSum = CandidateVoteCounts[Fruit](
+      perCandidate = Map(
+        Apple -> VoteCount(9),
+        Banana -> VoteCount(5),
+        Pear -> VoteCount(6),
+        Strawberry -> VoteCount(8),
+      ),
+      exhausted = VoteCount(87),
+      roundingError = VoteCount(NumPapers(0), NumVotes(10)),
+    )
+
+    assert(left + right === expectedSum)
   }
 
   it can "have its total vote count computed" in {
