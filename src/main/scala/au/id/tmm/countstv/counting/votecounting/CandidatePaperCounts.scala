@@ -25,6 +25,12 @@ private[votecounting] final case class CandidatePaperCounts[C](
       perCandidate = perCandidate.mapValues(numPapers => VoteCount(numPapers, numPapers * transferValue)),
       exhausted = VoteCount(exhausted, exhausted * transferValue),
     )
+
+  def increment(candidate: C, delta: NumPapers): CandidatePaperCounts[C] =
+    this.perCandidate.get(candidate) match {
+      case Some(oldValue) => this.copy(perCandidate = this.perCandidate.updated(candidate, oldValue + delta))
+      case None => this
+    }
 }
 
 object CandidatePaperCounts {

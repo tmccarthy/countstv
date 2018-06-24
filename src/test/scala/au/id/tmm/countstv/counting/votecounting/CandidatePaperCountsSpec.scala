@@ -104,4 +104,24 @@ class CandidatePaperCountsSpec extends ImprovedFlatSpec {
     assert(actualVoteCounts === expectedVoteCounts)
   }
 
+  it can "increment the count for a candidate" in {
+    val actualPaperCounts = testPaperCounts1.increment(Banana, NumPapers(5))
+
+    val expectedPaperCounts = CandidatePaperCounts[Fruit](
+      perCandidate = Map(
+        Apple -> NumPapers(32),
+        Banana -> NumPapers(6),
+        Pear -> NumPapers(5),
+        Strawberry -> NumPapers(6),
+      ),
+      exhausted = NumPapers(2),
+    )
+
+    assert(actualPaperCounts === expectedPaperCounts)
+  }
+
+  it should "be left unchanged if asked to increment an uncounted candidate" in {
+    assert(testPaperCounts1.increment(Watermelon, NumPapers(42)) === testPaperCounts1)
+  }
+
 }

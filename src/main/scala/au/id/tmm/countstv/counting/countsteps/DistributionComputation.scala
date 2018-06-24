@@ -2,7 +2,7 @@ package au.id.tmm.countstv.counting.countsteps
 
 import au.id.tmm.countstv.counting.NextActionComputation.NewStatusesAndNextAction
 import au.id.tmm.countstv.counting._
-import au.id.tmm.countstv.counting.votecounting.FullCountVoteCounting
+import au.id.tmm.countstv.counting.votecounting.{FullCountVoteCounting, VoteCountingUtilities}
 import au.id.tmm.countstv.model.CandidateDistributionReason._
 import au.id.tmm.countstv.model.countsteps.{DistributionCountStep, ElectedNoSurplusCountStep, ExcludedNoVotesCountStep}
 import au.id.tmm.countstv.model.values._
@@ -214,7 +214,7 @@ object DistributionComputation {
         // All the transfer values are the same so we don't have to compute the weighted value
         transferValueCoefficient * bundlesToDistributeNow.head.transferValue
       } else {
-        transferValueCoefficient * transferValueOf(bundlesToDistributeNow)
+        transferValueCoefficient * VoteCountingUtilities.transferValueOf(bundlesToDistributeNow.asInstanceOf[PaperBundles[C]])
       },
     )
 
@@ -335,23 +335,6 @@ object DistributionComputation {
       quota,
     ).map { newlyElectedCandidates =>
       ElectedCandidateComputations.newCandidateStatusesAfterElectionOf(newlyElectedCandidates, count, candidateStatuses)
-    }
-  }
-
-  // TODO this should only be computed once
-  private def transferValueOf[C](paperBundles: ParSet[AssignedPaperBundle[C]]): TransferValue = {
-    val (sumWeightXValue, sumWeight) = paperBundles
-      .foldLeft((0d, 0l)) { case ((sumWeightXValue, sumWeight), bundle) =>
-        (
-          sumWeightXValue + (bundle.numPapers.asLong * bundle.transferValue.factor),
-          sumWeight + bundle.numPapers.asLong,
-        )
-      }
-
-    if (sumWeight == 0) {
-      TransferValue(1)
-    } else {
-      TransferValue(sumWeightXValue / sumWeight)
     }
   }
 }

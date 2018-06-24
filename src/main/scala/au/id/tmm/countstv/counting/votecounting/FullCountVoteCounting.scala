@@ -2,7 +2,7 @@ package au.id.tmm.countstv.counting.votecounting
 
 import au.id.tmm.countstv.counting.PaperBundles
 import au.id.tmm.countstv.model.values.{NumPapers, NumVotes}
-import au.id.tmm.countstv.model.{CandidateStatuses, CandidateVoteCounts, VoteCount}
+import au.id.tmm.countstv.model.{CandidateStatuses, CandidateVoteCounts}
 
 object FullCountVoteCounting {
 
@@ -23,19 +23,7 @@ object FullCountVoteCounting {
     val countIncorporatingElectedCandidates =
       VoteCountingUtilities.incorporateElectedCandidatesIntoCount(quota, simpleCount, candidateStatuses)
 
-    updateRoundingError(initialNumPapers, countIncorporatingElectedCandidates)
-  }
-
-  private def updateRoundingError[C](
-                                      initialNumPapers: NumPapers,
-                                      voteCounts: CandidateVoteCountsSansRoundingError[C],
-                                    ): CandidateVoteCounts[C] = {
-    val initialVoteCount = VoteCount(initialNumPapers.asLong)
-    val roundingError = initialVoteCount - voteCounts.total
-
-    voteCounts.withRoundingError(
-      roundingError = roundingError
-    )
+    VoteCountingUtilities.updateRoundingError(initialNumPapers, countIncorporatingElectedCandidates)
   }
 
 }
