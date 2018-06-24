@@ -2,6 +2,7 @@ package au.id.tmm.countstv.model.countsteps
 
 import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
+import au.id.tmm.countstv.counting.votecounting.CandidateVoteCountsSansRoundingError
 import au.id.tmm.countstv.model.CandidateStatus._
 import au.id.tmm.countstv.model._
 import au.id.tmm.countstv.model.values._
@@ -46,7 +47,7 @@ class CountStepsSpec extends ImprovedFlatSpec {
       exhausted = VoteCount.zero,
       roundingError = VoteCount.zero,
     ),
-    transfersDueToIneligibles = Map.empty[Fruit, CandidateVoteCounts[Fruit]],
+    transfersDueToIneligibles = Map.empty[Fruit, CandidateVoteCountsSansRoundingError[Fruit]],
   )
 
   private val testDistributionCountStep = DistributionCountStep[Fruit](

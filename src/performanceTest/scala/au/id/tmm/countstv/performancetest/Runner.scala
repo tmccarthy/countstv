@@ -48,6 +48,7 @@ object Runner {
         .logWithTimeOnceFinished {
           FullCountComputation.runCount(candidates, ineligibleCandidates, numVacancies, preferenceTree)
             .onlyOutcome
+            .countSteps
             .last
             .candidateStatuses
         }

@@ -1,5 +1,6 @@
 package au.id.tmm.countstv.model.countsteps
 
+import au.id.tmm.countstv.counting.votecounting.CandidateVoteCountsSansRoundingError
 import au.id.tmm.countstv.model.countsteps.AllocationAfterIneligibles.TransfersDueToIneligibles
 import au.id.tmm.countstv.model.values.{Count, TransferValue}
 import au.id.tmm.countstv.model.{CandidateDistributionReason, CandidateStatus, CandidateStatuses, CandidateVoteCounts}
@@ -49,7 +50,7 @@ final case class AllocationAfterIneligibles[C](
 }
 
 object AllocationAfterIneligibles {
-  type TransfersDueToIneligibles[C] = Map[C, CandidateVoteCounts[C]]
+  type TransfersDueToIneligibles[C] = Map[C, CandidateVoteCountsSansRoundingError[C]]
 }
 
 sealed trait DistributionPhaseCountStep[C] extends CountStep[C]

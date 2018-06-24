@@ -8,7 +8,7 @@ class CountContextSpec extends ImprovedFlatSpec {
 
   private val countFixture: CountFixture = CountFixture.withFourCandidates
 
-  private val testContext = countFixture.contextAfterIneligibles
+  private lazy val testContext = countFixture.contextAfterIneligibles
 
   "a count context" should "have the right quota" in {
     assert(testContext.quota === QuotaComputation.computeQuota(testContext.numVacancies, testContext.numFormalPapers))

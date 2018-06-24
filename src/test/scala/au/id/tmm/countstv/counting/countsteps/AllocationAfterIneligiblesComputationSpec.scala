@@ -3,6 +3,7 @@ package au.id.tmm.countstv.counting.countsteps
 import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
 import au.id.tmm.countstv.counting.fixtures.CountFixture
+import au.id.tmm.countstv.counting.votecounting.CandidateVoteCountsSansRoundingError
 import au.id.tmm.countstv.counting.{AssignedPaperBundle, CountAction, PaperBundle}
 import au.id.tmm.countstv.model.CandidateDistributionReason.Exclusion
 import au.id.tmm.countstv.model.CandidateStatus._
@@ -61,7 +62,7 @@ class AllocationAfterIneligiblesComputationSpec extends ImprovedFlatSpec {
         exhausted = VoteCount.zero,
         roundingError = VoteCount.zero,
       ),
-      transfersDueToIneligibles = Map.empty[Fruit, CandidateVoteCounts[Fruit]],
+      transfersDueToIneligibles = Map.empty[Fruit, CandidateVoteCountsSansRoundingError[Fruit]],
     )
 
     assert(actualCountStep == expectedCountStep)
@@ -143,8 +144,8 @@ class AllocationAfterIneligiblesComputationSpec extends ImprovedFlatSpec {
         exhausted = VoteCount(0),
         roundingError = VoteCount(0),
       ),
-      transfersDueToIneligibles = Map[Fruit, CandidateVoteCounts[Fruit]](
-        Strawberry -> CandidateVoteCounts(
+      transfersDueToIneligibles = Map[Fruit, CandidateVoteCountsSansRoundingError[Fruit]](
+        Strawberry -> CandidateVoteCountsSansRoundingError(
           perCandidate = Map(
             Apple -> VoteCount(0),
             Banana -> VoteCount(2),
@@ -155,9 +156,8 @@ class AllocationAfterIneligiblesComputationSpec extends ImprovedFlatSpec {
             Watermelon -> VoteCount(1),
           ),
           exhausted = VoteCount(0),
-          roundingError = VoteCount(0),
         ),
-        Apple -> CandidateVoteCounts(
+        Apple -> CandidateVoteCountsSansRoundingError(
           perCandidate = Map(
             Apple -> VoteCount(0),
             Banana -> VoteCount(1),
@@ -168,7 +168,6 @@ class AllocationAfterIneligiblesComputationSpec extends ImprovedFlatSpec {
             Watermelon -> VoteCount(2),
           ),
           exhausted = VoteCount(0),
-          roundingError = VoteCount(0),
         ),
       ),
     )

@@ -1,6 +1,7 @@
 package au.id.tmm.countstv.counting.countsteps
 
-import au.id.tmm.countstv.counting.{QuotaComputation, RootPaperBundle, VoteCounting}
+import au.id.tmm.countstv.counting.votecounting.FullCountVoteCounting
+import au.id.tmm.countstv.counting.{QuotaComputation, RootPaperBundle}
 import au.id.tmm.countstv.model.countsteps.{CountSteps, InitialAllocation}
 import au.id.tmm.countstv.model.{CandidateStatus, CandidateStatuses}
 
@@ -38,7 +39,7 @@ private[counting] object InitialAllocationComputation {
       previousCountSteps = CountSteps.Initial(
         InitialAllocation(
           candidateStatuses = initialCandidateStatuses,
-          candidateVoteCounts = VoteCounting.countVotes(
+          candidateVoteCounts = FullCountVoteCounting.performFullRecount(
             initialNumPapers = rootPaperBundle.numPapers,
             quota = quota,
             candidateStatuses = initialCandidateStatuses,

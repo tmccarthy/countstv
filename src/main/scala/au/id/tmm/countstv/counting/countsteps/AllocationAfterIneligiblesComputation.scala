@@ -1,7 +1,8 @@
 package au.id.tmm.countstv.counting.countsteps
 
 import au.id.tmm.countstv.counting.NextActionComputation.NewStatusesAndNextAction
-import au.id.tmm.countstv.counting.{NextActionComputation, PaperBundle, VoteCounting}
+import au.id.tmm.countstv.counting.votecounting.{FullCountVoteCounting, SimpleVoteCounting}
+import au.id.tmm.countstv.counting.{NextActionComputation, PaperBundle}
 import au.id.tmm.countstv.model.countsteps.AllocationAfterIneligibles
 import au.id.tmm.countstv.model.values.Count
 import au.id.tmm.utilities.probabilities.ProbabilityMeasure
@@ -29,7 +30,7 @@ object AllocationAfterIneligiblesComputation {
 
     val transfersDueToIneligibles = newPaperBundlesPerIneligibleCandidate
       .map { case (candidate, paperBundles) =>
-        candidate -> VoteCounting.performSimpleCount(oldCandidateStatuses.allCandidates, paperBundles)
+        candidate -> SimpleVoteCounting.performSimpleCount(oldCandidateStatuses.allCandidates, paperBundles)
       }
       .seq
 
@@ -39,7 +40,7 @@ object AllocationAfterIneligiblesComputation {
     val newPaperBundles = replacedPaperBundles ++
       newPaperBundlesPerIneligibleCandidate.values.flatten
 
-    val newVoteCount = VoteCounting.countVotes(
+    val newVoteCount = FullCountVoteCounting.performFullRecount(
       oldContext.numFormalPapers,
       oldContext.quota,
       oldCandidateStatuses,

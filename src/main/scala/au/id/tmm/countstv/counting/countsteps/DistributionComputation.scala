@@ -2,6 +2,7 @@ package au.id.tmm.countstv.counting.countsteps
 
 import au.id.tmm.countstv.counting.NextActionComputation.NewStatusesAndNextAction
 import au.id.tmm.countstv.counting._
+import au.id.tmm.countstv.counting.votecounting.FullCountVoteCounting
 import au.id.tmm.countstv.model.CandidateDistributionReason._
 import au.id.tmm.countstv.model.countsteps.{DistributionCountStep, ElectedNoSurplusCountStep, ExcludedNoVotesCountStep}
 import au.id.tmm.countstv.model.values._
@@ -99,7 +100,7 @@ object DistributionComputation {
 
     val oldCandidateStatuses = countContext.mostRecentCountStep.candidateStatuses
 
-    val newVoteCounts = VoteCounting.countVotes(
+    val newVoteCounts = FullCountVoteCounting.performFullRecount(
       countContext.numFormalPapers,
       countContext.quota,
       candidateStatuses = oldCandidateStatuses,
@@ -188,7 +189,7 @@ object DistributionComputation {
 
     val (bundlesToDistributeNow, bundlesToDistributeLater) = bundlesToDistribute.dequeue
 
-    val paperBundlesAfterDistribution = allPaperBundlesAfterDistributingSome(
+    val BundleUpdate(newBundles, paperBundlesAfterDistribution) = allPaperBundlesAfterDistributingSome(
       count,
       oldCandidateStatuses,
       candidateToDistribute,
@@ -198,7 +199,7 @@ object DistributionComputation {
       bundlesToDistributeNow,
     )
 
-    val newVoteCounts = VoteCounting.countVotes(
+    val newVoteCounts = FullCountVoteCounting.performFullRecount(
       countContext.numFormalPapers,
       countContext.quota,
       oldCandidateStatuses,
@@ -284,8 +285,9 @@ object DistributionComputation {
           )
         }
     }
-
   }
+
+  private final case class BundleUpdate[C](newBundles: PaperBundles[C], allBundlesIncludingNewOnes: PaperBundles[C])
 
   private def allPaperBundlesAfterDistributingSome[C](
                                                        count: Count,
@@ -297,7 +299,7 @@ object DistributionComputation {
 
                                                        allPaperBundles: PaperBundles[C],
                                                        bundlesToDistribute: ParSet[AssignedPaperBundle[C]],
-                                                     ): PaperBundles[C] = {
+                                                     ): BundleUpdate[C] = {
     val distributionOrigin = distributionReason match {
       case Election => PaperBundle.Origin.ElectedCandidate(candidateToDistribute, transferValueCoefficient, count)
       case Exclusion => PaperBundle.Origin.ExcludedCandidate(candidateToDistribute, count)
@@ -311,7 +313,10 @@ object DistributionComputation {
       )
     }
 
-    (allPaperBundles diff bundlesToDistribute.asInstanceOf[ParSet[PaperBundle[C]]]) union newBundles
+    val allBundlesIncludingNewOnes =
+      (allPaperBundles diff bundlesToDistribute.asInstanceOf[ParSet[PaperBundle[C]]]) union newBundles
+
+    BundleUpdate(newBundles, allBundlesIncludingNewOnes)
   }
 
   private def updateStatusesOfAnyNewlyElected[C](
@@ -333,6 +338,7 @@ object DistributionComputation {
     }
   }
 
+  // TODO this should only be computed once
   private def transferValueOf[C](paperBundles: ParSet[AssignedPaperBundle[C]]): TransferValue = {
     val (sumWeightXValue, sumWeight) = paperBundles
       .foldLeft((0d, 0l)) { case ((sumWeightXValue, sumWeight), bundle) =>

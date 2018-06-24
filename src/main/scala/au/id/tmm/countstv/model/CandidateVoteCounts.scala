@@ -1,5 +1,7 @@
 package au.id.tmm.countstv.model
 
+import au.id.tmm.countstv.utils.PerCandidateCounts
+
 /**
   * A bundle of the [[VoteCount]] values per candidate, a count of exhausted votes, and a tally of any rounding error.
   */
@@ -14,11 +16,7 @@ final case class CandidateVoteCounts[C](
 
   private def combineWith(that: CandidateVoteCounts[C])(op: (VoteCount, VoteCount) => VoteCount): CandidateVoteCounts[C] = {
     CandidateVoteCounts(
-      perCandidate = this.perCandidate.map { case (candidate, voteCountFromThis) =>
-        val voteCountFromThat = that.perCandidate(candidate)
-
-        candidate -> op(voteCountFromThis, voteCountFromThat)
-      },
+      perCandidate = PerCandidateCounts.combine(this.perCandidate, that.perCandidate)(op),
       exhausted = op(this.exhausted, that.exhausted),
       roundingError = op(this.roundingError, that.roundingError),
     )

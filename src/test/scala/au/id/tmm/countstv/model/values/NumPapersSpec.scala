@@ -31,4 +31,9 @@ class NumPapersSpec extends ImprovedFlatSpec {
     assert(NumPapers.ordering.compare(NumPapers(3), NumPapers(6)) < 0)
     assert(NumPapers.ordering.compare(NumPapers(3), NumPapers(3)) === 0)
   }
+
+  it can "be multiplied by a transferValue" in {
+    assert(NumPapers(5) * TransferValue(0.75) === NumVotes(3))
+  }
+
 }

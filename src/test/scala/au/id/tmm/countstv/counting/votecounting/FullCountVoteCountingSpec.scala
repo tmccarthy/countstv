@@ -1,14 +1,15 @@
-package au.id.tmm.countstv.counting
+package au.id.tmm.countstv.counting.votecounting
 
 import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
+import au.id.tmm.countstv.counting.{AssignedPaperBundle, ExhaustedPaperBundle, PaperBundle}
 import au.id.tmm.countstv.model._
 import au.id.tmm.countstv.model.values._
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
 import scala.collection.parallel.immutable.ParSet
 
-class VoteCountingSpec extends ImprovedFlatSpec {
+class FullCountVoteCountingSpec extends ImprovedFlatSpec {
 
   private val testPreferenceTree = PreferenceTree.from[Fruit](
     Vector(Apple, Pear, Banana, Strawberry),
@@ -29,7 +30,7 @@ class VoteCountingSpec extends ImprovedFlatSpec {
     val paperBundles = PaperBundle.rootBundleFor(testPreferenceTree)
       .distributeToRemainingCandidates(PaperBundle.Origin.InitialAllocation, Count(2), candidateStatuses)
 
-    val actualVoteCounts = VoteCounting.countVotes[Fruit](
+    val actualVoteCounts = FullCountVoteCounting.performFullRecount[Fruit](
       initialNumPapers = testPreferenceTree.numPapers,
       quota = NumVotes(2),
       candidateStatuses = candidateStatuses,
@@ -70,7 +71,7 @@ class VoteCountingSpec extends ImprovedFlatSpec {
         )
       }
 
-    val actualVoteCounts = VoteCounting.countVotes[Fruit](
+    val actualVoteCounts = FullCountVoteCounting.performFullRecount[Fruit](
       initialNumPapers = testPreferenceTree.numPapers,
       quota = NumVotes(2),
       candidateStatuses = candidateStatuses,
@@ -102,7 +103,7 @@ class VoteCountingSpec extends ImprovedFlatSpec {
     val paperBundles = PaperBundle.rootBundleFor(testPreferenceTree)
       .distributeToRemainingCandidates(PaperBundle.Origin.InitialAllocation, Count(2), candidateStatuses)
 
-    val actualVoteCounts = VoteCounting.countVotes[Fruit](
+    val actualVoteCounts = FullCountVoteCounting.performFullRecount[Fruit](
       initialNumPapers = testPreferenceTree.numPapers,
       quota = NumVotes(2),
       candidateStatuses = candidateStatuses,
@@ -161,7 +162,7 @@ class VoteCountingSpec extends ImprovedFlatSpec {
       )
     )
 
-    val actualVoteCounts = VoteCounting.countVotes[Fruit](
+    val actualVoteCounts = FullCountVoteCounting.performFullRecount[Fruit](
       initialNumPapers = testPreferenceTree.numPapers,
       quota = NumVotes(2),
       candidateStatuses = candidateStatuses,
@@ -182,37 +183,4 @@ class VoteCountingSpec extends ImprovedFlatSpec {
     assert(actualVoteCounts === expectedVoteCounts)
   }
 
-  it should "correctly perform a simple count on a set of paper bundles" in {
-    val candidateStatuses = CandidateStatuses[Fruit](
-      Apple -> CandidateStatus.Remaining,
-      Banana -> CandidateStatus.Remaining,
-      Pear -> CandidateStatus.Remaining,
-      Strawberry -> CandidateStatus.Excluded(Ordinal.first, Count(1)),
-    )
-
-    val paperBundles = PaperBundle.rootBundleFor(testPreferenceTree)
-      .distributeToRemainingCandidates(PaperBundle.Origin.InitialAllocation, Count(1), candidateStatuses)
-      .flatMap { b =>
-        b.distributeToRemainingCandidates(
-          PaperBundle.Origin.ExcludedCandidate(Strawberry, Count(2)),
-          Count(2),
-          candidateStatuses
-        )
-      }
-
-    val actualCount = VoteCounting.performSimpleCount(candidateStatuses.allCandidates, paperBundles)
-
-    val expectedCount = CandidateVoteCounts(
-      perCandidate = Map(
-        Apple -> VoteCount(3),
-        Banana -> VoteCount(1),
-        Pear -> VoteCount.zero,
-        Strawberry -> VoteCount.zero,
-      ),
-      exhausted = VoteCount(1),
-      roundingError = VoteCount.zero,
-    )
-
-    assert(actualCount === expectedCount)
-  }
 }
