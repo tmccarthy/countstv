@@ -263,4 +263,43 @@ class DistributingPapersSpec extends ImprovedFlatSpec {
 
     assert(actualCountStep === expectedCountStep)
   }
+
+  "count 7, where Raspberry is distributed" should "have produced the correct count step" in {
+    val actualCountStep =
+      CountStepFixtures.DuringDistributions.wherePapersWorthNoVotesAreDistributed
+
+    val expectedCountStep = DistributionCountStep[Fruit](
+      count = Count(7),
+      candidateStatuses = CandidateStatuses[Fruit](
+        Apple -> Elected(Ordinal.first,Count(4)),
+        Banana -> Excluded(Ordinal.third,Count(3)),
+        Mango -> Remaining,
+        Pear -> Remaining,
+        Raspberry -> Excluded(Ordinal.fourth, Count(5)),
+        Strawberry -> Excluded(Ordinal.second,Count(2)),
+        Watermelon -> Excluded(Ordinal.first,Count(1)),
+      ),
+      candidateVoteCounts = CandidateVoteCounts(
+        perCandidate = Map(
+          Apple -> VoteCount(NumPapers(0), NumVotes(17)),
+          Banana -> VoteCount(NumPapers(0), NumVotes(0)),
+          Mango -> VoteCount(NumPapers(25), NumVotes(16)),
+          Pear -> VoteCount(NumPapers(25), NumVotes(16)),
+          Raspberry -> VoteCount(NumPapers(0), NumVotes(-1)), // This is a weird outcome as a result of dead-reckoned counts
+          Strawberry -> VoteCount(NumPapers(0), NumVotes(0)),
+          Watermelon -> VoteCount(NumPapers(0), NumVotes(0)),
+        ),
+        exhausted = VoteCount(NumPapers(0), NumVotes(0)),
+        roundingError = VoteCount(NumPapers(0), NumVotes(2))
+      ),
+      distributionSource = DistributionCountStep.Source(
+        Raspberry,
+        CandidateDistributionReason.Exclusion,
+        sourceCounts = Set(Count(5)),
+        transferValue = TransferValue(1d / 18d),
+      ),
+    )
+
+    assert(actualCountStep === expectedCountStep)
+  }
 }

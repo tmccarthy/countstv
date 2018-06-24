@@ -2,7 +2,7 @@ package au.id.tmm.countstv.counting.countsteps
 
 import au.id.tmm.countstv.counting.NextActionComputation.NewStatusesAndNextAction
 import au.id.tmm.countstv.counting._
-import au.id.tmm.countstv.counting.votecounting.{FullCountVoteCounting, VoteCountingUtilities}
+import au.id.tmm.countstv.counting.votecounting.{DeadReckonedVoteCounting, FullCountVoteCounting}
 import au.id.tmm.countstv.model.CandidateDistributionReason._
 import au.id.tmm.countstv.model.countsteps.{DistributionCountStep, ElectedNoSurplusCountStep, ExcludedNoVotesCountStep}
 import au.id.tmm.countstv.model.values._
@@ -182,7 +182,7 @@ object DistributionComputation {
 
                                                                transferValueCoefficient: TransferValueCoefficient,
                                                                bundlesToDistribute: Queue[ParSet[AssignedPaperBundle[C]]],
-                                                             ): ProbabilityMeasure[CountContext.DistributionPhase[C]] = {
+                                                             ) : ProbabilityMeasure[CountContext.DistributionPhase[C]] = {
     val count = countContext.mostRecentCountStep.count.increment
 
     val oldCandidateStatuses = countContext.mostRecentCountStep.candidateStatuses
@@ -199,23 +199,34 @@ object DistributionComputation {
       bundlesToDistributeNow,
     )
 
-    val newVoteCounts = FullCountVoteCounting.performFullRecount(
+    val transferValue = if (distributionReason == Exclusion) {
+      // All the transfer values are the same so we don't have to compute the weighted value
+      transferValueCoefficient * bundlesToDistributeNow.head.transferValue
+    } else {
+      val voteCountForCandidate =
+        countContext.mostRecentCountStep.candidateVoteCounts.perCandidate(candidateToDistribute)
+
+      val surplus = voteCountForCandidate.numVotes - countContext.quota
+
+      surplus / voteCountForCandidate.numPapers
+    }
+
+    // TODO add functionality to use the full recount here
+    val newVoteCounts = DeadReckonedVoteCounting.performDeadReckonedCount(
       countContext.numFormalPapers,
       countContext.quota,
       oldCandidateStatuses,
-      paperBundlesAfterDistribution,
+      countContext.mostRecentCountStep.candidateVoteCounts,
+      bundlesToDistributeNow,
+      newBundles,
+      transferValue,
     )
 
     val distributionSource = DistributionCountStep.Source(
       candidateToDistribute,
       distributionReason,
       bundlesToDistributeNow.map(_.origin.count).seq,
-      transferValue = if (distributionReason == Exclusion) {
-        // All the transfer values are the same so we don't have to compute the weighted value
-        transferValueCoefficient * bundlesToDistributeNow.head.transferValue
-      } else {
-        transferValueCoefficient * VoteCountingUtilities.transferValueOf(bundlesToDistributeNow.asInstanceOf[PaperBundles[C]])
-      },
+      transferValue = transferValue,
     )
 
     if (bundlesToDistributeLater.nonEmpty) {

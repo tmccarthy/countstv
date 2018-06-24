@@ -15,10 +15,10 @@ object DeadReckonedVoteCounting {
                                    previousVoteCounts: CandidateVoteCounts[C],
                                    removedBundles: ParSet[AssignedPaperBundle[C]],
                                    addedBundles: PaperBundles[C],
-                                 ): (CandidateVoteCounts[C], TransferValue) = {
+                                   transferValue: TransferValue,
+                                 ): CandidateVoteCounts[C] = {
 
     // TODO probably do this concurrently
-    val transferValue = VoteCountingUtilities.transferValueOf(addedBundles)
     val papersRemoved = countPapersFor(candidateStatuses.allCandidates, removedBundles.asInstanceOf[PaperBundles[C]])
     val papersAdded = countPapersFor(candidateStatuses.allCandidates, addedBundles)
 
@@ -36,7 +36,7 @@ object DeadReckonedVoteCounting {
 
     val finalVoteCounts = VoteCountingUtilities.updateRoundingError(numFormalPapers, voteCountsAccountingForElections)
 
-    (finalVoteCounts, transferValue)
+    finalVoteCounts
   }
 
   private def countPapersFor[C](

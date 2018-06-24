@@ -8,6 +8,18 @@ class NumVotesSpec extends ImprovedFlatSpec {
     assert(NumVotes.byRoundingDown(42.42d) === NumVotes(42))
   }
 
+  it can "be rounded up if it is likely a floating point error" in {
+    assert(NumVotes.byRoundingDown(42 - 1e-10) === NumVotes(42))
+  }
+
+  it can "be rounded down if it is likely a floating point error" in {
+    assert(NumVotes.byRoundingDown(-65983.999999999956658d) === NumVotes(-65984))
+  }
+
+  it can "be divided by a number of papers to produce a transfer value" in {
+    assert(NumVotes(10) / NumPapers(18) === TransferValue(10d / 18d))
+  }
+
   it can "be added to another" in {
     assert(NumVotes(2) + NumVotes(3) === NumVotes(5))
   }

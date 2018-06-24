@@ -68,13 +68,14 @@ class DeadReckonedVoteCountingSpec extends ImprovedFlatSpec {
       )
     )
 
-    val (actualVoteCounts, transferValue) = DeadReckonedVoteCounting.performDeadReckonedCount(
+    val actualVoteCounts = DeadReckonedVoteCounting.performDeadReckonedCount(
       numFormalPapers,
       quota,
       candidateStatuses,
       oldVoteCounts,
       removedBundles,
       addedBundles,
+      TransferValue(0.5d),
     )
 
     val expectedVoteCounts = CandidateVoteCounts[Fruit](
@@ -89,7 +90,6 @@ class DeadReckonedVoteCountingSpec extends ImprovedFlatSpec {
     )
 
     assert(actualVoteCounts === expectedVoteCounts)
-    assert(transferValue === TransferValue(0.5d))
   }
 
 }

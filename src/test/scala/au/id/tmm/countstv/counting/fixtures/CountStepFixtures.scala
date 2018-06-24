@@ -59,6 +59,10 @@ object CountStepFixtures {
     def whereCandidateElectedWithoutSurplus: ElectedNoSurplusCountStep[Fruit] = assertCountStepType[ElectedNoSurplusCountStep[Fruit]] {
       CountFixture.withElectionSansSurplus.getActualCountStep(Count(5))
     }
+
+    def wherePapersWorthNoVotesAreDistributed: DistributionCountStep[Fruit] = assertCountStepType[DistributionCountStep[Fruit]] {
+      CountFixture.withFinalElection.getActualCountStep(Count(7))
+    }
   }
 
   object AfterFinalStep {

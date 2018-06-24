@@ -13,7 +13,7 @@ final case class NumPapers(asLong: Long) extends AnyVal {
   def <=(that: NumPapers): Boolean = this.asLong <= that.asLong
   def <(that: NumPapers): Boolean = this.asLong < that.asLong
 
-  def *(transferValue: TransferValue): NumVotes = NumVotes((asLong * transferValue.factor).toLong)
+  def *(transferValue: TransferValue): NumVotes = NumVotes.byRoundingDown(asLong * transferValue.factor)
 }
 
 object NumPapers {
