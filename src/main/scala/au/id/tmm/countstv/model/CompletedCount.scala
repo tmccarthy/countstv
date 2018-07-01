@@ -8,6 +8,7 @@ final case class CompletedCount[C](
                                     numFormalPapers: NumPapers,
                                     quota: NumVotes,
 
+                                    // TODO what about when count is completed after ineligible handling
                                     countSteps: CountSteps.DistributionPhase[C],
                                   ) {
   def outcomes: CandidateStatuses[C] = countSteps.last.candidateStatuses

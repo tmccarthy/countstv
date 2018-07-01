@@ -3,7 +3,7 @@ package au.id.tmm.countstv.counting
 import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit.{Apple, Banana, Pear, Strawberry}
 import au.id.tmm.countstv.model.PreferenceTree
-import au.id.tmm.countstv.model.values.{Count, TransferValue, TransferValueCoefficient}
+import au.id.tmm.countstv.model.values.{Count, TransferValue}
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
 class PaperBundleOriginSpec extends ImprovedFlatSpec {
@@ -34,7 +34,7 @@ class PaperBundleOriginSpec extends ImprovedFlatSpec {
 
   it can "be distribution from an elected candidate" in {
     val electedCandidate = Fruit.Apple
-    val transferValue = TransferValueCoefficient(0.7d)
+    val transferValue = TransferValue(0.7d)
     val count = Count(4)
 
     val origin = PaperBundle.Origin.ElectedCandidate[Fruit](electedCandidate, transferValue, count)

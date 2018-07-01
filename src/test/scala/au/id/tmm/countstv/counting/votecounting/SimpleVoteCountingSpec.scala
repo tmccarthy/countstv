@@ -97,12 +97,12 @@ class SimpleVoteCountingSpec extends ImprovedFlatSpec {
       AssignedPaperBundle(
         transferValue = TransferValue(0.666666666d),
         preferenceTreeNode = testPreferenceTree.childFor(Apple, Pear, Banana).get,
-        origin = PaperBundle.Origin.ElectedCandidate(Apple, TransferValueCoefficient(0.666666666d), Count(2)),
+        origin = PaperBundle.Origin.ElectedCandidate(Apple, TransferValue(0.666666666d), Count(2)),
       ),
       AssignedPaperBundle(
         transferValue = TransferValue(0.666666666d),
         preferenceTreeNode = testPreferenceTree.childFor(Apple, Banana).get,
-        origin = PaperBundle.Origin.ElectedCandidate(Apple, TransferValueCoefficient(0.666666666d), Count(2)),
+        origin = PaperBundle.Origin.ElectedCandidate(Apple, TransferValue(0.666666666d), Count(2)),
       ),
       AssignedPaperBundle(
         transferValue = TransferValue(1d),
@@ -118,7 +118,7 @@ class SimpleVoteCountingSpec extends ImprovedFlatSpec {
       ExhaustedPaperBundle(
         numPapers = NumPapers(1),
         transferValue = TransferValue(0.666666666d),
-        origin = PaperBundle.Origin.ElectedCandidate(Apple, TransferValueCoefficient(0.666666666d), Count(2)),
+        origin = PaperBundle.Origin.ElectedCandidate(Apple, TransferValue(0.666666666d), Count(2)),
         exhaustedAtCount = Count(3),
       )
     )

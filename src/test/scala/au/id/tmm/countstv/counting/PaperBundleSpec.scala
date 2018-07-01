@@ -206,19 +206,19 @@ class PaperBundleSpec extends ImprovedFlatSpec {
       origin = PaperBundle.Origin.InitialAllocation,
     )
 
-    val transferValueCoefficient = TransferValueCoefficient(0.7d)
-    val origin = PaperBundle.Origin.ElectedCandidate(Apple, transferValueCoefficient, Count(1))
+    val transferValue = TransferValue(0.7d)
+    val origin = PaperBundle.Origin.ElectedCandidate(Apple, transferValue, Count(1))
 
     val actualBundlesAfterDistribution = originalBundle.distributeToRemainingCandidates(origin, Count(1), candidateStatuses)
 
     val expectedBundlesAfterDistribution = Set[PaperBundle[Fruit]](
       AssignedPaperBundle(
-        transferValue = transferValueCoefficient * TransferValue(0.9d),
+        transferValue = transferValue,
         preferenceTreeNode = testPreferenceTree.childFor(Apple, Pear).get,
         origin = origin,
       ),
       AssignedPaperBundle(
-        transferValue = transferValueCoefficient * TransferValue(0.9d),
+        transferValue = transferValue,
         preferenceTreeNode = testPreferenceTree.childFor(Apple, Banana).get,
         origin = origin
       ),
@@ -243,7 +243,7 @@ class PaperBundleSpec extends ImprovedFlatSpec {
     )
 
     val origin: PaperBundle.Origin[Fruit] =
-      PaperBundle.Origin.ElectedCandidate(Apple, TransferValueCoefficient(0.7d), Count(1))
+      PaperBundle.Origin.ElectedCandidate(Apple, TransferValue(0.7d), Count(1))
 
     val actualBundlesAfterDistribution = originalBundle.distributeToRemainingCandidates(origin, Count(1), candidateStatuses)
 

@@ -59,7 +59,7 @@ class FullCountVoteCountingSpec extends ImprovedFlatSpec {
       Strawberry -> CandidateStatus.Remaining,
     )
 
-    val transferValue = TransferValueCoefficient(0.666666666d)
+    val transferValue = TransferValue(0.666666666d)
 
     val paperBundles = PaperBundle.rootBundleFor(testPreferenceTree)
       .distributeToRemainingCandidates(PaperBundle.Origin.InitialAllocation, Count(0), candidateStatuses)
@@ -136,12 +136,12 @@ class FullCountVoteCountingSpec extends ImprovedFlatSpec {
       AssignedPaperBundle(
         transferValue = TransferValue(0.666666666d),
         preferenceTreeNode = testPreferenceTree.childFor(Apple, Pear, Banana).get,
-        origin = PaperBundle.Origin.ElectedCandidate(Apple, TransferValueCoefficient(0.666666666d), Count(2)),
+        origin = PaperBundle.Origin.ElectedCandidate(Apple, TransferValue(0.666666666d), Count(2)),
       ),
       AssignedPaperBundle(
         transferValue = TransferValue(0.666666666d),
         preferenceTreeNode = testPreferenceTree.childFor(Apple, Banana).get,
-        origin = PaperBundle.Origin.ElectedCandidate(Apple, TransferValueCoefficient(0.666666666d), Count(2)),
+        origin = PaperBundle.Origin.ElectedCandidate(Apple, TransferValue(0.666666666d), Count(2)),
       ),
       AssignedPaperBundle(
         transferValue = TransferValue(1d),
@@ -157,7 +157,7 @@ class FullCountVoteCountingSpec extends ImprovedFlatSpec {
       ExhaustedPaperBundle(
         numPapers = NumPapers(1),
         transferValue = TransferValue(0.666666666d),
-        origin = PaperBundle.Origin.ElectedCandidate(Apple, TransferValueCoefficient(0.666666666d), Count(2)),
+        origin = PaperBundle.Origin.ElectedCandidate(Apple, TransferValue(0.666666666d), Count(2)),
         exhaustedAtCount = Count(3),
       )
     )

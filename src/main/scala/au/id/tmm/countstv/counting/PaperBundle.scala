@@ -3,7 +3,7 @@ package au.id.tmm.countstv.counting
 import au.id.tmm.countstv.counting.PaperBundle.Origin
 import au.id.tmm.countstv.model.PreferenceTree.PreferenceTreeNode
 import au.id.tmm.countstv.model._
-import au.id.tmm.countstv.model.values.{Count, NumPapers, TransferValue, TransferValueCoefficient}
+import au.id.tmm.countstv.model.values.{Count, NumPapers, TransferValue}
 
 import scala.collection.parallel.immutable.ParSet
 
@@ -127,7 +127,7 @@ private[counting] object PaperBundle {
 
     val distributedTransferValue = origin match {
       case PaperBundle.Origin.ElectedCandidate(_, appliedTransferValue, _) =>
-        appliedTransferValue * bundle.transferValue
+        appliedTransferValue
       case _ => bundle.transferValue
     }
 
@@ -197,7 +197,7 @@ private[counting] object PaperBundle {
     /**
       * The origin of a paper bundle that was distributed away from an elected candidate.
       */
-    final case class ElectedCandidate[C](source: C, transferValue: TransferValueCoefficient, count: Count) extends Origin[C]
+    final case class ElectedCandidate[C](source: C, transferValue: TransferValue, count: Count) extends Origin[C]
 
     /**
       * The origin of a paper bundle that was distributed away from an excluded candidate.

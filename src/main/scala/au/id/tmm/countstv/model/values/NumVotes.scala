@@ -30,7 +30,9 @@ object NumVotes {
     if (distanceToNearestInt <= 1e-9) {
       NumVotes(nearestInt.toLong)
     } else {
-      NumVotes(math.floor(asDouble).toLong)
+      // Note that the behaviour of rounding negative numbers to the adjacent int closest to zero is intentional here,
+      // as opposed to a genuine floor operation
+      NumVotes(asDouble.toLong)
     }
   }
 

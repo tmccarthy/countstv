@@ -26,7 +26,7 @@ object DeadReckonedVoteCounting {
 
     val votesTransferred = papersTransferred * transferValue
 
-    val newVoteCount = CandidateVoteCountsSansRoundingError.from(previousVoteCounts) + votesTransferred
+    val newVoteCount = ensureAllVoteCountsNonNegative(CandidateVoteCountsSansRoundingError.from(previousVoteCounts) + votesTransferred)
 
     val voteCountsAccountingForElections = VoteCountingUtilities.incorporateElectedCandidatesIntoCount(
       quota,
@@ -54,6 +54,27 @@ object DeadReckonedVoteCounting {
         left + right
       },
     )
+  }
+
+  // In some rare cases, due to rounding errors, vote counts can end up negative under the rounding rules that work
+  // in normal circumstances. We handle this here.
+  private def ensureAllVoteCountsNonNegative[C](
+                                                 voteCounts: CandidateVoteCountsSansRoundingError[C],
+                                               ): CandidateVoteCountsSansRoundingError[C] = {
+    val someCandidatesHaveNegativeVotes = voteCounts.perCandidate.exists { case (_, voteCount) =>
+        voteCount.numVotes < NumVotes(0)
+    }
+
+    if (someCandidatesHaveNegativeVotes || voteCounts.exhausted.numVotes < NumVotes(0)) {
+      voteCounts.copy(
+        perCandidate = voteCounts.perCandidate.mapValues { voteCount =>
+          if (voteCount.numVotes < NumVotes(0)) voteCount.copy(numVotes = NumVotes(0)) else voteCount
+        },
+        exhausted = voteCounts.exhausted.copy(numVotes = NumVotes(0)),
+      )
+    } else {
+      voteCounts
+    }
   }
 
 }

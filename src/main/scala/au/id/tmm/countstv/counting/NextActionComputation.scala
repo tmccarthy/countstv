@@ -68,6 +68,8 @@ object NextActionComputation {
     }
   }
 
+  // TODO final election can only occur if there are no elected candidates waiting for election
+  // TODO final election is done at the end of a normal step
   private def newStatusesAndActionIfFinalElectionPossible[C](
                                                       numVacancies: Int,
                                                       currentCandidateVoteCounts: CandidateVoteCounts[C],

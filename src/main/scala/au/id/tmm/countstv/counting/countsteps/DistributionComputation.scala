@@ -22,11 +22,12 @@ object DistributionComputation {
                                       candidate: C,
                                       distributionReason: CandidateDistributionReason,
                                     ): ProbabilityMeasure[CountContext.DistributionPhase[C]] = {
-    val transferValueCoefficient = computeTransferValueCoefficient(countContext, candidate, distributionReason)
-
     val bundlesToDistribute = computeBundlesToDistribute(countContext, candidate, distributionReason)
 
-    if (distributionReason == Election && transferValueCoefficient == TransferValueCoefficient(0)) {
+    val votesForCandidate = countContext.mostRecentCountStep.candidateVoteCounts.perCandidate(candidate).numVotes
+    val surplus = votesForCandidate - countContext.quota
+
+    if (distributionReason == Election && surplus == NumVotes(0)) {
       applyElectionWithoutSurplus(countContext, candidate)
 
     } else if (distributionReason == Exclusion && bundlesToDistribute.isEmpty) {
@@ -37,23 +38,8 @@ object DistributionComputation {
         countContext,
         candidate,
         distributionReason,
-        transferValueCoefficient,
         bundlesToDistribute,
       )
-    }
-  }
-
-  private def computeTransferValueCoefficient[C](
-                                                  countContext: CountContext.AllowingAppending[C],
-                                                  candidate: C,
-                                                  distributionReason: CandidateDistributionReason,
-                                                ) = {
-    if (distributionReason == Election) {
-      val voteCountForCandidate = countContext.mostRecentCountStep.candidateVoteCounts.perCandidate(candidate)
-
-      TransferValueCoefficient.compute(voteCountForCandidate.numVotes, countContext.quota)
-    } else {
-      TransferValueCoefficient(1d)
     }
   }
 
@@ -163,14 +149,12 @@ object DistributionComputation {
                                                                            candidateToDistribute: C,
                                                                            distributionReason: CandidateDistributionReason,
 
-                                                                           transferValueCoefficient: TransferValueCoefficient,
                                                                            bundlesToDistribute: Queue[ParSet[AssignedPaperBundle[C]]],
                                                                          ): ProbabilityMeasure[CountContext.DistributionPhase[C]] =
     applyDistributionsUntilAllBundlesDistributed(
       countContext,
       candidateToDistribute,
       distributionReason,
-      transferValueCoefficient,
       bundlesToDistribute,
     )
 
@@ -180,7 +164,6 @@ object DistributionComputation {
                                                                candidateToDistribute: C,
                                                                distributionReason: CandidateDistributionReason,
 
-                                                               transferValueCoefficient: TransferValueCoefficient,
                                                                bundlesToDistribute: Queue[ParSet[AssignedPaperBundle[C]]],
                                                              ) : ProbabilityMeasure[CountContext.DistributionPhase[C]] = {
     val count = countContext.mostRecentCountStep.count.increment
@@ -189,19 +172,9 @@ object DistributionComputation {
 
     val (bundlesToDistributeNow, bundlesToDistributeLater) = bundlesToDistribute.dequeue
 
-    val BundleUpdate(newBundles, paperBundlesAfterDistribution) = allPaperBundlesAfterDistributingSome(
-      count,
-      oldCandidateStatuses,
-      candidateToDistribute,
-      distributionReason,
-      transferValueCoefficient,
-      countContext.paperBundles,
-      bundlesToDistributeNow,
-    )
-
     val transferValue = if (distributionReason == Exclusion) {
-      // All the transfer values are the same so we don't have to compute the weighted value
-      transferValueCoefficient * bundlesToDistributeNow.head.transferValue
+      // All the transfer values are the same so we don't have to compute the value
+      bundlesToDistributeNow.head.transferValue
     } else {
       val voteCountForCandidate =
         countContext.mostRecentCountStep.candidateVoteCounts.perCandidate(candidateToDistribute)
@@ -210,6 +183,16 @@ object DistributionComputation {
 
       surplus / voteCountForCandidate.numPapers
     }
+
+    val BundleUpdate(newBundles, paperBundlesAfterDistribution) = allPaperBundlesAfterDistributingSome(
+      count,
+      oldCandidateStatuses,
+      candidateToDistribute,
+      distributionReason,
+      transferValue,
+      countContext.paperBundles,
+      bundlesToDistributeNow,
+    )
 
     // TODO add functionality to use the full recount here
     val newVoteCounts = DeadReckonedVoteCounting.performDeadReckonedCount(
@@ -262,7 +245,6 @@ object DistributionComputation {
             newCountContext,
             candidateToDistribute,
             distributionReason,
-            transferValueCoefficient,
             bundlesToDistributeLater,
           )
         case possibilities @ Varied(_) => possibilities.flatMap { newCountContextPossibility =>
@@ -270,7 +252,6 @@ object DistributionComputation {
             newCountContextPossibility,
             candidateToDistribute,
             distributionReason,
-            transferValueCoefficient,
             bundlesToDistributeLater,
           )
         }
@@ -306,13 +287,13 @@ object DistributionComputation {
 
                                                        candidateToDistribute: C,
                                                        distributionReason: CandidateDistributionReason,
-                                                       transferValueCoefficient: TransferValueCoefficient,
+                                                       transferValue: TransferValue,
 
                                                        allPaperBundles: PaperBundles[C],
                                                        bundlesToDistribute: ParSet[AssignedPaperBundle[C]],
                                                      ): BundleUpdate[C] = {
     val distributionOrigin = distributionReason match {
-      case Election => PaperBundle.Origin.ElectedCandidate(candidateToDistribute, transferValueCoefficient, count)
+      case Election => PaperBundle.Origin.ElectedCandidate(candidateToDistribute, transferValue, count)
       case Exclusion => PaperBundle.Origin.ExcludedCandidate(candidateToDistribute, count)
     }
 

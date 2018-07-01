@@ -58,12 +58,12 @@ class DeadReckonedVoteCountingSpec extends ImprovedFlatSpec {
       AssignedPaperBundle[Fruit](
         TransferValue(0.5d),
         preferenceTree.childFor(Apple, Banana).get,
-        PaperBundle.Origin.ElectedCandidate(Apple, TransferValueCoefficient(0.5d), Count(2)),
+        PaperBundle.Origin.ElectedCandidate(Apple, TransferValue(0.5d), Count(2)),
       ),
       ExhaustedPaperBundle[Fruit](
         NumPapers(1),
         TransferValue(0.5d),
-        PaperBundle.Origin.ElectedCandidate(Apple, TransferValueCoefficient(0.5d), Count(2)),
+        PaperBundle.Origin.ElectedCandidate(Apple, TransferValue(0.5d), Count(2)),
         exhaustedAtCount = Count(1),
       )
     )

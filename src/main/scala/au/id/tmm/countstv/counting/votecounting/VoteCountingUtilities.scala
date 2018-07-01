@@ -1,7 +1,6 @@
 package au.id.tmm.countstv.counting.votecounting
 
-import au.id.tmm.countstv.counting.PaperBundles
-import au.id.tmm.countstv.model.values.{NumPapers, NumVotes, TransferValue}
+import au.id.tmm.countstv.model.values.{NumPapers, NumVotes}
 import au.id.tmm.countstv.model.{CandidateStatus, CandidateStatuses, CandidateVoteCounts, VoteCount}
 
 object VoteCountingUtilities {
@@ -17,7 +16,6 @@ object VoteCountingUtilities {
         val candidateStatus = candidateStatuses.asMap(candidate)
 
         val voteCountForCandidate = {
-          // TODO I don't think this is correct *during* a distribution
           if (candidateStatus.isInstanceOf[CandidateStatus.Elected] && voteCountFromSimpleCount == VoteCount.zero) {
             voteCountFromSimpleCount + VoteCount(NumPapers(0), quota)
           } else {
@@ -40,22 +38,6 @@ object VoteCountingUtilities {
     voteCounts.withRoundingError(
       roundingError = roundingError
     )
-  }
-
-  def transferValueOf[C](paperBundles: PaperBundles[C]): TransferValue = {
-    val (sumWeightXValue, sumWeight) = paperBundles
-      .foldLeft((0d, 0l)) { case ((sumWeightXValue, sumWeight), bundle) =>
-        (
-          sumWeightXValue + (bundle.numPapers.asLong * bundle.transferValue.factor),
-          sumWeight + bundle.numPapers.asLong,
-        )
-      }
-
-    if (sumWeight == 0) {
-      TransferValue(1)
-    } else {
-      TransferValue(sumWeightXValue / sumWeight)
-    }
   }
 
 }
