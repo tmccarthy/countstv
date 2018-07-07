@@ -44,7 +44,7 @@ private[counting] final case class RootPaperBundle[C](preferenceTree: Preference
   override def transferValue: TransferValue = TransferValue(1.0d)
 
   def distribute: PaperBundles[C] = {
-    val childBundles = preferenceTree.children.valuesIterator.map { childNode =>
+    val childBundles = preferenceTree.children.map { childNode =>
       AssignedPaperBundle(
         transferValue = TransferValue(1.0d),
         preferenceTreeNode = childNode,
@@ -112,7 +112,7 @@ private[counting] object PaperBundle {
 
         distributeToRemainingCandidates(b, origin, count, nodesForDistributedBundles)
       case b: RootPaperBundle[C] =>
-        val nodesForDistributedBundles = b.preferenceTree.children.valuesIterator
+        val nodesForDistributedBundles = b.preferenceTree.children
 
         distributeToRemainingCandidates(b, origin, count, nodesForDistributedBundles)
     }
@@ -162,7 +162,7 @@ private[counting] object PaperBundle {
                                                           rootNode: PreferenceTree[C],
                                                           remainingCandidates: Set[C],
                                                         ): Iterator[PreferenceTreeNode[C]] = {
-    rootNode.children.valuesIterator.flatMap { childNode =>
+    rootNode.children.flatMap { childNode =>
       if (remainingCandidates contains childNode.associatedCandidate) {
         Set(childNode)
       } else {

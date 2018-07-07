@@ -31,7 +31,7 @@ sealed class PreferenceTree[C] () {
   /**
     * The child nodes of this node.
     */
-  def children: scala.collection.Map[C, PreferenceTreeNode[C]] = internalChildren
+  def children: Iterator[PreferenceTreeNode[C]] = internalChildren.valuesIterator
 
   private def getOrCreateChildFor(candidate: C): PreferenceTreeNode[C] =
     internalChildren.getOrElseUpdate(

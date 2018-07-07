@@ -78,7 +78,7 @@ class PreferenceTreeSpec extends ImprovedFlatSpec {
       Vector(Banana, Pear),
     )
 
-    assert(preferenceTree.children.keySet === Set(Apple, Banana))
+    assert(preferenceTree.children.map(_.associatedCandidate).toSet === Set(Apple, Banana))
   }
 
   it should "have a string representation" in {
