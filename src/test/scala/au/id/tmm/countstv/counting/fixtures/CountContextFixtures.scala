@@ -1,8 +1,7 @@
 package au.id.tmm.countstv.counting.fixtures
 
 import au.id.tmm.countstv.Fruit
-import au.id.tmm.countstv.counting.CountAction
-import au.id.tmm.countstv.counting.countsteps.{CountContext, FinalElectionComputation}
+import au.id.tmm.countstv.counting.countsteps.CountContext
 import au.id.tmm.countstv.model.values.Count
 
 object CountContextFixtures {
@@ -41,16 +40,8 @@ object CountContextFixtures {
   }
 
   object AfterFinalStep {
-    def whereCandidateElectedToRemainingVacancy: CountContext.Terminal[Fruit] = {
-      val contextAfterStep7: CountContext.DuringDistributions[Fruit] =
-        CountFixture.withFinalElection.actualDistributionContextAfterCount(Count(7))
-
-      contextAfterStep7.nextAction match {
-        case CountAction.MarkCandidateFinallyElected(c) =>
-          FinalElectionComputation.contextAfterMarkingCandidateFinallyElected(contextAfterStep7, c).onlyOutcome
-            .asInstanceOf[CountContext.Terminal[Fruit]]
-        case _ => throw new AssertionError("Expected final election")
-      }
+    def whereCandidateElectedToRemainingVacancy: CountContext.DuringDistributions[Fruit] = {
+      CountFixture.withFinalElection.actualDistributionContextAfterCount(Count(8))
     }
   }
 

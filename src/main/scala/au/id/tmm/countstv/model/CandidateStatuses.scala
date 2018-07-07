@@ -61,7 +61,7 @@ final case class CandidateStatuses[C](asMap: Map[C, CandidateStatus]) {
 
   /**
     * Returns a `Map` containing every candidate with a status that differs in the given set of statuses. The values in
-    * the map new statuses.
+    * the map are the new statuses.
     */
   def diff(that: CandidateStatuses[C]): Map[C, CandidateStatus] = {
     this.asMap.flatMap { case (candidate, newStatus) =>

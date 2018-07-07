@@ -4,7 +4,6 @@ import au.id.tmm.countstv.counting.votecounting.CandidateVoteCountsSansRoundingE
 import au.id.tmm.countstv.model.countsteps.AllocationAfterIneligibles.TransfersDueToIneligibles
 import au.id.tmm.countstv.model.values.{Count, TransferValue}
 import au.id.tmm.countstv.model.{CandidateDistributionReason, CandidateStatus, CandidateStatuses, CandidateVoteCounts}
-import au.id.tmm.utilities.collection.DupelessSeq
 
 /**
   * A representation of the state of a count after a step.
@@ -87,16 +86,6 @@ final case class ElectedNoSurplusCountStep[C](
                                                electedCandidate: C,
                                                sourceCounts: Set[Count],
                                              ) extends DistributionPhaseCountStep[C]
-
-/**
-  * A count step where candidates have been elected according to final election conditions.
-  */
-final case class FinalElectionCountStep[C](
-                                            count: Count,
-                                            candidateStatuses: CandidateStatuses[C],
-                                            candidateVoteCounts: CandidateVoteCounts[C],
-                                            electedCandidates: DupelessSeq[C],
-                                          ) extends CountStep[C]
 
 object DistributionCountStep {
 

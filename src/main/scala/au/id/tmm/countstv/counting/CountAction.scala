@@ -20,14 +20,6 @@ private[counting] object CountAction {
     extends CountAction[C]
       with ActionableDuringDistribution[C]
 
-  case object ElectAllRemainingCandidates
-    extends CountAction[Nothing]
-      with ActionableDuringDistribution[Nothing]
-
-  case class MarkCandidateFinallyElected[C](candidate: C)
-    extends CountAction[C]
-      with ActionableDuringDistribution[C]
-
   case object NoAction
     extends CountAction[Nothing]
       with DuringDistribution[Nothing]

@@ -1,8 +1,6 @@
 package au.id.tmm.countstv.counting.fixtures
 
 import au.id.tmm.countstv.Fruit
-import au.id.tmm.countstv.counting.CountAction
-import au.id.tmm.countstv.counting.countsteps.{CountContext, FinalElectionComputation}
 import au.id.tmm.countstv.model.countsteps._
 import au.id.tmm.countstv.model.values.Count
 import org.scalatest.Assertions
@@ -15,7 +13,8 @@ object CountStepFixtures {
   private def assertCountStepType[A : ClassTag](countStep: => CountStep[Fruit]): A = {
     countStep match {
       case c: A => c
-      case _ => Assertions.fail("Count step was not the expected type")
+      case x => Assertions.fail(s"Count step was not the expected type. " +
+        s"Expected ${implicitly[ClassTag[A]].runtimeClass}, received ${x.getClass}")
     }
   }
 
@@ -66,21 +65,12 @@ object CountStepFixtures {
   }
 
   object AfterFinalStep {
-    def whereCandidateElectedToRemainingVacancy: FinalElectionCountStep[Fruit] = assertCountStepType[FinalElectionCountStep[Fruit]] {
+    def whereCandidateElectedToRemainingVacancy: DistributionCountStep[Fruit] = assertCountStepType[DistributionCountStep[Fruit]] {
       CountContextFixtures.AfterFinalStep.whereCandidateElectedToRemainingVacancy.mostRecentCountStep
     }
 
-    def whereAllRemainingCandidatesMarkedElected: FinalElectionCountStep[Fruit] = assertCountStepType[FinalElectionCountStep[Fruit]] {
-      val contextAfterStep1: CountContext.AfterIneligibleHandling[Fruit] =
-        CountFixture.withAVacancyForEachCandidate.contextAfterIneligibles
-
-      contextAfterStep1.nextAction match {
-        case CountAction.ElectAllRemainingCandidates =>
-          FinalElectionComputation.contextAfterElectingAllRemainingCandidates(contextAfterStep1).onlyOutcome
-            .asInstanceOf[CountContext.Terminal[Fruit]]
-            .mostRecentCountStep
-        case _ => throw new AssertionError("Expected final election")
-      }
+    def whereAllRemainingCandidatesMarkedElected: AllocationAfterIneligibles[Fruit] = assertCountStepType[AllocationAfterIneligibles[Fruit]] {
+      CountFixture.withAVacancyForEachCandidate.contextAfterIneligibles.mostRecentCountStep
     }
   }
 

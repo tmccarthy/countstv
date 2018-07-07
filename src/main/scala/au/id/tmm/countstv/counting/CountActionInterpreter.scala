@@ -1,7 +1,7 @@
 package au.id.tmm.countstv.counting
 
 import au.id.tmm.countstv.counting.CountAction._
-import au.id.tmm.countstv.counting.countsteps.{AllocationAfterIneligiblesComputation, CountContext, DistributionComputation, FinalElectionComputation}
+import au.id.tmm.countstv.counting.countsteps.{AllocationAfterIneligiblesComputation, CountContext, DistributionComputation}
 import au.id.tmm.utilities.probabilities.ProbabilityMeasure
 
 object CountActionInterpreter {
@@ -20,12 +20,6 @@ object CountActionInterpreter {
     countContext.nextAction match {
       case DistributeFromCandidate(candidate, reason) =>
         DistributionComputation.distributeAwayFromCandidate(countContext, candidate, reason)
-
-      case ElectAllRemainingCandidates =>
-        FinalElectionComputation.contextAfterElectingAllRemainingCandidates(countContext)
-
-      case MarkCandidateFinallyElected(candidate) =>
-        FinalElectionComputation.contextAfterMarkingCandidateFinallyElected(countContext, candidate)
 
       case NoAction =>
         throw new NotImplementedError // TODO redesign the types to avoid this being legal

@@ -62,11 +62,22 @@ object CountStepRenderer {
       case Some(ElectedNoSurplusCountStep(count, _, _, electedCandidate, sourceCounts)) =>
         StepComment.ElectedNoSurplus(electedCandidate, count, sourceCounts)
 
-      case Some(FinalElectionCountStep(count, _, _, electedCandidates)) =>
-        StepComment.FinalElection(electedCandidates, count)
-
       case None =>
-        StepComment.AllVacanciesFilled
+        previousCountStep match {
+          case Some(previousCountStep) => {
+            val finallyElectedCandidates = countStep.candidateStatuses.diff(previousCountStep.candidateStatuses)
+              .toList
+              .collect {
+                case (candidate, status: CandidateStatus.Elected) => candidate -> status
+              }
+              .sortBy { case (_, status) => status.ordinalElected }
+              .map { case (candidate, _) => candidate }
+              .to[DupelessSeq]
+
+            StepComment.FinalElection(finallyElectedCandidates)
+          }
+          case None => StepComment.InitialAllocation
+        }
     }
 
     def renderedRow(candidate: StepCandidate[C]): RenderedRow[C] = {
@@ -91,7 +102,7 @@ object CountStepRenderer {
           case _ => TransferValue(1)
         },
         statusFor(countStep)(candidate),
-        changedThisStep = thisStatus != previousStatus, // TODO
+        changedThisStep = thisStatus != previousStatus,
         stepComment,
       )
     }
@@ -136,8 +147,7 @@ object CountStepRenderer {
     case class NextStepDistributing[C](candidate: C, reason: CandidateDistributionReason, nextCount: Count, transferValue: TransferValue, sourceCounts: Set[Count]) extends StepComment[C]
     case class ExcludedNoVotes[C](candidate: C, nextCount: Count) extends StepComment[C]
     case class ElectedNoSurplus[C](candidate: C, nextCount: Count, sourceCounts: Set[Count]) extends StepComment[C]
-    case class FinalElection[C](candidates: DupelessSeq[C], nextCount: Count) extends StepComment[C]
-    case object AllVacanciesFilled extends StepComment[Nothing]
+    case class FinalElection[C](candidates: DupelessSeq[C]) extends StepComment[C]
   }
 
   sealed trait StepCandidate[+C]

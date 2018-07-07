@@ -56,16 +56,6 @@ private[counting] object CountContext {
                  nextAction: CountAction.DuringDistribution[C],
                ): CountContext.DuringDistributions[C]
 
-    def updated(
-                 newCountStep: FinalElectionCountStep[C],
-                 nextAction: CountAction.NoAction.type,
-               ): CountContext.Terminal[C] = Terminal(
-      numFormalPapers,
-      numVacancies,
-      paperBundles,
-      previousCountSteps.append(newCountStep),
-    )
-
     override def nextAction: CountAction.DuringDistribution[C]
   }
 
@@ -95,8 +85,8 @@ private[counting] object CountContext {
       )
   }
 
-  sealed trait DistributionPhase[C] extends CountContext[C] {
-    override def previousCountSteps: CountSteps.DistributionPhase[C]
+  sealed trait DistributionPhase[C] extends CountContext[C] with AllowingAppending[C] {
+    override def previousCountSteps: CountSteps.DuringDistributions[C]
   }
 
   final case class DuringDistributions[C](
@@ -121,19 +111,6 @@ private[counting] object CountContext {
         previousCountSteps = this.previousCountSteps.append(newCountStep),
         nextAction = nextAction,
       )
-  }
-
-  final case class Terminal[C](
-                                numFormalPapers: NumPapers,
-                                numVacancies: Int,
-
-                                paperBundles: PaperBundles[C],
-
-                                previousCountSteps: CountSteps.DistributionPhase[C],
-                              ) extends CountContext[C] with DistributionPhase[C] {
-    override def mostRecentCountStep: CountStep[C] = previousCountSteps.last
-
-    override def nextAction: CountAction.NoAction.type = CountAction.NoAction
   }
 
 }

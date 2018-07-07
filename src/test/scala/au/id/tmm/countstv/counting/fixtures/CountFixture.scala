@@ -2,13 +2,12 @@ package au.id.tmm.countstv.counting.fixtures
 
 import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
-import au.id.tmm.countstv.counting.countsteps.CountContext.{DuringDistributions, Terminal}
+import au.id.tmm.countstv.counting.countsteps.CountContext.DuringDistributions
 import au.id.tmm.countstv.counting.countsteps.{CountContext, InitialAllocationComputation}
 import au.id.tmm.countstv.counting.{CountActionInterpreter, PaperBundle, QuotaComputation, RootPaperBundle}
 import au.id.tmm.countstv.model.PreferenceTree
 import au.id.tmm.countstv.model.countsteps.DistributionPhaseCountStep
 import au.id.tmm.countstv.model.values.{Count, NumPapers, NumVotes}
-import org.scalatest.Assertions
 
 import scala.annotation.tailrec
 
@@ -50,7 +49,6 @@ case class CountFixture(
   def actualDistributionContextAfterCount(count: Count): CountContext.DuringDistributions[Fruit] = {
     actualContextAfterCount(count) match {
       case c: DuringDistributions[Fruit] => c
-      case _: Terminal[Fruit] => Assertions.fail(s"The first context after count $count is a terminal context")
     }
   }
 
@@ -76,7 +74,6 @@ case class CountFixture(
           firstContextAfterCount(count, newContext)
         }
       }
-      case _: Terminal[Fruit] => Assertions.fail(s"There is no context for $count in this count")
     }
   }
 
@@ -285,5 +282,22 @@ object CountFixture {
       }
     }
   }.copy(numVacancies = 7)
+
+  def whereEnoughCandidatesExceedQuotaWithoutDistribution: CountFixture = CountFixture(
+    allBallots = Vector(
+      Vector[Fruit](Apple),
+      Vector[Fruit](Apple),
+      Vector[Fruit](Apple),
+      Vector[Fruit](Apple),
+      Vector[Fruit](Apple),
+      Vector[Fruit](Apple),
+      Vector[Fruit](Apple),
+      Vector[Fruit](Banana),
+      Vector[Fruit](Banana),
+      Vector[Fruit](Banana),
+      Vector[Fruit](Banana),
+      Vector[Fruit](Banana),
+    ),
+  )
 
 }

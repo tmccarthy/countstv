@@ -50,34 +50,28 @@ object FullCountComputation {
   }
 
   @tailrec
-  private def computeContextUntilFinal[C](context: CountContext.AllowingAppending[C]): ProbabilityMeasure[CountContext.DistributionPhase[C]] = {
+  private def computeContextUntilFinal[C](context: CountContext.AllowingAppending[C]): ProbabilityMeasure[CountContext.AllowingAppending[C]] = {
+    if (context.nextAction == CountAction.NoAction) {
+      return Always(context)
+    }
+
+
+
+
+
     val nextContextPossibilities = CountActionInterpreter.applyActionToContext(context)
 
     nextContextPossibilities match {
-      case Always(onlyOutcome) => onlyOutcome match {
-        case allowingAppending: CountContext.AllowingAppending[C] =>
-          if (allowingAppending.nextAction == CountAction.NoAction) {
-            ProbabilityMeasure.Always(allowingAppending)
-          } else {
-            computeContextUntilFinal(allowingAppending)
-          }
-        case terminal: CountContext.Terminal[C] => ProbabilityMeasure.Always(terminal)
-      }
-      case possibilities @ Varied(_) => possibilities.flatMap {
-        case allowingAppending: CountContext.AllowingAppending[C] =>
-          if (allowingAppending.nextAction == CountAction.NoAction) {
-            ProbabilityMeasure.Always(allowingAppending)
-          } else {
-            nonRecursiveComputeContextUntilFinal(allowingAppending)
-          }
-        case terminal: CountContext.Terminal[C] => ProbabilityMeasure.Always(terminal)
+      case Always(onlyOutcome) => computeContextUntilFinal(onlyOutcome)
+      case possibilities @ Varied(_) => possibilities.flatMap { possibility =>
+        nonRecursiveComputeContextUntilFinal(possibility)
       }
     }
   }
 
   private def nonRecursiveComputeContextUntilFinal[C](
                                                        context: CountContext.AllowingAppending[C],
-                                                     ): ProbabilityMeasure[CountContext.DistributionPhase[C]] =
+                                                     ): ProbabilityMeasure[CountContext.AllowingAppending[C]] =
     computeContextUntilFinal(context)
 
 }

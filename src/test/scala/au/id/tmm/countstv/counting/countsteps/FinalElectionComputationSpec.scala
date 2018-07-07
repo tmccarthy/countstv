@@ -4,29 +4,29 @@ import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit.{Mango, _}
 import au.id.tmm.countstv.counting.fixtures.CountStepFixtures
 import au.id.tmm.countstv.model.CandidateStatus._
-import au.id.tmm.countstv.model.countsteps.FinalElectionCountStep
-import au.id.tmm.countstv.model.values.{Count, NumPapers, NumVotes, Ordinal}
-import au.id.tmm.countstv.model.{CandidateStatuses, CandidateVoteCounts, VoteCount}
-import au.id.tmm.utilities.collection.DupelessSeq
+import au.id.tmm.countstv.model.countsteps.{AllocationAfterIneligibles, DistributionCountStep}
+import au.id.tmm.countstv.model.values._
+import au.id.tmm.countstv.model.{CandidateDistributionReason, CandidateStatuses, CandidateVoteCounts, VoteCount}
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
 class FinalElectionComputationSpec extends ImprovedFlatSpec {
 
-  "count 8, where Pear is elected to the remaining vacancy" should "have produced the correct count step" in {
-    val actualCountStep = CountStepFixtures.AfterFinalStep.whereCandidateElectedToRemainingVacancy
+  "count 7, where Raspberry is distributed and Pear is elected" should "have produced the correct count step" in {
+    val actualCountStep =
+      CountStepFixtures.DuringDistributions.wherePapersWorthNoVotesAreDistributed
 
-    val expectedCountStep = FinalElectionCountStep[Fruit](
-      count = Count(8),
+    val expectedCountStep = DistributionCountStep[Fruit](
+      count = Count(7),
       candidateStatuses = CandidateStatuses[Fruit](
         Apple -> Elected(Ordinal.first,Count(4)),
         Banana -> Excluded(Ordinal.third,Count(3)),
         Mango -> Remaining,
-        Pear -> Elected(Ordinal.second,Count(8)),
+        Pear -> Elected(Ordinal.second, Count(7)),
         Raspberry -> Excluded(Ordinal.fourth, Count(5)),
         Strawberry -> Excluded(Ordinal.second,Count(2)),
         Watermelon -> Excluded(Ordinal.first,Count(1)),
       ),
-      candidateVoteCounts = CandidateVoteCounts[Fruit](
+      candidateVoteCounts = CandidateVoteCounts(
         perCandidate = Map(
           Apple -> VoteCount(NumPapers(0), NumVotes(17)),
           Banana -> VoteCount(NumPapers(0), NumVotes(0)),
@@ -36,11 +36,14 @@ class FinalElectionComputationSpec extends ImprovedFlatSpec {
           Strawberry -> VoteCount(NumPapers(0), NumVotes(0)),
           Watermelon -> VoteCount(NumPapers(0), NumVotes(0)),
         ),
-        exhausted = VoteCount.zero,
+        exhausted = VoteCount(NumPapers(0), NumVotes(0)),
         roundingError = VoteCount(NumPapers(0), NumVotes(1))
       ),
-      electedCandidates = DupelessSeq(
-        Pear,
+      distributionSource = DistributionCountStep.Source(
+        Raspberry,
+        CandidateDistributionReason.Exclusion,
+        sourceCounts = Set(Count(5)),
+        transferValue = TransferValue(1d / 18d),
       ),
     )
 
@@ -50,16 +53,15 @@ class FinalElectionComputationSpec extends ImprovedFlatSpec {
   "a count where the number of vacancies equals the number of candidates" should "produce the correct count step" in {
     val actualCountStep = CountStepFixtures.AfterFinalStep.whereAllRemainingCandidatesMarkedElected
 
-    val expectedCountStep = FinalElectionCountStep[Fruit](
-      count = Count(2),
+    val expectedCountStep = AllocationAfterIneligibles[Fruit](
       candidateStatuses = CandidateStatuses[Fruit](
-        Apple -> Elected(Ordinal.first, Count(2)),
-        Banana -> Elected(Ordinal.fifth, Count(2)),
-        Mango -> Elected(Ordinal.second, Count(2)),
-        Pear -> Elected(Ordinal.third, Count(2)),
-        Raspberry -> Elected(Ordinal.fourth, Count(2)),
-        Strawberry -> Elected(Ordinal.sixth, Count(2)),
-        Watermelon -> Elected(Ordinal.seventh, Count(2)),
+        Apple -> Elected(Ordinal.first, Count(1)),
+        Banana -> Elected(Ordinal.fifth, Count(1)),
+        Mango -> Elected(Ordinal.second, Count(1)),
+        Pear -> Elected(Ordinal.third, Count(1)),
+        Raspberry -> Elected(Ordinal.fourth, Count(1)),
+        Strawberry -> Elected(Ordinal.sixth, Count(1)),
+        Watermelon -> Elected(Ordinal.seventh, Count(1)),
       ),
       candidateVoteCounts = CandidateVoteCounts[Fruit](
         perCandidate = Map(
@@ -74,15 +76,7 @@ class FinalElectionComputationSpec extends ImprovedFlatSpec {
         exhausted = VoteCount.zero,
         roundingError = VoteCount(NumPapers(0), NumVotes(0))
       ),
-      electedCandidates = DupelessSeq(
-        Apple,
-        Mango,
-        Pear,
-        Raspberry,
-        Banana,
-        Strawberry,
-        Watermelon,
-      ),
+      transfersDueToIneligibles = Map.empty,
     )
 
     assert(actualCountStep === expectedCountStep)

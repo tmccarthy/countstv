@@ -42,7 +42,7 @@ class NextActionComputationSpec extends ImprovedFlatSpec {
           steps.copy(distributionCountSteps = distributionCountSteps.init :+ newLastCountStep)
         }
 
-        case _: CountSteps.Initial[Fruit] | _: CountSteps.AfterFinalElections[Fruit] => fail()
+        case _: CountSteps.Initial[Fruit] => fail()
       }
       ).asInstanceOf[T_COUNT_STEPS]
   }

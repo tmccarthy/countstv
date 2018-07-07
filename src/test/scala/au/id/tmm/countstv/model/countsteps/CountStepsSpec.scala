@@ -6,7 +6,6 @@ import au.id.tmm.countstv.counting.votecounting.CandidateVoteCountsSansRoundingE
 import au.id.tmm.countstv.model.CandidateStatus._
 import au.id.tmm.countstv.model._
 import au.id.tmm.countstv.model.values._
-import au.id.tmm.utilities.collection.DupelessSeq
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
 class CountStepsSpec extends ImprovedFlatSpec {
@@ -84,40 +83,9 @@ class CountStepsSpec extends ImprovedFlatSpec {
 
   private val secondDistributionStep = testDistributionCountStep.copy(count = testDistributionCountStep.count.increment)
 
-  private val testFinalElectionStep = FinalElectionCountStep[Fruit](
-    count = Count(3),
-    candidateStatuses = CandidateStatuses[Fruit](
-      Apple -> Elected(Ordinal.first, Count(3)),
-      Banana -> Elected(Ordinal.second, Count(3)),
-      Mango -> Remaining,
-      Pear -> Remaining,
-      Raspberry -> Remaining,
-      Strawberry -> Remaining,
-      Watermelon -> Excluded(Ordinal.first, Count(2)),
-    ),
-    candidateVoteCounts = CandidateVoteCounts(
-      perCandidate = Map(
-        Apple -> VoteCount(11),
-        Banana -> VoteCount(6),
-        Mango -> VoteCount(10),
-        Pear -> VoteCount(11),
-        Raspberry -> VoteCount(7),
-        Strawberry -> VoteCount(5),
-        Watermelon -> VoteCount(0),
-      ),
-      exhausted = VoteCount.zero,
-      roundingError = VoteCount.zero,
-    ),
-    electedCandidates = DupelessSeq(
-      Apple,
-      Banana,
-    ),
-  )
-
   private val testCountStepsInitial: CountSteps.Initial[Fruit] = CountSteps.Initial(testInitialAllocation)
   private val testCountStepsAfterIneligibleHandling: CountSteps.AfterIneligibleHandling[Fruit] = CountSteps.AfterIneligibleHandling(testInitialAllocation, testAllocationAfterIneligibles)
   private val testCountStepsDuringDistributions: CountSteps.DuringDistributions[Fruit] = CountSteps.DuringDistributions(testInitialAllocation, testAllocationAfterIneligibles, List(testDistributionCountStep))
-  private val testCountStepsAfterFinalElections: CountSteps.AfterFinalElections[Fruit] = CountSteps.AfterFinalElections(testInitialAllocation, testAllocationAfterIneligibles, List(testDistributionCountStep), testFinalElectionStep)
 
   behaviour of "an initial CountSteps instance"
 
@@ -194,14 +162,6 @@ class CountStepsSpec extends ImprovedFlatSpec {
     assert(withAppendedDistributionStep === CountSteps.DuringDistributions(testInitialAllocation, testAllocationAfterIneligibles, List(testDistributionCountStep)))
   }
 
-  it can "have a final election step appended" in {
-    val countSteps = testCountStepsAfterIneligibleHandling
-
-    val withAppendedDistributionStep = countSteps.append(testFinalElectionStep)
-
-    assert(withAppendedDistributionStep === CountSteps.AfterFinalElections(testInitialAllocation, testAllocationAfterIneligibles, Nil, testFinalElectionStep))
-  }
-
   behaviour of "a CountSteps instance during distribution steps"
 
   standardTests(testCountStepsDuringDistributions)(
@@ -238,14 +198,6 @@ class CountStepsSpec extends ImprovedFlatSpec {
     assert(withAppendedDistributionStep.distributionCountSteps === List(testDistributionCountStep, secondDistributionStep))
   }
 
-  it can "have a final election step appended" in {
-    val countSteps = testCountStepsDuringDistributions
-
-    val withAppendedDistributionStep = countSteps.append(testFinalElectionStep)
-
-    assert(withAppendedDistributionStep === testCountStepsAfterFinalElections)
-  }
-
   it can "be truncated to a distribution step" in {
     val initialCountSteps = testCountStepsDuringDistributions.append(secondDistributionStep)
 
@@ -260,39 +212,6 @@ class CountStepsSpec extends ImprovedFlatSpec {
     intercept[IllegalArgumentException] {
       CountSteps.DuringDistributions(testInitialAllocation, testAllocationAfterIneligibles, Nil)
     }
-  }
-
-  behaviour of "a CountSteps instance after a final election step"
-
-  standardTests(testCountStepsAfterFinalElections)(
-    expectedHead = testInitialAllocation,
-    expectedLast = testFinalElectionStep,
-    expectedAsList = List(testInitialAllocation, testAllocationAfterIneligibles, testDistributionCountStep, testFinalElectionStep),
-    expectedSize = 4,
-    expectedDefinedUpToCount = Count(3),
-    expectedWhenTruncatedAtCount = List(
-      Count(0) -> testCountStepsInitial,
-      Count(1) -> testCountStepsAfterIneligibleHandling,
-      Count(2) -> testCountStepsDuringDistributions,
-      Count(3) -> testCountStepsAfterFinalElections,
-      Count(42) -> testCountStepsAfterFinalElections,
-    )
-  )
-
-  it should "contain an initial step" in {
-    assert(testCountStepsAfterFinalElections.initialAllocation === testInitialAllocation)
-  }
-
-  it should "contain an allocation after ineligible candidates" in {
-    assert(testCountStepsAfterFinalElections.allocationAfterIneligibles === testAllocationAfterIneligibles)
-  }
-
-  it should "contain a list of distribution steps" in {
-    assert(testCountStepsAfterFinalElections.distributionCountSteps === List(testDistributionCountStep))
-  }
-
-  it should "contain a final election step" in {
-    assert(testCountStepsAfterFinalElections.finalElectionCountStep === testFinalElectionStep)
   }
 
   private def standardTests(testInstance: CountSteps[Fruit])

@@ -27,7 +27,7 @@ class FullCountComputationSpec extends ImprovedFlatSpec {
       Apple -> Elected(Ordinal.first,Count(4)),
       Banana -> Excluded(Ordinal.third,Count(3)),
       Mango -> Remaining,
-      Pear -> Elected(Ordinal.second,Count(8)),
+      Pear -> Elected(Ordinal.second,Count(7)),
       Raspberry -> Excluded(Ordinal.fourth,Count(5)),
       Strawberry -> Excluded(Ordinal.second,Count(2)),
       Watermelon -> Excluded(Ordinal.first,Count(1)),
@@ -61,7 +61,7 @@ class FullCountComputationSpec extends ImprovedFlatSpec {
         Banana -> Excluded(Ordinal(2),Count(3)),
         Mango -> Remaining,
         Strawberry -> Excluded(Ordinal(0),Count(1)),
-        Pear -> Elected(Ordinal(1),Count(8)),
+        Pear -> Elected(Ordinal(1),Count(7)),
         Raspberry -> Excluded(Ordinal(3),Count(5)),
         Watermelon -> Excluded(Ordinal(1),Count(2)),
       ),
@@ -70,7 +70,7 @@ class FullCountComputationSpec extends ImprovedFlatSpec {
         Banana -> Excluded(Ordinal(2),Count(3)),
         Mango -> Remaining,
         Strawberry -> Excluded(Ordinal(1),Count(2)),
-        Pear -> Elected(Ordinal(1),Count(8)),
+        Pear -> Elected(Ordinal(1),Count(7)),
         Raspberry -> Excluded(Ordinal(3),Count(5)),
         Watermelon -> Excluded(Ordinal(0),Count(1)),
       ),
@@ -86,7 +86,7 @@ class FullCountComputationSpec extends ImprovedFlatSpec {
       CandidateStatuses(
         Apple -> Elected(Ordinal(0),Count(4)),
         Banana -> Excluded(Ordinal(2),Count(3)),
-        Mango -> Elected(Ordinal(1),Count(8)),
+        Mango -> Elected(Ordinal(1),Count(7)),
         Pear -> Remaining,
         Raspberry -> Excluded(Ordinal(3),Count(5)),
         Strawberry -> Excluded(Ordinal(1),Count(2)),
@@ -95,7 +95,7 @@ class FullCountComputationSpec extends ImprovedFlatSpec {
       CandidateStatuses(
         Apple -> Elected(Ordinal(0),Count(5)),
         Banana -> Excluded(Ordinal(3),Count(4)),
-        Mango -> Elected(Ordinal(1),Count(7)),
+        Mango -> Elected(Ordinal(1),Count(6)),
         Pear -> Remaining,
         Raspberry -> Excluded(Ordinal(2),Count(3)),
         Strawberry -> Excluded(Ordinal(1),Count(2)),
@@ -114,7 +114,7 @@ class FullCountComputationSpec extends ImprovedFlatSpec {
         Apple -> Elected(Ordinal.first,Count(4)),
         Banana -> Excluded(Ordinal.third,Count(3)),
         Mango -> Remaining,
-        Pear -> Elected(Ordinal.second,Count(8)),
+        Pear -> Elected(Ordinal.second,Count(7)),
         Raspberry -> Excluded(Ordinal.fourth,Count(5)),
         Strawberry -> Excluded(Ordinal.second,Count(2)),
         Watermelon -> Excluded(Ordinal.first,Count(1)),
@@ -129,13 +129,31 @@ class FullCountComputationSpec extends ImprovedFlatSpec {
 
     val expectedFinalOutcome = ProbabilityMeasure.Always(
       CandidateStatuses[Fruit](
-        Apple -> Elected(Ordinal.first, Count(2)),
-        Banana -> Elected(Ordinal.fifth, Count(2)),
-        Mango -> Elected(Ordinal.second, Count(2)),
-        Pear -> Elected(Ordinal.third, Count(2)),
-        Raspberry -> Elected(Ordinal.fourth, Count(2)),
-        Strawberry -> Elected(Ordinal.sixth, Count(2)),
-        Watermelon -> Elected(Ordinal.seventh, Count(2)),
+        Apple -> Elected(Ordinal.first, Count(1)),
+        Banana -> Elected(Ordinal.fifth, Count(1)),
+        Mango -> Elected(Ordinal.second, Count(1)),
+        Pear -> Elected(Ordinal.third, Count(1)),
+        Raspberry -> Elected(Ordinal.fourth, Count(1)),
+        Strawberry -> Elected(Ordinal.sixth, Count(1)),
+        Watermelon -> Elected(Ordinal.seventh, Count(1)),
+      )
+    )
+
+    assert(actualOutcome === expectedFinalOutcome)
+  }
+
+  it should "produce the correct outcome where all vacancies are filled by candidates exceeding quota after the initial allocation" in {
+    val actualOutcome = runFullCountFor(CountFixture.whereEnoughCandidatesExceedQuotaWithoutDistribution).map(_.outcomes)
+
+    val expectedFinalOutcome = ProbabilityMeasure.Always(
+      CandidateStatuses[Fruit](
+        Apple -> Elected(Ordinal.first, Count(1)),
+        Banana -> Elected(Ordinal.second, Count(1)),
+        Mango -> Remaining,
+        Pear -> Remaining,
+        Raspberry -> Remaining,
+        Strawberry -> Remaining,
+        Watermelon -> Remaining,
       )
     )
 

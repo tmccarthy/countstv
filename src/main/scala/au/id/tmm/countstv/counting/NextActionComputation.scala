@@ -4,6 +4,7 @@ import au.id.tmm.countstv.model.CandidateDistributionReason.{Election, Exclusion
 import au.id.tmm.countstv.model.countsteps._
 import au.id.tmm.countstv.model.values.{Count, NumVotes, Ordinal}
 import au.id.tmm.countstv.model.{CandidateStatus, CandidateStatuses, CandidateVoteCounts}
+import au.id.tmm.utilities.collection.DupelessSeq
 import au.id.tmm.utilities.probabilities.ProbabilityMeasure.Always
 import au.id.tmm.utilities.probabilities.{ProbabilityMeasure, TieSensitiveSorting}
 
@@ -36,10 +37,11 @@ object NextActionComputation {
     firstPresentIn(
       Stream(
         newStatusesAndActionIfCountFinished(numVacancies, oldCandidateStatuses),
-        newStatusesAndActionIfFinalElectionPossible(numVacancies, currentVoteCounts, previousCandidateVoteCountsAscending, oldCandidateStatuses),
+        newStatusesAndActionIfRemainingCandidatesEqualsUnfilledVacancies(count, numVacancies, currentVoteCounts, previousCandidateVoteCountsAscending, oldCandidateStatuses),
         newStatusesAndActionFromDistributionOfElectedCandidate(count, currentVoteCounts, previousCandidateVoteCountsAscending, oldCandidateStatuses, numVacancies, quota, proposedCountSteps),
+        newStatusesAndActionIfTwoRemaining(count, numVacancies, currentVoteCounts, previousCandidateVoteCountsAscending, oldCandidateStatuses),
       ),
-      newStatusesAndActionFromExclusionOfCandidate(count, currentVoteCounts, previousCandidateVoteCountsAscending, oldCandidateStatuses),
+      fallback = newStatusesAndActionFromExclusionOfCandidate(count, currentVoteCounts, previousCandidateVoteCountsAscending, oldCandidateStatuses),
     )
   }
 
@@ -56,9 +58,9 @@ object NextActionComputation {
   }
 
   private def newStatusesAndActionIfCountFinished[C](
-                                              numVacancies: Int,
-                                              oldCandidateStatuses: CandidateStatuses[C],
-                                            ): ProbabilityMeasure[Option[NewStatusesAndNextAction[C, CountAction.DuringDistribution[C]]]] = Always {
+                                                      numVacancies: Int,
+                                                      oldCandidateStatuses: CandidateStatuses[C],
+                                                    ): ProbabilityMeasure[Option[NewStatusesAndNextAction[C, CountAction.DuringDistribution[C]]]] = Always {
     val numUnfilledVacancies = numVacancies - oldCandidateStatuses.electedCandidates.size
 
     if (numUnfilledVacancies == 0) {
@@ -68,42 +70,65 @@ object NextActionComputation {
     }
   }
 
-  // TODO final election can only occur if there are no elected candidates waiting for election
-  // TODO final election is done at the end of a normal step
-  private def newStatusesAndActionIfFinalElectionPossible[C](
-                                                      numVacancies: Int,
-                                                      currentCandidateVoteCounts: CandidateVoteCounts[C],
-                                                      previousCandidateVoteCountsAscending: List[CandidateVoteCounts[C]],
-                                                      oldCandidateStatuses: CandidateStatuses[C],
-                                                    ): ProbabilityMeasure[Option[NewStatusesAndNextAction[C, CountAction.DuringDistribution[C]]]] = {
+  private def newStatusesAndActionIfRemainingCandidatesEqualsUnfilledVacancies[C](
+                                                                                   count: Count,
+                                                                                   numVacancies: Int,
+                                                                                   currentCandidateVoteCounts: CandidateVoteCounts[C],
+                                                                                   previousCandidateVoteCountsAscending: List[CandidateVoteCounts[C]],
+                                                                                   oldCandidateStatuses: CandidateStatuses[C],
+                                                                                 ): ProbabilityMeasure[Option[NewStatusesAndNextAction[C, CountAction.DuringDistribution[C]]]] = {
     val numUnfilledVacancies = numVacancies - oldCandidateStatuses.electedCandidates.size
 
-    if (numUnfilledVacancies == 1 && oldCandidateStatuses.remainingCandidates.size == 2) {
+    def ordering = new CandidateVoteCountOrdering[C](currentCandidateVoteCounts, previousCandidateVoteCountsAscending)
 
-      val ordering = new CandidateVoteCountOrdering[C](currentCandidateVoteCounts, previousCandidateVoteCountsAscending)
+    if (numUnfilledVacancies >= oldCandidateStatuses.remainingCandidates.size) {
+      TieSensitiveSorting.sort(oldCandidateStatuses.remainingCandidates)(ordering)
+        .map(_.reverse.to[DupelessSeq])
+        .map { electedCandidates =>
+          val newStatuses = ElectedCandidateComputations.newCandidateStatusesAfterElectionOf(electedCandidates, count, oldCandidateStatuses)
+
+          Some(NewStatusesAndNextAction(newStatuses, CountAction.NoAction))
+        }
+    } else {
+      Always(None)
+    }
+  }
+
+  private def newStatusesAndActionIfTwoRemaining[C](
+                                                     count: Count,
+                                                     numVacancies: Int,
+                                                     currentCandidateVoteCounts: CandidateVoteCounts[C],
+                                                     previousCandidateVoteCountsAscending: List[CandidateVoteCounts[C]],
+                                                     oldCandidateStatuses: CandidateStatuses[C],
+                                                   ): ProbabilityMeasure[Option[NewStatusesAndNextAction[C, CountAction.DuringDistribution[C]]]] = {
+    val numUnfilledVacancies = numVacancies - oldCandidateStatuses.electedCandidates.size
+
+    def ordering = new CandidateVoteCountOrdering[C](currentCandidateVoteCounts, previousCandidateVoteCountsAscending)
+
+    if (numUnfilledVacancies == 1 && oldCandidateStatuses.remainingCandidates.size == 2) {
 
       val electedCandidatePossibilities = TieSensitiveSorting.sort(oldCandidateStatuses.remainingCandidates)(ordering)
         .map(_.last)
 
       electedCandidatePossibilities.map { electedCandidate =>
-        Some(NewStatusesAndNextAction(oldCandidateStatuses, CountAction.MarkCandidateFinallyElected(electedCandidate)))
+        val newStatuses = ElectedCandidateComputations.newCandidateStatusesAfterElectionOf(DupelessSeq(electedCandidate), count, oldCandidateStatuses)
+
+        Some(NewStatusesAndNextAction(newStatuses, CountAction.NoAction))
       }
-    } else if (numUnfilledVacancies == oldCandidateStatuses.remainingCandidates.size) {
-      Always(Some(NewStatusesAndNextAction(oldCandidateStatuses, CountAction.ElectAllRemainingCandidates)))
     } else {
       Always(None)
     }
   }
 
   private def newStatusesAndActionFromDistributionOfElectedCandidate[C](
-                                                      count: Count,
-                                                      currentCandidateVoteCounts: CandidateVoteCounts[C],
-                                                      previousCandidateVoteCountsAscending: List[CandidateVoteCounts[C]],
-                                                      oldCandidateStatuses: CandidateStatuses[C],
-                                                      numVacancies: Int,
-                                                      quota: NumVotes,
-                                                      proposedCountSteps: CountSteps.AllowingAppending[C],
-                                                    ): ProbabilityMeasure[Option[NewStatusesAndNextAction[C, CountAction.DuringDistribution[C]]]] = {
+                                                                         count: Count,
+                                                                         currentCandidateVoteCounts: CandidateVoteCounts[C],
+                                                                         previousCandidateVoteCountsAscending: List[CandidateVoteCounts[C]],
+                                                                         oldCandidateStatuses: CandidateStatuses[C],
+                                                                         numVacancies: Int,
+                                                                         quota: NumVotes,
+                                                                         proposedCountSteps: CountSteps.AllowingAppending[C],
+                                                                       ): ProbabilityMeasure[Option[NewStatusesAndNextAction[C, CountAction.DuringDistribution[C]]]] = {
     val candidatesNewlyExceedingQuota = ElectedCandidateComputations.newlyExceedingQuota(
       currentCandidateVoteCounts,
       previousCandidateVoteCountsAscending,
@@ -139,11 +164,11 @@ object NextActionComputation {
   }
 
   private def newStatusesAndActionFromExclusionOfCandidate[C](
-                                                       count: Count,
-                                                       currentCandidateVoteCounts: CandidateVoteCounts[C],
-                                                       previousCandidateVoteCountsAscending: List[CandidateVoteCounts[C]],
-                                                       oldCandidateStatuses: CandidateStatuses[C],
-                                                     ): ProbabilityMeasure[NewStatusesAndNextAction[C, CountAction.DuringDistribution[C]]] = {
+                                                               count: Count,
+                                                               currentCandidateVoteCounts: CandidateVoteCounts[C],
+                                                               previousCandidateVoteCountsAscending: List[CandidateVoteCounts[C]],
+                                                               oldCandidateStatuses: CandidateStatuses[C],
+                                                             ): ProbabilityMeasure[NewStatusesAndNextAction[C, CountAction.DuringDistribution[C]]] = {
     ExcludedCandidateComputations.computeExcluded(currentCandidateVoteCounts, previousCandidateVoteCountsAscending, oldCandidateStatuses).map { candidateToExclude =>
       val newStatusForCandidate = CandidateStatus.Excluded(
         ordinalExcluded = Ordinal.ofNextAdditionTo(oldCandidateStatuses.excludedCandidates),
