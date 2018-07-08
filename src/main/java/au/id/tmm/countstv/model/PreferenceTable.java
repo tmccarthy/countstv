@@ -10,7 +10,7 @@ class PreferenceTable<C> {
 
     private final int[][] table;
     private final C[] candidateLookup;
-    private int totalNumPapers;
+    private final int totalNumPapers;
 
     public PreferenceTable(int[][] table, C[] candidateLookup, int totalNumPapers) {
         this.table = table;
