@@ -10,11 +10,11 @@ import org.scalatest.Assertion
 
 class PaperBundleSpec extends ImprovedFlatSpec {
 
-  private val testPreferenceTree = PreferenceTree.from[Fruit](
+  private val testPreferenceTree = PreferenceTree.from[Fruit](Set(Apple, Pear, Banana, Strawberry), numBallotsHint = 3)(List(
     Vector(Apple, Pear, Banana, Strawberry),
     Vector(Apple, Banana, Strawberry, Pear),
     Vector(Banana, Pear),
-  )
+  ))
 
   "a paper bundle" should "have a transfer value" in {
     val paperBundle = AssignedPaperBundle[Fruit](
@@ -33,7 +33,7 @@ class PaperBundleSpec extends ImprovedFlatSpec {
       origin = PaperBundle.Origin.InitialAllocation,
     )
 
-    assert(paperBundle.preferenceTreeNode eq testPreferenceTree.childFor(Fruit.Banana).get)
+    assert(paperBundle.preferenceTreeNode === testPreferenceTree.childFor(Fruit.Banana).get)
   }
 
   it should "have an origin" in {

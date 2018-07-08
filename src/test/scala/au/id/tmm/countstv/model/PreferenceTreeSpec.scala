@@ -14,24 +14,27 @@ class PreferenceTreeSpec extends ImprovedFlatSpec {
     Apple,
   )
 
+  private def preferenceTreeWith(ballots: NormalisedBallot[Fruit]*) =
+    PreferenceTree.from[Fruit](Set(Banana, Pear, Strawberry, Apple), ballots.length)(ballots)
+
   "an empty preference tree" should "have no papers" in {
-    val emptyPreferenceTree = PreferenceTree.empty
+    val emptyPreferenceTree = PreferenceTree.empty[Fruit](Set(Banana, Pear, Strawberry, Apple))
 
     assert(emptyPreferenceTree.numPapers === NumPapers(0))
   }
 
   "a preference tree with a single ballot" should "have 1 paper" in {
-    val preferenceTree = PreferenceTree.from(List(
+    val preferenceTree = preferenceTreeWith(
       ballotWith4Preferences
-    ))
+    )
 
     assert(preferenceTree.numPapers === NumPapers(1))
   }
 
   it should "have a child for the first preference" in {
-    val preferenceTree = PreferenceTree.from(List(
+    val preferenceTree = preferenceTreeWith(
       ballotWith4Preferences
-    ))
+    )
 
     val childNode = preferenceTree.childFor(ballotWith4Preferences.head)
 
@@ -39,9 +42,9 @@ class PreferenceTreeSpec extends ImprovedFlatSpec {
   }
 
   it should "have a child for the last preference" in {
-    val preferenceTree = PreferenceTree.from(List(
+    val preferenceTree = preferenceTreeWith(
       ballotWith4Preferences
-    ))
+    )
 
     val lastChildNode = preferenceTree
       .childFor(
@@ -55,9 +58,9 @@ class PreferenceTreeSpec extends ImprovedFlatSpec {
   }
 
   it should "have no child when preferences are exhausted" in {
-    val preferenceTree = PreferenceTree.from(List(
+    val preferenceTree = preferenceTreeWith(
       ballotWith4Preferences
-    ))
+    )
 
     val lastChildNode = preferenceTree
       .childFor(
@@ -72,7 +75,7 @@ class PreferenceTreeSpec extends ImprovedFlatSpec {
   }
 
   "a preference tree" should "have children" in {
-    val preferenceTree = PreferenceTree.from(
+    val preferenceTree = preferenceTreeWith(
       Vector(Apple, Pear, Banana, Strawberry),
       Vector(Apple, Banana, Strawberry, Pear),
       Vector(Banana, Pear),
@@ -82,7 +85,7 @@ class PreferenceTreeSpec extends ImprovedFlatSpec {
   }
 
   it should "have a string representation" in {
-    val preferenceTree = PreferenceTree.from(
+    val preferenceTree = preferenceTreeWith(
       Vector(Apple, Pear, Banana, Strawberry),
       Vector(Apple, Banana, Strawberry, Pear),
       Vector(Banana, Pear),
@@ -93,7 +96,7 @@ class PreferenceTreeSpec extends ImprovedFlatSpec {
 
   it should "reject empty ballots" in {
     intercept[IllegalArgumentException] {
-      PreferenceTree.from(
+      preferenceTreeWith(
         Vector(Apple, Pear, Banana, Strawberry),
         Vector(Apple, Banana, Strawberry, Pear),
         Vector(),
@@ -103,9 +106,9 @@ class PreferenceTreeSpec extends ImprovedFlatSpec {
   }
 
   "a preference tree child node" should "be associated with a candidate" in {
-    val preferenceTree = PreferenceTree.from(List(
+    val preferenceTree = preferenceTreeWith(
       ballotWith4Preferences
-    ))
+    )
 
     val childNode = preferenceTree.childFor(ballotWith4Preferences.head).get
 
@@ -113,7 +116,7 @@ class PreferenceTreeSpec extends ImprovedFlatSpec {
   }
 
   it should "have a string representation" in {
-    val preferenceTree = PreferenceTree.from(
+    val preferenceTree = preferenceTreeWith(
       Vector(Apple, Pear, Banana, Strawberry),
       Vector(Apple, Banana, Strawberry, Pear),
       Vector(Banana, Pear),

@@ -8,11 +8,11 @@ import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
 class PaperBundleOriginSpec extends ImprovedFlatSpec {
 
-  private val testPreferenceTree = PreferenceTree.from[Fruit](
+  private val testPreferenceTree = PreferenceTree.from[Fruit](Set(Apple, Pear, Banana, Strawberry), numBallotsHint = 3)(List(
     Vector(Apple, Pear, Banana, Strawberry),
     Vector(Apple, Banana, Strawberry, Pear),
     Vector(Banana, Pear),
-  )
+  ))
 
   "a paper bundle's origin" can "be the initial allocation" in {
     val paperBundle = AssignedPaperBundle[Fruit](

@@ -20,7 +20,7 @@ class DeadReckonedVoteCountingSpec extends ImprovedFlatSpec {
       Strawberry -> Remaining,
     )
 
-    val preferenceTree = PreferenceTree.from[Fruit](
+    val preferenceTree = PreferenceTree.from[Fruit](candidateStatuses.allCandidates, numBallotsHint = 8)(List(
       Vector(Apple, Banana),
       Vector(Apple, Banana),
       Vector(Apple, Banana),
@@ -29,7 +29,7 @@ class DeadReckonedVoteCountingSpec extends ImprovedFlatSpec {
       Vector(Apple),
       Vector(Banana),
       Vector(Banana),
-    )
+    ))
 
     val numFormalPapers = preferenceTree.numPapers
     val numVacancies = 2

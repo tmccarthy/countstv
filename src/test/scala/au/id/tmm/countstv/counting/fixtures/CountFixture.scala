@@ -30,7 +30,7 @@ case class CountFixture(
 
   val quota: NumVotes = QuotaComputation.computeQuota(numVacancies, numPapers)
 
-  lazy val preferenceTree: PreferenceTree[Fruit] = PreferenceTree.from(allBallots)
+  lazy val preferenceTree: PreferenceTree[Fruit] = PreferenceTree.from(candidates, allBallots.size)(allBallots)
 
   lazy val initialContext: CountContext.Initial[Fruit] = {
     val rootBundle: RootPaperBundle[Fruit] = PaperBundle.rootBundleFor[Fruit](preferenceTree)

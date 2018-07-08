@@ -11,13 +11,13 @@ import scala.collection.parallel.immutable.ParSet
 
 class SimpleVoteCountingSpec extends ImprovedFlatSpec {
 
-  private val testPreferenceTree = PreferenceTree.from[Fruit](
+  private val testPreferenceTree = PreferenceTree.from[Fruit](Set(Apple, Pear, Banana, Strawberry), numBallotsHint = 3)(List(
     Vector(Apple, Pear, Banana, Strawberry),
     Vector(Apple, Banana, Strawberry, Pear),
     Vector(Apple, Strawberry, Pear),
     Vector(Banana, Pear),
     Vector(Strawberry),
-  )
+  ))
 
   "a simple vote count" should "correctly perform a simple count on a set of paper bundles" in {
     val candidateStatuses = CandidateStatuses[Fruit](

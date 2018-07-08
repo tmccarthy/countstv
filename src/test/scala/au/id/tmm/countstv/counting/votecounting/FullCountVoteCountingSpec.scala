@@ -11,13 +11,13 @@ import scala.collection.parallel.immutable.ParSet
 
 class FullCountVoteCountingSpec extends ImprovedFlatSpec {
 
-  private val testPreferenceTree = PreferenceTree.from[Fruit](
+  private val testPreferenceTree = PreferenceTree.from[Fruit](Set(Apple, Pear, Banana, Strawberry), numBallotsHint = 3)(List(
     Vector(Apple, Pear, Banana, Strawberry),
     Vector(Apple, Banana, Strawberry, Pear),
     Vector(Apple, Strawberry, Pear),
     Vector(Banana, Pear),
     Vector(Strawberry),
-  )
+  ))
 
   "a voteCount" should "correctly count the votes when no candidates are elected" in {
     val candidateStatuses = CandidateStatuses[Fruit](

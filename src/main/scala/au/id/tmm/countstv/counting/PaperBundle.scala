@@ -122,7 +122,7 @@ private[counting] object PaperBundle {
                                                   bundle: PaperBundle[C],
                                                   origin: Origin[C],
                                                   count: Count,
-                                                  nodesForDistributedBundles: Iterator[PreferenceTreeNode[C]],
+                                                  nodesForDistributedBundles: List[PreferenceTreeNode[C]],
                                                 ): PaperBundles[C] = {
 
     val distributedTransferValue = origin match {
@@ -161,7 +161,7 @@ private[counting] object PaperBundle {
   private def childNodesAssignedToRemainingCandidates[C](
                                                           rootNode: PreferenceTree[C],
                                                           remainingCandidates: Set[C],
-                                                        ): Iterator[PreferenceTreeNode[C]] = {
+                                                        ): List[PreferenceTreeNode[C]] = {
     rootNode.children.flatMap { childNode =>
       if (remainingCandidates contains childNode.associatedCandidate) {
         Set(childNode)
