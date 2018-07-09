@@ -24,10 +24,6 @@ task wrapper(type: Wrapper) {
     distributionUrl = "http://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
 }
 
-testSets {
-    performanceTest
-}
-
 idea.module {
     inheritOutputDirs = true
 }
@@ -43,11 +39,6 @@ dependencies {
     testCompile "org.scalatest:scalatest${s}:$scalaTestVersion"
     testCompile "au.id.tmm:tmm-test-utils${s}:$tmmTestUtilsVersion"
     testCompile 'org.slf4j:slf4j-simple:1.7.25'
-
-    performanceTestCompile "org.scalatest:scalatest${s}:$scalaTestVersion"
-    performanceTestCompile "au.id.tmm:tmm-test-utils${s}:$tmmTestUtilsVersion"
-    performanceTestCompile 'org.slf4j:slf4j-simple:1.7.25'
-    performanceTestCompile 'org.kohsuke:wordnet-random-name:1.3'
 
     // Needed to produce scalatest report
     testRuntime 'org.pegdown:pegdown:1.4.2'
