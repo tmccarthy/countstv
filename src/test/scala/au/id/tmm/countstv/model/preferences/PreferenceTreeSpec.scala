@@ -126,4 +126,16 @@ class PreferenceTreeSpec extends ImprovedFlatSpec {
 
     assert(childNode.toString === "PreferenceTreeNode(numChildren=1, NumPapers(1))")
   }
+
+  it should "not be equal to its parent" in {
+    val preferenceTree = preferenceTreeWith(
+      Vector(Apple, Pear, Banana, Strawberry),
+      Vector(Apple, Banana, Strawberry, Pear),
+      Vector(Banana, Pear),
+    )
+
+    val childNode = preferenceTree.childFor(Apple, Pear, Banana).get
+
+    assert(childNode !== preferenceTree)
+  }
 }

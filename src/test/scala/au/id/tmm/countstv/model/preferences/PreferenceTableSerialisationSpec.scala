@@ -1,7 +1,10 @@
 package au.id.tmm.countstv.model.preferences
 
+import java.io.InputStream
+
 import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
+import au.id.tmm.utilities.encoding.EncodingUtils.StringConversions
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 import org.scalatest.Assertion
 
@@ -14,9 +17,29 @@ class PreferenceTableSerialisationSpec extends ImprovedFlatSpec {
   private def serialiseAndDeserialise(preferenceTable: PreferenceTable[Fruit]): PreferenceTable[Fruit] = {
     val inputStream = PreferenceTableSerialisation.serialise(preferenceTable)
 
-    PreferenceTableSerialisation.deserialise(candidates)(inputStream) match {
+    PreferenceTableDeserialisation.deserialise(candidates)(inputStream) match {
       case Right(preferenceTable) => preferenceTable
       case Left(error) => fail(error)
+    }
+  }
+
+  private def failToDeserialise(
+                                 preferenceTable: PreferenceTable[Fruit],
+                                 candidates: Set[Fruit] = candidates,
+                               )(
+                                 modifyInts: Vector[Int] => Vector[Int],
+                               ): PreferenceTableDeserialisation.Error = {
+    val inputStream = PreferenceTableSerialisation.serialise(preferenceTable)
+
+    val ints = Stream.continually(inputStream.read()).takeWhile(_ != -1).toVector
+
+    val modifiedInts = modifyInts(ints).iterator
+
+    val modifiedInputStream: InputStream = () => if (modifiedInts.hasNext) modifiedInts.next() else END_OF_STREAM
+
+    PreferenceTableDeserialisation.deserialise(candidates)(modifiedInputStream) match {
+      case Right(_) => fail("Expected error")
+      case Left(e) => e
     }
   }
 
@@ -24,20 +47,14 @@ class PreferenceTableSerialisationSpec extends ImprovedFlatSpec {
     assert(left equalTo right)
   }
 
-  "a preference table" can "be serialised and deserialised if it is empty" in {
-    val preferenceTable = PreferenceTableConstruction.from(
-      Iterable.empty[java.util.Collection[Fruit]].asJava,
-      0,
-      candidates.asJava,
-      Fruit.ordering,
-    )
+  private val emptyPreferenceTable = PreferenceTableConstruction.from(
+    Iterable.empty[java.util.Collection[Fruit]].asJava,
+    0,
+    candidates.asJava,
+    Fruit.ordering,
+  )
 
-    val deserialisedTable = serialiseAndDeserialise(preferenceTable)
-
-    assertEquals(preferenceTable, deserialisedTable)
-  }
-
-  it can "be serialised if it has a non-empty table" in {
+  private val testPreferenceTable = {
     val ballots: List[List[Fruit]] = List(
       List(Banana, Strawberry, Apple, Pear),
       List(Banana, Strawberry, Apple, Pear),
@@ -61,16 +78,85 @@ class PreferenceTableSerialisationSpec extends ImprovedFlatSpec {
       List(Banana, Pear, Strawberry, Apple),
     )
 
-    val preferenceTable = PreferenceTableConstruction.from(
+    PreferenceTableConstruction.from(
       ballots.map(_.asJavaCollection).asJava,
       ballots.size,
       candidates.asJava,
       Fruit.ordering,
     )
+  }
 
-    val deserialisedTable = serialiseAndDeserialise(preferenceTable)
+  "a preference table" can "be serialised and deserialised if it is empty" in {
+    val deserialisedTable = serialiseAndDeserialise(emptyPreferenceTable)
 
-    assertEquals(preferenceTable, deserialisedTable)
+    assertEquals(emptyPreferenceTable, deserialisedTable)
+  }
+
+  it can "be serialised if it has a non-empty table" in {
+    val deserialisedTable = serialiseAndDeserialise(testPreferenceTable)
+
+    assertEquals(testPreferenceTable, deserialisedTable)
+  }
+
+  "a sequence of bytes"  can "not be deserialised if the magic number is incorrect" in {
+    val error = failToDeserialise(testPreferenceTable) { ints =>
+      ints.updated(0, 0x0000)
+    }
+
+    assert(error === PreferenceTableDeserialisation.Error.MagicWordMissing())
+    assert(error.getMessage === "The magic word was missing from the start of the preference tree stream")
+  }
+
+  it can "not be deserialised if the version is 2" in {
+    val error = failToDeserialise(testPreferenceTable) { ints =>
+      ints.updated(2, Integer.MAX_VALUE)
+    }
+
+    assert(error === PreferenceTableDeserialisation.Error.UnknownVersion(Integer.MAX_VALUE))
+    assert(error.getMessage === s"Could not deserialise preference table serialisation version ${Integer.MAX_VALUE}")
+  }
+
+  it can "not be deserialised if there is a mismatch in the number of candidates" in {
+    val error = failToDeserialise(testPreferenceTable, candidates + Watermelon)(modifyInts = identity)
+
+    assert(error === PreferenceTableDeserialisation.Error.NumCandidatesMismatch(numCandidates = 4, expectedNumCandidates = 5))
+    assert(error.getMessage === s"The preference table contains 4, but 5 candidates were expected")
+  }
+
+  it can "not be deserialised if the digest doesn't match" in {
+    val error = failToDeserialise(testPreferenceTable) { ints =>
+      ints.updated(ints.length - 74, 5)
+    }
+
+    val expectedDigest = "8f10c393dc38051329a66843d9ea615bbcaf0238894e3c79e012f73c20cf6be486610f70f9263fffeef411efe036393974c13e0a603bd7ead8229b025d33b242"
+    val actualDigest = "64d6c85be6054182bb86437c44ac42acccca0ecc5ef6466cd6e0f789ba992dcdf19e985854fac29271877e5a8e316f854182e1505ef18cf847f572facf948d70"
+
+    assert(error ===
+      PreferenceTableDeserialisation.Error.DigestMismatch(
+        actualDigest = actualDigest.fromHex.toVector,
+        expectedDigest = expectedDigest.fromHex.toVector,
+        algorithm = "SHA-512",
+      )
+    )
+    assert(error.getMessage === s"SHA-512 Integrity check failed. Expected $expectedDigest, found $actualDigest")
+  }
+
+  it can "not be deserialised if it ends prematurely" in {
+    val error = failToDeserialise(testPreferenceTable) { ints =>
+      ints.take(40)
+    }
+
+    assert(error === PreferenceTableDeserialisation.Error.PrematureStreamEnd())
+    assert(error.getMessage === "Encountered an unexpected end of stream")
+  }
+
+  it can "not be deserialised if it contains unexpected bytes at the end" in {
+    val error = failToDeserialise(testPreferenceTable) { ints =>
+      ints ++ Vector(42)
+    }
+
+    assert(error === PreferenceTableDeserialisation.Error.UnexpectedContent())
+    assert(error.getMessage === "Encountered unexpected content at end of stream")
   }
 
 }

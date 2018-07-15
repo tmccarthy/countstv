@@ -9,6 +9,7 @@ import java.util.Objects;
 
 class PreferenceTable<C> {
 
+    // TODO consider using a short array for the votes
     private final int[][] table;
     private final C[] candidateLookup;
     private final int totalNumPapers;
