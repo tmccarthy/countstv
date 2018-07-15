@@ -1,4 +1,4 @@
-package au.id.tmm.countstv.model
+package au.id.tmm.countstv.model.preferences
 
 import au.id.tmm.countstv.Fruit._
 import au.id.tmm.countstv.model.values.NumPapers

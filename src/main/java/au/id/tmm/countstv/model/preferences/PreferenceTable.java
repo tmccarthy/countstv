@@ -1,4 +1,4 @@
-package au.id.tmm.countstv.model;
+package au.id.tmm.countstv.model.preferences;
 
 import scala.Option;
 import scala.collection.immutable.List;

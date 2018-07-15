@@ -1,7 +1,7 @@
-package au.id.tmm.countstv.model
+package au.id.tmm.countstv.model.preferences
 
 import au.id.tmm.countstv.NormalisedBallot
-import au.id.tmm.countstv.model.PreferenceTree.PreferenceTreeNode
+import au.id.tmm.countstv.model.preferences.PreferenceTree.PreferenceTreeNode
 import au.id.tmm.countstv.model.values.NumPapers
 
 import scala.collection.JavaConverters

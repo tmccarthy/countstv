@@ -1,8 +1,9 @@
 package au.id.tmm.countstv.counting
 
 import au.id.tmm.countstv.counting.PaperBundle.Origin
-import au.id.tmm.countstv.model.PreferenceTree.PreferenceTreeNode
 import au.id.tmm.countstv.model._
+import au.id.tmm.countstv.model.preferences.PreferenceTree
+import au.id.tmm.countstv.model.preferences.PreferenceTree.PreferenceTreeNode
 import au.id.tmm.countstv.model.values.{Count, NumPapers, TransferValue}
 
 import scala.collection.parallel.immutable.ParSet

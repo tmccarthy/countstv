@@ -2,7 +2,7 @@ package au.id.tmm.countstv.counting
 
 import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit.{Apple, Banana, Pear, Strawberry}
-import au.id.tmm.countstv.model.PreferenceTree
+import au.id.tmm.countstv.model.preferences.PreferenceTree
 import au.id.tmm.countstv.model.values.{Count, TransferValue}
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 

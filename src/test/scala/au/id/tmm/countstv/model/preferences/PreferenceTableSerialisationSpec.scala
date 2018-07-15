@@ -1,4 +1,4 @@
-package au.id.tmm.countstv.model
+package au.id.tmm.countstv.model.preferences
 
 import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._

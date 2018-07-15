@@ -1,9 +1,9 @@
-package au.id.tmm.countstv.model
+package au.id.tmm.countstv.model.preferences
 
 import java.io.{ByteArrayInputStream, InputStream}
 import java.security.{DigestInputStream, MessageDigest}
 
-import au.id.tmm.countstv.model.PreferenceTableSerialisation.Error.{DigestMismatch, PrematureStreamEnd, UnexpectedContent}
+import au.id.tmm.countstv.model.preferences.PreferenceTableSerialisation.Error.{DigestMismatch, PrematureStreamEnd, UnexpectedContent}
 import au.id.tmm.utilities.encoding.EncodingUtils.ArrayConversions
 
 import scala.annotation.tailrec

@@ -2,6 +2,7 @@ package au.id.tmm.countstv.counting
 
 import au.id.tmm.countstv.counting.countsteps.{CountContext, InitialAllocationComputation}
 import au.id.tmm.countstv.model._
+import au.id.tmm.countstv.model.preferences.PreferenceTree
 import au.id.tmm.utilities.logging.Logger
 import au.id.tmm.utilities.probabilities.ProbabilityMeasure
 import au.id.tmm.utilities.probabilities.ProbabilityMeasure.{Always, Varied}

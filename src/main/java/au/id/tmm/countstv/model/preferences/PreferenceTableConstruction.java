@@ -1,4 +1,4 @@
-package au.id.tmm.countstv.model;
+package au.id.tmm.countstv.model.preferences;
 
 import com.google.common.collect.ImmutableSortedSet;
 import gnu.trove.map.TObjectIntMap;

@@ -5,8 +5,8 @@ import au.id.tmm.countstv.Fruit._
 import au.id.tmm.countstv.counting.countsteps.CountContext.DuringDistributions
 import au.id.tmm.countstv.counting.countsteps.{CountContext, InitialAllocationComputation}
 import au.id.tmm.countstv.counting.{CountActionInterpreter, PaperBundle, QuotaComputation, RootPaperBundle}
-import au.id.tmm.countstv.model.PreferenceTree
 import au.id.tmm.countstv.model.countsteps.DistributionPhaseCountStep
+import au.id.tmm.countstv.model.preferences.PreferenceTree
 import au.id.tmm.countstv.model.values.{Count, NumPapers, NumVotes}
 
 import scala.annotation.tailrec

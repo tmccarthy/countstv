@@ -5,6 +5,7 @@ import au.id.tmm.countstv.Fruit._
 import au.id.tmm.countstv.counting._
 import au.id.tmm.countstv.model.CandidateStatus._
 import au.id.tmm.countstv.model._
+import au.id.tmm.countstv.model.preferences.PreferenceTree
 import au.id.tmm.countstv.model.values._
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 

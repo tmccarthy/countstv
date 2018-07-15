@@ -3,8 +3,9 @@ package au.id.tmm.countstv.counting
 import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit.{Apple, Banana, Pear, Strawberry}
 import au.id.tmm.countstv.counting.PaperBundle.Origin.IneligibleCandidate
+import au.id.tmm.countstv.model.preferences.PreferenceTree
 import au.id.tmm.countstv.model.values._
-import au.id.tmm.countstv.model.{CandidateStatus, CandidateStatuses, PreferenceTree}
+import au.id.tmm.countstv.model.{CandidateStatus, CandidateStatuses}
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 import org.scalatest.Assertion
 
