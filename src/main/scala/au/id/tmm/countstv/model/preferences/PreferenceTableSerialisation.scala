@@ -27,12 +27,12 @@ private[model] object PreferenceTableSerialisation {
       preferenceTable.getCandidateLookup.length
     )
 
-    val table = preferenceTable.getTable
-    writeInt(outputStream, table.length)
+    writeInt(outputStream, preferenceTable.getLength)
 
-    table.foreach { row =>
-      writeInt(outputStream, row.length)
-      writeInts(outputStream, row)
+    for (i <- 0 until preferenceTable.getLength) {
+      writeInt(outputStream, preferenceTable.getRowPaperCounts()(i))
+      writeInt(outputStream, preferenceTable.getPreferenceArrays()(i).length)
+      writeShorts(outputStream, preferenceTable.getPreferenceArrays()(i))
     }
 
     val messageDigest = digest.digest()
@@ -47,6 +47,14 @@ private[model] object PreferenceTableSerialisation {
     val bytes = ByteBuffer.allocate(ints.size * Integer.BYTES)
 
     ints.foreach(bytes.putInt)
+
+    outputStream.write(bytes.array())
+  }
+
+  private def writeShorts(outputStream: OutputStream, shorts: Iterable[Short]): Unit = {
+    val bytes = ByteBuffer.allocate(shorts.size * java.lang.Short.BYTES)
+
+    shorts.foreach(bytes.putShort)
 
     outputStream.write(bytes.array())
   }

@@ -9,19 +9,20 @@ import java.util.Objects;
 
 class PreferenceTable<C> {
 
-    // TODO consider using a short array for the votes
-    private final int[][] table;
+    private final int[] rowPaperCounts;
+    private final short[][] preferenceArrays;
     private final C[] candidateLookup;
     private final int totalNumPapers;
 
-    public PreferenceTable(int[][] table, C[] candidateLookup, int totalNumPapers) {
-        this.table = table;
+    public PreferenceTable(int[] rowPaperCounts, short[][] preferenceArrays, C[] candidateLookup, int totalNumPapers) {
+        this.rowPaperCounts = rowPaperCounts;
+        this.preferenceArrays = preferenceArrays;
         this.candidateLookup = candidateLookup;
         this.totalNumPapers = totalNumPapers;
     }
 
     public View<C> rootView() {
-        return new View<>(this, 0, table.length, -1, totalNumPapers);
+        return new View<>(this, 0, rowPaperCounts.length, -1, totalNumPapers);
     }
 
     C[] getCandidateLookup() {
@@ -32,8 +33,16 @@ class PreferenceTable<C> {
         return totalNumPapers;
     }
 
-    int[][] getTable() {
-        return table;
+    int getLength() {
+        return rowPaperCounts.length;
+    }
+
+    int[] getRowPaperCounts() {
+        return rowPaperCounts;
+    }
+
+    short[][] getPreferenceArrays() {
+        return preferenceArrays;
     }
 
     public static final class View<C> {
@@ -79,7 +88,7 @@ class PreferenceTable<C> {
         }
 
         private C candidateAtPreferenceIndex(int index) {
-            int candidateIndex = preferenceTable.table[viewStartIndex][index + 1];
+            int candidateIndex = preferenceTable.preferenceArrays[viewStartIndex][index];
             C candidate = preferenceTable.candidateLookup[candidateIndex];
             return candidate;
         }
@@ -94,11 +103,12 @@ class PreferenceTable<C> {
             int startIndexForPreviousCandidate = viewStartIndex;
 
             for (int i = viewStartIndex; i < viewEndIndex; i++) {
-                int[] tableRow = preferenceTable.table[i];
+                int numPapers = preferenceTable.rowPaperCounts[i];
+                short[] preferenceArray = preferenceTable.preferenceArrays[i];
 
                 int currentCandidate;
-                if (preferenceIndexForChildren + 1 < tableRow.length) {
-                    currentCandidate = tableRow[preferenceIndexForChildren + 1];
+                if (preferenceIndexForChildren < preferenceArray.length) {
+                    currentCandidate = preferenceArray[preferenceIndexForChildren];
                 } else {
                     currentCandidate = EXHAUSTED;
                 }
@@ -121,7 +131,7 @@ class PreferenceTable<C> {
                 }
 
                 previousCandidate = currentCandidate;
-                numPapersForPreviousCandidate += tableRow[0];
+                numPapersForPreviousCandidate += numPapers;
             }
 
             if (previousCandidate != UNINITIALISED && previousCandidate != EXHAUSTED) {
@@ -166,7 +176,8 @@ class PreferenceTable<C> {
     public boolean equalTo(PreferenceTable<C> that) {
         return this.totalNumPapers == that.totalNumPapers &&
                 Arrays.equals(this.candidateLookup, that.candidateLookup) &&
-                Arrays.deepEquals(this.table, that.table);
+                Arrays.equals(this.rowPaperCounts, that.rowPaperCounts) &&
+                Arrays.deepEquals(this.preferenceArrays, that.preferenceArrays);
     }
 
 }

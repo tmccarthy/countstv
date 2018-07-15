@@ -146,11 +146,11 @@ class PreferenceTableSerialisationSpec extends ImprovedFlatSpec {
 
   it can "not be deserialised if the digest doesn't match" in {
     val error = failToDeserialise(testPreferenceTable) { bytes =>
-      bytes.updated(bytes.length - 300, 5.toByte)
+      bytes.updated(bytes.length - 200, 5.toByte)
     }
 
-    val expectedDigest = "7ac351875de1d99c70e536db565334d0752880d3b52ad5fe106b0ac73cf48a71fcdd74a8a47fb87e80dc447036a3cf0930d77e119f1d225888e83b9b4d9b317c"
-    val actualDigest = "0efc010d47efc368c6e6bd167546c084eb29acf2c04ac992d1e4326e537c261688618bfdcf6e49e57d2202dbd1a887429856d65c0d55c51c3824817c79624562"
+    val expectedDigest = "5eb8709a96ee5191569879a59eea8255297c8fd7358e9ca5a57c288520d6bfc5b77c5d8d460499aeb7d884e390bafce232ad25de8155b9524596611b92eed051"
+    val actualDigest = "09548af2d26deea3f2de53f715924c586b9e522f4014a9224256ef47baa1ed73cad3518da493a2768891fdf05cf0285a972e0287fd338e370b76d1899097fe11"
 
     assert(error ===
       DigestMismatch(

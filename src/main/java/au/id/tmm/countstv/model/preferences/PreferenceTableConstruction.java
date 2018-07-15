@@ -3,6 +3,7 @@ package au.id.tmm.countstv.model.preferences;
 import com.google.common.collect.ImmutableSortedSet;
 import gnu.trove.map.TObjectIntMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
+import scala.Tuple2;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -31,13 +32,13 @@ public final class PreferenceTableConstruction {
 
         TObjectIntMap<C> candidateIndexLookup = buildCandidateIndexLookup(candidateLookup);
 
-        int[][] allBallotsArray = readAllPreferencesIntoArray(ballotsIterable, numBallotsHint, candidateIndexLookup);
+        short[][] allBallotsArray = readAllPreferencesIntoArray(ballotsIterable, numBallotsHint, candidateIndexLookup);
 
         int totalNumPapers = allBallotsArray.length;
 
-        int[][] table = collapseRepeatedBallots(allBallotsArray);
+        Tuple2<int[], short[][]> table = collapseRepeatedBallots(allBallotsArray);
 
-        return new PreferenceTable<>(table, candidateLookup, totalNumPapers);
+        return new PreferenceTable<>(table._1, table._2, candidateLookup, totalNumPapers);
     }
 
     private static <C> TObjectIntMap<C> buildCandidateIndexLookup(C[] candidateLookup) {
@@ -51,18 +52,18 @@ public final class PreferenceTableConstruction {
     }
 
     @SuppressWarnings("unchecked")
-    private static <C> int[][] readAllPreferencesIntoArray(
+    private static <C> short[][] readAllPreferencesIntoArray(
             Iterable<Collection<C>> ballotsIterable,
             int numBallotsHint,
             TObjectIntMap<C> candidateIndexLookup
     ) {
-        int[][] allBallotPapers = new int[numBallotsHint][];
+        short[][] allBallotPapers = new short[numBallotsHint][];
         int i = 0;
 
         for (Collection<C> ballotPaper : ballotsIterable) {
             C[] preferences = (C[]) ballotPaper.toArray();
 
-            int[] preferencesAsInts = convertToCandidateInts(preferences, candidateIndexLookup);
+            short[] preferencesAsInts = convertToCandidateInts(preferences, candidateIndexLookup);
 
             if (i + 1 > allBallotPapers.length) {
                 allBallotPapers = Arrays.copyOf(allBallotPapers, (int) (allBallotPapers.length * ALL_BALLOT_PAPERS_GROWTH_FACTOR));
@@ -73,57 +74,63 @@ public final class PreferenceTableConstruction {
 
         allBallotPapers = Arrays.copyOf(allBallotPapers, i);
 
-        Arrays.parallelSort(allBallotPapers, new IntArrayComparator());
+        Arrays.parallelSort(allBallotPapers, new ShortArrayComparator());
 
         return allBallotPapers;
     }
 
-    private static <C> int[] convertToCandidateInts(C[] preferences, TObjectIntMap<C> candidateIndexLookup) {
-        int[] preferencesAsInts = new int[preferences.length];
+    private static <C> short[] convertToCandidateInts(C[] preferences, TObjectIntMap<C> candidateIndexLookup) {
+        short[] preferencesAsInts = new short[preferences.length];
 
         for (int i = 0; i < preferences.length; i++) {
-            preferencesAsInts[i] = candidateIndexLookup.get(preferences[i]);
+            preferencesAsInts[i] = (short) candidateIndexLookup.get(preferences[i]);
         }
 
         return preferencesAsInts;
     }
 
-    private static int[][] collapseRepeatedBallots(int[][] allBallotPapers) {
-        int[][] table = new int[allBallotPapers.length][];
+    private static Tuple2<int[], short[][]> collapseRepeatedBallots(short[][] allBallotPapers) {
+        int[] rowPaperCounts = new int[allBallotPapers.length];
+        short[][] preferenceArrays = new short[allBallotPapers.length][];
+
         int tableIndex = 0;
 
-        int[] previousPreferenceArray = null;
+        short[] previousPreferenceArray = null;
 
-        for (int[] thisPreferenceArray : allBallotPapers) {
+        for (short[] thisPreferenceArray : allBallotPapers) {
             if (previousPreferenceArray == null || !Arrays.equals(thisPreferenceArray, previousPreferenceArray)) {
-                int[] newTableRow = new int[thisPreferenceArray.length + 1];
-                newTableRow[0] = 1;
-                System.arraycopy(thisPreferenceArray, 0, newTableRow, 1, thisPreferenceArray.length);
+                short[] newPreferenceArray = new short[thisPreferenceArray.length];
 
-                table[tableIndex++] = newTableRow;
+                System.arraycopy(thisPreferenceArray, 0, newPreferenceArray, 0, thisPreferenceArray.length);
+
+                rowPaperCounts[tableIndex] = 1;
+                preferenceArrays[tableIndex] = newPreferenceArray;
+
+                tableIndex++;
             } else {
-                table[tableIndex - 1][0] += 1;
+                rowPaperCounts[tableIndex -1] += 1;
             }
 
             previousPreferenceArray = thisPreferenceArray;
         }
 
-        if (tableIndex != table.length) {
-            table = Arrays.copyOf(table, tableIndex);
+        if (tableIndex != rowPaperCounts.length) {
+            rowPaperCounts = Arrays.copyOf(rowPaperCounts, tableIndex);
+            preferenceArrays = Arrays.copyOf(preferenceArrays, tableIndex);
         }
 
-        return table;
+        return Tuple2.<int[], short[][]>apply(rowPaperCounts, preferenceArrays);
     }
 
-    private static final class IntArrayComparator implements Comparator<int[]> {
+    private static final class ShortArrayComparator implements Comparator<short[]> {
         @Override
-        public int compare(int[] left, int[] right) {
+        public int compare(short[] left, short[] right) {
             if (left == right) {
                 return 0;
             }
 
             for (int i = 0; i < Math.min(left.length, right.length); i++) {
-                int comparison = Integer.compare(left[i], right[i]);
+                int comparison = Short.compare(left[i], right[i]);
 
                 if (comparison != 0) {
                     return comparison;

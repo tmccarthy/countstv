@@ -29,15 +29,14 @@ private[model] object PreferenceTableDeserialisation {
       _ <- checkDigest(inputStream, actualDigest)
       _ <- confirmStreamComplete(inputStream)
     } yield {
+      val rowPaperCounts = table._1
+      val preferenceArrays = table._2
+
       val candidateIntLookup = new Array(numCandidates).asInstanceOf[Array[C]]
 
       allCandidates.toList.sorted.copyToArray(candidateIntLookup)
 
-      new PreferenceTable[C](
-        table,
-        candidateIntLookup,
-        totalNumPapers,
-      )
+      new PreferenceTable[C](rowPaperCounts, preferenceArrays, candidateIntLookup, totalNumPapers)
     }
   }
 
@@ -72,21 +71,24 @@ private[model] object PreferenceTableDeserialisation {
     }
   }
 
-  private def readTable(inputStream: EndSafeInputStream): Either[Error, Array[Array[Int]]] = {
+  private def readTable(inputStream: EndSafeInputStream): Either[Error, (Array[Int], Array[Array[Short]])] = {
     inputStream.readInt().flatMap { tableSize =>
-      val table = new Array[Array[Int]](tableSize)
+      val rowPaperCounts = new Array[Int](tableSize)
+      val preferenceArrays = new Array[Array[Short]](tableSize)
 
       for (i <- 0 until tableSize) {
         for {
-          rowLength <- inputStream.readInt()
-          row <- inputStream.readIntArray(rowLength)
+          numPapers <- inputStream.readInt()
+          preferencesLength <- inputStream.readInt()
+          preferencesArray <- inputStream.readShortArray(preferencesLength)
         } yield {
-          table(i) = row
+          rowPaperCounts(i) = numPapers
+          preferenceArrays(i) = preferencesArray
         }
 
       }
 
-      Right(table)
+      Right((rowPaperCounts, preferenceArrays))
     }
   }
 
@@ -105,6 +107,22 @@ private[model] object PreferenceTableDeserialisation {
   }
 
   private final class EndSafeInputStream(inputStream: InputStream) {
+    def readShortArray(length: Int): Either[PrematureStreamEnd, Array[Short]] = {
+      val numBytesToRead = length * java.lang.Short.BYTES
+
+      val bytes = new Array[Byte](numBytesToRead)
+
+      val numBytesRead = inputStream.read(bytes)
+
+      if (numBytesRead != numBytesToRead) return Left(PrematureStreamEnd())
+
+      val shorts = new Array[Short](length)
+
+      ByteBuffer.wrap(bytes).asShortBuffer().get(shorts)
+
+      Right(shorts)
+    }
+
     def readIntArray(length: Int): Either[PrematureStreamEnd, Array[Int]] = {
       val numBytesToRead = length * Integer.BYTES
 
