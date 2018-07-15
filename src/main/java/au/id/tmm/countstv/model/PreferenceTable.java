@@ -4,6 +4,7 @@ import scala.Option;
 import scala.collection.immutable.List;
 import scala.collection.mutable.Builder;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 class PreferenceTable<C> {
@@ -22,8 +23,16 @@ class PreferenceTable<C> {
         return new View<>(this, 0, table.length, -1, totalNumPapers);
     }
 
-    public int numCandidates() {
-        return candidateLookup.length;
+    C[] getCandidateLookup() {
+        return candidateLookup;
+    }
+
+    int getTotalNumPapers() {
+        return totalNumPapers;
+    }
+
+    int[][] getTable() {
+        return table;
     }
 
     public static final class View<C> {
@@ -137,6 +146,12 @@ class PreferenceTable<C> {
         public int hashCode() {
             return Objects.hash(preferenceTable, viewStartIndex, viewEndIndex, preferenceIndex);
         }
+    }
+
+    public boolean equalTo(PreferenceTable<C> that) {
+        return this.totalNumPapers == that.totalNumPapers &&
+                Arrays.equals(this.candidateLookup, that.candidateLookup) &&
+                Arrays.deepEquals(this.table, that.table);
     }
 
 }
