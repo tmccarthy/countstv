@@ -7,6 +7,7 @@ import au.id.tmm.countstv.counting.countsteps.{CountContext, InitialAllocationCo
 import au.id.tmm.countstv.counting.{CountActionInterpreter, PaperBundle, QuotaComputation, RootPaperBundle}
 import au.id.tmm.countstv.model.countsteps.DistributionPhaseCountStep
 import au.id.tmm.countstv.model.preferences.PreferenceTree
+import au.id.tmm.countstv.model.preferences.PreferenceTree.RootPreferenceTree
 import au.id.tmm.countstv.model.values.{Count, NumPapers, NumVotes}
 
 import scala.annotation.tailrec
@@ -30,7 +31,7 @@ case class CountFixture(
 
   val quota: NumVotes = QuotaComputation.computeQuota(numVacancies, numPapers)
 
-  lazy val preferenceTree: PreferenceTree[Fruit] = PreferenceTree.from(candidates, allBallots.size)(allBallots)
+  lazy val preferenceTree: RootPreferenceTree[Fruit] = PreferenceTree.from(candidates, allBallots.size)(allBallots)
 
   lazy val initialContext: CountContext.Initial[Fruit] = {
     val rootBundle: RootPaperBundle[Fruit] = PaperBundle.rootBundleFor[Fruit](preferenceTree)

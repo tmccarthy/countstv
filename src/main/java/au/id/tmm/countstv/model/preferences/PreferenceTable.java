@@ -150,11 +150,11 @@ class PreferenceTable<C> {
             if (o == null || getClass() != o.getClass()) {
                 return false;
             }
-            View<?> view = (View<?>) o;
+            @SuppressWarnings("unchecked") View<C> view = (View<C>) o;
             return viewStartIndex == view.viewStartIndex &&
                     viewEndIndex == view.viewEndIndex &&
                     preferenceIndex == view.preferenceIndex &&
-                    Objects.equals(preferenceTable, view.preferenceTable);
+                    preferenceTable.equalTo(view.preferenceTable);
         }
 
         @Override

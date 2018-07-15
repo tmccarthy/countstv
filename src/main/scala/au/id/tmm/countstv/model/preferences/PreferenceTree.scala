@@ -50,7 +50,12 @@ object PreferenceTree {
 
   def empty[C: Ordering](allCandidates: Set[C]): PreferenceTree[C] = from(allCandidates, numBallotsHint = 0)(Nil)
 
-  def from[C : Ordering](allCandidates: Set[C], numBallotsHint: Int = 100)(ballots: Iterable[NormalisedBallot[C]]): PreferenceTree[C] = {
+  def from[C : Ordering](
+                          allCandidates: Set[C],
+                          numBallotsHint: Int = 100,
+                        )(
+                          ballots: Iterable[NormalisedBallot[C]],
+                        ): RootPreferenceTree[C] = {
 
     val ballotsAsJava = ballots
       .map { b =>
@@ -70,7 +75,7 @@ object PreferenceTree {
     new RootPreferenceTree[C](preferenceTable)
   }
 
-  final class RootPreferenceTree[C] private[preferences] (private val preferenceTable: PreferenceTable[C])
+  final class RootPreferenceTree[C] private[preferences] (private[preferences] val preferenceTable: PreferenceTable[C])
     extends PreferenceTree[C](preferenceTable.rootView()) {
 
     override def toString: String = s"${getClass.getSimpleName}(numChildren=${children.size}, numPapers=${numPapers.asLong})"
