@@ -3,13 +3,19 @@ package au.id.tmm.countstv.model.preferences
 import java.io.InputStream
 import java.nio.ByteBuffer
 import java.security.{DigestInputStream, MessageDigest}
+import java.util.zip.GZIPInputStream
 
 import au.id.tmm.countstv.model.preferences.PreferenceTableDeserialisation.Error._
 import au.id.tmm.utilities.encoding.EncodingUtils.ArrayConversions
 
 private[model] object PreferenceTableDeserialisation {
 
-  def deserialise[C <: Object : Ordering](allCandidates: Set[C])(rawInputStream: InputStream): Either[Error, PreferenceTable[C]] = {
+  def decompressAndDeserialise[C <: AnyRef : Ordering](allCandidates: Set[C], rawInputStream: InputStream): Either[Error, PreferenceTable[C]] = {
+    val inputStream = new GZIPInputStream(rawInputStream)
+    deserialise(allCandidates, inputStream)
+  }
+
+  def deserialise[C <: AnyRef : Ordering](allCandidates: Set[C], rawInputStream: InputStream): Either[Error, PreferenceTable[C]] = {
     val digest = MessageDigest.getInstance(messageDigestAlgorithm)
     val inputStream = new EndSafeInputStream(new DigestInputStream(rawInputStream, digest))
 

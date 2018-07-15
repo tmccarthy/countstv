@@ -3,8 +3,15 @@ package au.id.tmm.countstv.model.preferences
 import java.io.OutputStream
 import java.nio.ByteBuffer
 import java.security.{DigestOutputStream, MessageDigest}
+import java.util.zip.GZIPOutputStream
 
 private[model] object PreferenceTableSerialisation {
+
+  def serialiseAndCompress[C](preferenceTable: PreferenceTable[C], rawOutputStream: OutputStream): Unit = {
+    for (outputStream <- resource.managed(new GZIPOutputStream(rawOutputStream))) {
+      serialise(preferenceTable, outputStream)
+    }
+  }
 
   def serialise[C](preferenceTable: PreferenceTable[C], rawOutputStream: OutputStream): Unit = {
 

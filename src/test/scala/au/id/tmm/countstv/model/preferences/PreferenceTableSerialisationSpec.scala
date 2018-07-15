@@ -22,7 +22,7 @@ class PreferenceTableSerialisationSpec extends ImprovedFlatSpec {
 
     val inputStream = new ByteArrayInputStream(outputStream.toByteArray)
 
-    PreferenceTableDeserialisation.deserialise(candidates)(inputStream) match {
+    PreferenceTableDeserialisation.deserialise(candidates, inputStream) match {
       case Right(preferenceTable) => preferenceTable
       case Left(error) => fail(error)
     }
@@ -42,7 +42,7 @@ class PreferenceTableSerialisationSpec extends ImprovedFlatSpec {
 
     val modifiedInputStream = new ByteArrayInputStream(modifiedBytes.toArray)
 
-    PreferenceTableDeserialisation.deserialise(candidates)(modifiedInputStream) match {
+    PreferenceTableDeserialisation.deserialise(candidates, modifiedInputStream) match {
       case Right(_) => fail("Expected error")
       case Left(e) => e
     }
@@ -102,6 +102,21 @@ class PreferenceTableSerialisationSpec extends ImprovedFlatSpec {
 
     assertEquals(testPreferenceTable, deserialisedTable)
   }
+
+    it can "be serialised and deserialised with compression" in {
+      val outputStream = new ByteArrayOutputStream()
+
+      PreferenceTableSerialisation.serialiseAndCompress(testPreferenceTable, outputStream)
+
+      val inputStream = new ByteArrayInputStream(outputStream.toByteArray)
+
+      val deserialisedPreferenceTable = PreferenceTableDeserialisation.decompressAndDeserialise(candidates, inputStream) match {
+        case Right(preferenceTable) => preferenceTable
+        case Left(error) => fail(error)
+      }
+
+      assertEquals(deserialisedPreferenceTable, testPreferenceTable)
+    }
 
   "a sequence of bytes" can "not be deserialised if the magic number is incorrect" in {
     val error = failToDeserialise(testPreferenceTable) { bytes =>
