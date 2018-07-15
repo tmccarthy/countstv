@@ -7,7 +7,7 @@ import au.id.tmm.countstv.model.values.NumPapers
 import scala.collection.JavaConverters
 import scala.collection.JavaConverters.asJavaIterableConverter
 
-sealed class PreferenceTree[C] (private val view: PreferenceTable.View[C]) {
+sealed abstract class PreferenceTree[C] private (private val view: PreferenceTable.View[C]) {
 
   /**
     * The number of ballot papers that this node represents.
@@ -17,7 +17,7 @@ sealed class PreferenceTree[C] (private val view: PreferenceTable.View[C]) {
   /**
     * The child nodes of this node.
     */
-  def children: List[PreferenceTreeNode[C]] = view.children().map(new PreferenceTreeNode(_))
+  def children: List[PreferenceTreeNode[C]] = view.children().map(new PreferenceTreeNode[C](_))
 
   def childFor(candidate: C): Option[PreferenceTreeNode[C]] = children.find(_.associatedCandidate == candidate)
 
@@ -30,8 +30,6 @@ sealed class PreferenceTree[C] (private val view: PreferenceTable.View[C]) {
 
     currentChild
   }
-
-  override def toString: String = s"${getClass.getSimpleName}(numChildren=${children.size}, $numPapers)"
 
   def canEqual(other: Any): Boolean = other.isInstanceOf[PreferenceTree[_]]
 
@@ -69,11 +67,23 @@ object PreferenceTree {
       implicitly[Ordering[C]],
     )
 
-    new PreferenceTree[C](preferenceTable.rootView())
+    new RootPreferenceTree[C](preferenceTable)
   }
 
-  final class PreferenceTreeNode[C](private val view: PreferenceTable.View[C]) extends PreferenceTree[C](view) {
+  final class RootPreferenceTree[C] private[preferences] (private val preferenceTable: PreferenceTable[C])
+    extends PreferenceTree[C](preferenceTable.rootView()) {
+
+    override def toString: String = s"${getClass.getSimpleName}(numChildren=${children.size}, numPapers=${numPapers.asLong})"
+  }
+
+  final class PreferenceTreeNode[C] private[preferences] (private val view: PreferenceTable.View[C]) extends PreferenceTree[C](view) {
     def associatedCandidate: C = view.assignedCandidate().get
+
+    override def toString: String = {
+      val candidatePath = view.path().mkString(", ")
+
+      s"${getClass.getSimpleName}(path=[$candidatePath], numPapers=${numPapers.asLong})"
+    }
   }
 
 }

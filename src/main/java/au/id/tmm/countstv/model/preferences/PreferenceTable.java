@@ -60,14 +60,28 @@ class PreferenceTable<C> {
             this.numPapers = numPapers;
         }
 
+        public scala.collection.immutable.List<C> path() {
+            Builder<C, List<C>> pathBuilder = List.<C>canBuildFrom().apply();
+
+            for (int i = 0; i < preferenceIndex; i++) {
+                pathBuilder.$plus$eq(candidateAtPreferenceIndex(i));
+            }
+
+            return pathBuilder.result();
+        }
+
         public Option<C> assignedCandidate() {
             if (preferenceIndex < 0) {
                 return Option.<C>empty();
             } else {
-                int candidateIndex = preferenceTable.table[viewStartIndex][preferenceIndex + 1];
-                C candidate = preferenceTable.candidateLookup[candidateIndex];
-                return Option.<C>apply(candidate);
+                return Option.<C>apply(candidateAtPreferenceIndex(preferenceIndex));
             }
+        }
+
+        private C candidateAtPreferenceIndex(int index) {
+            int candidateIndex = preferenceTable.table[viewStartIndex][index + 1];
+            C candidate = preferenceTable.candidateLookup[candidateIndex];
+            return candidate;
         }
 
         public scala.collection.immutable.List<View<C>> children() {

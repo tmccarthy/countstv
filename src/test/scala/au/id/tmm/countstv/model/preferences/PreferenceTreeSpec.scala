@@ -91,7 +91,7 @@ class PreferenceTreeSpec extends ImprovedFlatSpec {
       Vector(Banana, Pear),
     )
 
-    assert(preferenceTree.toString === "PreferenceTree(numChildren=2, NumPapers(3))")
+    assert(preferenceTree.toString === "RootPreferenceTree(numChildren=2, numPapers=3)")
   }
 
   it should "reject empty ballots" in {
@@ -124,7 +124,7 @@ class PreferenceTreeSpec extends ImprovedFlatSpec {
 
     val childNode = preferenceTree.childFor(Apple, Pear, Banana).get
 
-    assert(childNode.toString === "PreferenceTreeNode(numChildren=1, NumPapers(1))")
+    assert(childNode.toString === "PreferenceTreeNode(path=[Apple, Pear], numPapers=1)")
   }
 
   it should "not be equal to its parent" in {
