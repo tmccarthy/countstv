@@ -1,56 +1,51 @@
 package au.id.tmm.countstv.model.preferences
 
-import java.io.{ByteArrayInputStream, InputStream}
-import java.security.{DigestInputStream, MessageDigest}
-
-import scala.annotation.tailrec
+import java.io.OutputStream
+import java.nio.ByteBuffer
+import java.security.{DigestOutputStream, MessageDigest}
 
 private[model] object PreferenceTableSerialisation {
 
-  def serialise[C](preferenceTable: PreferenceTable[C]): InputStream = {
+  def serialise[C](preferenceTable: PreferenceTable[C], rawOutputStream: OutputStream): Unit = {
 
-    val streamBody: Stream[Int] = magicWord.toStream ++
-      Stream(serialisationVerson) ++
-      Stream(preferenceTable.getTotalNumPapers) ++
-      Stream(preferenceTable.getCandidateLookup.length) ++
-      Stream(preferenceTable.getTable.length) ++
-      preferenceTable.getTable.toStream.flatMap { row =>
-        row.length +: row.toStream
-      }
+    val digest = MessageDigest.getInstance(messageDigestAlgorithm)
+    val outputStream = new DigestOutputStream(rawOutputStream, digest)
 
-    val bodyInputStream: InputStream = new InputStream {
-      private val iterator = streamBody.iterator
+    writeBytes(outputStream, magicWord)
 
-      override def read(): Int = if (iterator.hasNext) iterator.next() else END_OF_STREAM
+    writeInts(outputStream,
+      Vector() :+
+      serialisationVerson :+
+      preferenceTable.getTotalNumPapers :+
+      preferenceTable.getCandidateLookup.length
+    )
+
+    val table = preferenceTable.getTable
+    writeInt(outputStream, table.length)
+
+    table.foreach { row =>
+      writeInt(outputStream, row.length)
+      writeInts(outputStream, row)
     }
 
-    val combinedInputStream: InputStream = new InputStream {
-      private val digest = MessageDigest.getInstance(messageDigestAlgorithm)
-      private val wrappedBodyInputStream = new DigestInputStream(bodyInputStream, digest)
+    val messageDigest = digest.digest()
 
-      private var digestStream: Option[InputStream] = None
+    outputStream.write(messageDigest)
+    outputStream.flush()
+  }
 
-      @tailrec
-      override def read(): Int = {
-        digestStream match {
-          case Some(digestStream) => digestStream.read()
-          case None => {
-            val bodyInt = wrappedBodyInputStream.read()
+  private def writeInt(outputStream: OutputStream, int: Int): Unit = writeInts(outputStream, List(int))
 
-            if (bodyInt == END_OF_STREAM) {
-              digestStream = Some(new ByteArrayInputStream(digest.digest()))
+  private def writeInts(outputStream: OutputStream, ints: Iterable[Int]): Unit = {
+    val bytes = ByteBuffer.allocate(ints.size * Integer.BYTES)
 
-              this.read()
-            } else {
-              bodyInt
-            }
-          }
-        }
-      }
-    }
+    ints.foreach(bytes.putInt)
 
-    combinedInputStream
+    outputStream.write(bytes.array())
+  }
 
+  private def writeBytes(outputStream: OutputStream, bytes: Iterable[Byte]): Unit = {
+    outputStream.write(bytes.toArray)
   }
 
 }

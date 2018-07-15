@@ -1,9 +1,10 @@
 package au.id.tmm.countstv.model.preferences
 
-import java.io.InputStream
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 
 import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
+import au.id.tmm.countstv.model.preferences.PreferenceTableDeserialisation.Error._
 import au.id.tmm.utilities.encoding.EncodingUtils.StringConversions
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 import org.scalatest.Assertion
@@ -15,7 +16,11 @@ class PreferenceTableSerialisationSpec extends ImprovedFlatSpec {
   private val candidates: Set[Fruit] = Set(Apple, Banana, Strawberry, Pear)
 
   private def serialiseAndDeserialise(preferenceTable: PreferenceTable[Fruit]): PreferenceTable[Fruit] = {
-    val inputStream = PreferenceTableSerialisation.serialise(preferenceTable)
+    val outputStream = new ByteArrayOutputStream()
+
+    PreferenceTableSerialisation.serialise(preferenceTable, outputStream)
+
+    val inputStream = new ByteArrayInputStream(outputStream.toByteArray)
 
     PreferenceTableDeserialisation.deserialise(candidates)(inputStream) match {
       case Right(preferenceTable) => preferenceTable
@@ -27,15 +32,15 @@ class PreferenceTableSerialisationSpec extends ImprovedFlatSpec {
                                  preferenceTable: PreferenceTable[Fruit],
                                  candidates: Set[Fruit] = candidates,
                                )(
-                                 modifyInts: Vector[Int] => Vector[Int],
+                                 modifyStream: Vector[Byte] => Vector[Byte],
                                ): PreferenceTableDeserialisation.Error = {
-    val inputStream = PreferenceTableSerialisation.serialise(preferenceTable)
+    val outputStream = new ByteArrayOutputStream()
 
-    val ints = Stream.continually(inputStream.read()).takeWhile(_ != -1).toVector
+    PreferenceTableSerialisation.serialise(preferenceTable, outputStream)
 
-    val modifiedInts = modifyInts(ints).iterator
+    val modifiedBytes = modifyStream(outputStream.toByteArray.toVector)
 
-    val modifiedInputStream: InputStream = () => if (modifiedInts.hasNext) modifiedInts.next() else END_OF_STREAM
+    val modifiedInputStream = new ByteArrayInputStream(modifiedBytes.toArray)
 
     PreferenceTableDeserialisation.deserialise(candidates)(modifiedInputStream) match {
       case Right(_) => fail("Expected error")
@@ -92,47 +97,48 @@ class PreferenceTableSerialisationSpec extends ImprovedFlatSpec {
     assertEquals(emptyPreferenceTable, deserialisedTable)
   }
 
-  it can "be serialised if it has a non-empty table" in {
+  it can "be serialised and deserialised if it has a non-empty table" in {
     val deserialisedTable = serialiseAndDeserialise(testPreferenceTable)
 
     assertEquals(testPreferenceTable, deserialisedTable)
   }
 
-  "a sequence of bytes"  can "not be deserialised if the magic number is incorrect" in {
-    val error = failToDeserialise(testPreferenceTable) { ints =>
-      ints.updated(0, 0x0000)
+  "a sequence of bytes" can "not be deserialised if the magic number is incorrect" in {
+    val error = failToDeserialise(testPreferenceTable) { bytes =>
+      bytes.updated(0, 0.toByte)
     }
 
-    assert(error === PreferenceTableDeserialisation.Error.MagicWordMissing())
-    assert(error.getMessage === "The magic word was missing from the start of the preference tree stream")
+    assert(error === MagicWordMissing("00E1A1DE".fromHex.toVector, "ADE1A1DE".fromHex.toVector))
+    assert(error.getMessage === "The magic word was missing from the start of the preference tree stream. Expected " +
+      "ade1a1de, found 00e1a1de")
   }
 
   it can "not be deserialised if the version is 2" in {
-    val error = failToDeserialise(testPreferenceTable) { ints =>
-      ints.updated(2, Integer.MAX_VALUE)
+    val error = failToDeserialise(testPreferenceTable) { bytes =>
+      bytes.updated(7, 2.toByte)
     }
 
-    assert(error === PreferenceTableDeserialisation.Error.UnknownVersion(Integer.MAX_VALUE))
-    assert(error.getMessage === s"Could not deserialise preference table serialisation version ${Integer.MAX_VALUE}")
+    assert(error === UnknownVersion(2))
+    assert(error.getMessage === s"Could not deserialise preference table serialisation version 2")
   }
 
   it can "not be deserialised if there is a mismatch in the number of candidates" in {
-    val error = failToDeserialise(testPreferenceTable, candidates + Watermelon)(modifyInts = identity)
+    val error = failToDeserialise(testPreferenceTable, candidates + Watermelon)(modifyStream = identity)
 
-    assert(error === PreferenceTableDeserialisation.Error.NumCandidatesMismatch(numCandidates = 4, expectedNumCandidates = 5))
+    assert(error === NumCandidatesMismatch(numCandidates = 4, expectedNumCandidates = 5))
     assert(error.getMessage === s"The preference table contains 4, but 5 candidates were expected")
   }
 
   it can "not be deserialised if the digest doesn't match" in {
-    val error = failToDeserialise(testPreferenceTable) { ints =>
-      ints.updated(ints.length - 74, 5)
+    val error = failToDeserialise(testPreferenceTable) { bytes =>
+      bytes.updated(bytes.length - 300, 5.toByte)
     }
 
-    val expectedDigest = "8f10c393dc38051329a66843d9ea615bbcaf0238894e3c79e012f73c20cf6be486610f70f9263fffeef411efe036393974c13e0a603bd7ead8229b025d33b242"
-    val actualDigest = "64d6c85be6054182bb86437c44ac42acccca0ecc5ef6466cd6e0f789ba992dcdf19e985854fac29271877e5a8e316f854182e1505ef18cf847f572facf948d70"
+    val expectedDigest = "7ac351875de1d99c70e536db565334d0752880d3b52ad5fe106b0ac73cf48a71fcdd74a8a47fb87e80dc447036a3cf0930d77e119f1d225888e83b9b4d9b317c"
+    val actualDigest = "0efc010d47efc368c6e6bd167546c084eb29acf2c04ac992d1e4326e537c261688618bfdcf6e49e57d2202dbd1a887429856d65c0d55c51c3824817c79624562"
 
     assert(error ===
-      PreferenceTableDeserialisation.Error.DigestMismatch(
+      DigestMismatch(
         actualDigest = actualDigest.fromHex.toVector,
         expectedDigest = expectedDigest.fromHex.toVector,
         algorithm = "SHA-512",
@@ -142,20 +148,20 @@ class PreferenceTableSerialisationSpec extends ImprovedFlatSpec {
   }
 
   it can "not be deserialised if it ends prematurely" in {
-    val error = failToDeserialise(testPreferenceTable) { ints =>
-      ints.take(40)
+    val error = failToDeserialise(testPreferenceTable) { bytes =>
+      bytes.take(160)
     }
 
-    assert(error === PreferenceTableDeserialisation.Error.PrematureStreamEnd())
+    assert(error === PrematureStreamEnd())
     assert(error.getMessage === "Encountered an unexpected end of stream")
   }
 
   it can "not be deserialised if it contains unexpected bytes at the end" in {
-    val error = failToDeserialise(testPreferenceTable) { ints =>
-      ints ++ Vector(42)
+    val error = failToDeserialise(testPreferenceTable) { bytes =>
+      bytes ++ Vector(42.toByte)
     }
 
-    assert(error === PreferenceTableDeserialisation.Error.UnexpectedContent())
+    assert(error === UnexpectedContent())
     assert(error.getMessage === "Encountered unexpected content at end of stream")
   }
 

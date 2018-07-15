@@ -1,6 +1,7 @@
 package au.id.tmm.countstv.model.preferences
 
 import java.io.InputStream
+import java.nio.ByteBuffer
 import java.security.{DigestInputStream, MessageDigest}
 
 import au.id.tmm.countstv.model.preferences.PreferenceTableDeserialisation.Error._
@@ -15,7 +16,7 @@ private[model] object PreferenceTableDeserialisation {
     for {
       _ <- checkMagicWord(inputStream)
       _ <- checkVersion(inputStream)
-      totalNumPapers <- inputStream.read()
+      totalNumPapers <- inputStream.readInt()
       numCandidates <- readNumCandidates(allCandidates, inputStream)
       table <- readTable(inputStream)
       actualDigest = digest.digest().toVector
@@ -35,10 +36,10 @@ private[model] object PreferenceTableDeserialisation {
   }
 
   private def checkMagicWord(inputStream: EndSafeInputStream): Either[Error, Unit] = {
-    inputStream.read(magicWord.size)
+    inputStream.readBytes(magicWord.size)
       .flatMap { deserialisedMagicWord =>
         if (deserialisedMagicWord != magicWord) {
-          Left(Error.MagicWordMissing())
+          Left(Error.MagicWordMissing(deserialisedMagicWord, magicWord))
         } else {
           Right(Unit)
         }
@@ -46,7 +47,7 @@ private[model] object PreferenceTableDeserialisation {
   }
 
   private def checkVersion(inputStream: EndSafeInputStream): Either[Error, Unit] = {
-    inputStream.read().flatMap { version =>
+    inputStream.readInt().flatMap { version =>
       if (version != serialisationVerson) {
         Left(Error.UnknownVersion(version))
       } else {
@@ -56,7 +57,7 @@ private[model] object PreferenceTableDeserialisation {
   }
 
   private def readNumCandidates[C](allCandidates: Set[C], inputStream: EndSafeInputStream): Either[Error, Int] = {
-    inputStream.read().flatMap { numCandidates =>
+    inputStream.readInt().flatMap { numCandidates =>
       if (numCandidates != allCandidates.size) {
         Left(Error.NumCandidatesMismatch(numCandidates, expectedNumCandidates = allCandidates.size))
       } else {
@@ -66,13 +67,13 @@ private[model] object PreferenceTableDeserialisation {
   }
 
   private def readTable(inputStream: EndSafeInputStream): Either[Error, Array[Array[Int]]] = {
-    inputStream.read().flatMap { tableSize =>
+    inputStream.readInt().flatMap { tableSize =>
       val table = new Array[Array[Int]](tableSize)
 
       for (i <- 0 until tableSize) {
         for {
-          rowLength <- inputStream.read()
-          row <- inputStream.readArray(rowLength)
+          rowLength <- inputStream.readInt()
+          row <- inputStream.readIntArray(rowLength)
         } yield {
           table(i) = row
         }
@@ -94,28 +95,32 @@ private[model] object PreferenceTableDeserialisation {
   }
 
   private def confirmStreamComplete(inputStream: EndSafeInputStream): Either[UnexpectedContent, Unit] = {
-    inputStream.read().fold(_ => Right(Unit), _ => Left(UnexpectedContent()))
+    inputStream.readBytes(1).fold(_ => Right(Unit), _ => Left(UnexpectedContent()))
   }
 
   private final class EndSafeInputStream(inputStream: InputStream) {
-    @inline def read(): Either[PrematureStreamEnd, Int] = {
-      val value = inputStream.read()
-      if (value == END_OF_STREAM) Left(PrematureStreamEnd()) else Right(value)
+    def readIntArray(length: Int): Either[PrematureStreamEnd, Array[Int]] = {
+      val numBytesToRead = length * Integer.BYTES
+
+      val bytes = new Array[Byte](numBytesToRead)
+
+      val numBytesRead = inputStream.read(bytes)
+
+      if (numBytesRead != numBytesToRead) return Left(PrematureStreamEnd())
+
+      val ints = new Array[Int](length)
+
+      ByteBuffer.wrap(bytes).asIntBuffer().get(ints)
+
+      Right(ints)
     }
 
-    def readArray(length: Int): Either[PrematureStreamEnd, Array[Int]] = {
-      val array = new Array[Int](length)
-
-      for (i <- 0 until length) {
-        val value = inputStream.read()
-        if (value == END_OF_STREAM) return Left(PrematureStreamEnd()) else array(i) = value
-      }
-
-      Right(array)
+    @inline def readInts(length: Int): Either[PrematureStreamEnd, Vector[Int]] = {
+      readIntArray(length).map(_.toVector)
     }
 
-    def read(length: Int): Either[PrematureStreamEnd, Vector[Int]] = {
-      readArray(length).map(_.toVector)
+    @inline def readInt(): Either[PrematureStreamEnd, Int] = {
+      readInts(1).map(_.head)
     }
 
     def readBytes(length: Int): Either[PrematureStreamEnd, Vector[Byte]] = {
@@ -135,8 +140,10 @@ private[model] object PreferenceTableDeserialisation {
   }
 
   object Error {
-    case class MagicWordMissing() extends Error {
-      override def message: String = "The magic word was missing from the start of the preference tree stream"
+    private def render(bytes: Vector[Byte]): String = bytes.toArray.toHex
+
+    case class MagicWordMissing(actualMagicWord: Vector[Byte], expectedMagicWord: Vector[Byte]) extends Error {
+      override def message: String = s"The magic word was missing from the start of the preference tree stream. Expected ${render(expectedMagicWord)}, found ${render(actualMagicWord)}"
     }
 
     case class UnknownVersion(unrecognisedVersion: Int) extends Error {
@@ -151,8 +158,6 @@ private[model] object PreferenceTableDeserialisation {
     case class DigestMismatch(actualDigest: Vector[Byte], expectedDigest: Vector[Byte], algorithm: String) extends Error {
       override def message: String = s"$messageDigestAlgorithm Integrity check failed. Expected ${render(expectedDigest)}, " +
         s"found ${render(actualDigest)}"
-
-      private def render(digest: Vector[Byte]): String = digest.toArray.toHex
     }
 
     case class PrematureStreamEnd() extends Error {
