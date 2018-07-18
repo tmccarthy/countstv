@@ -1,5 +1,5 @@
 ext.'signing.keyId' = findProperty('signing.keyId') ?: System.getenv().GNU_KEY_ID ?: ''
-ext.'signing.secretKeyRingFile' = findProperty('signing.secretKeyRingFile') ?: System.getenv().GNU_KEY_FILE ?: 'DEFAULT' // TODO
+ext.'signing.secretKeyRingFile' = findProperty('signing.secretKeyRingFile') ?: System.getenv().GNU_KEY_FILE ?: ''
 ext.'signing.password' = findProperty('signing.password') ?: System.getenv().GNU_KEY_PASSWORD ?: ''
 
 nexusStaging {
