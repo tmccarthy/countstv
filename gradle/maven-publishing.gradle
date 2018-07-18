@@ -1,3 +1,12 @@
+ext.'signing.keyId' = findProperty('signing.keyId') ?: System.getenv().GNU_KEY_ID ?: ''
+ext.'signing.secretKeyRingFile' = findProperty('signing.secretKeyRingFile') ?: System.getenv().GNU_KEY_FILE ?: 'DEFAULT' // TODO
+ext.'signing.password' = findProperty('signing.password') ?: System.getenv().GNU_KEY_PASSWORD ?: ''
+
+nexusStaging {
+    username = findProperty('ossrhUser') ?: System.getenv().OSSRH_USER ?: ''
+    password = findProperty('ossrhPassword') ?: System.getenv().OSSRH_PASSWORD ?: ''
+}
+
 task sourcesJar(type: Jar) {
     classifier 'sources'
     from sourceSets.main.allScala
@@ -31,8 +40,6 @@ artifacts {
 }
 
 signing {
-    useGpgCmd()
-
     required { gradle.taskGraph.hasTask(tasks.uploadArchives) }
 
     sign configurations.archives
@@ -40,11 +47,6 @@ signing {
 
 tasks.withType(Sign).each {
     it.onlyIf { gradle.taskGraph.hasTask(tasks.uploadArchives) }
-}
-
-nexusStaging {
-    username = findProperty('ossrhUser') ?: ''
-    password = findProperty('ossrhPassword') ?: ''
 }
 
 def configurePom(MavenPom pom) {
@@ -95,4 +97,15 @@ uploadArchives {
             configurePom(pom)
         }
     }
+
+    onlyIf { rootProject.ext.versionIsFinal }
+}
+
+task releaseIfFinalVersion(type: GradleBuild) {
+    onlyIf { rootProject.ext.versionIsFinal }
+
+    startParameter.logLevel = LogLevel.INFO
+    startParameter.showStacktrace = ShowStacktrace.ALWAYS_FULL
+
+    tasks = ['assemble', 'uploadArchives', 'closeAndReleaseRepository']
 }

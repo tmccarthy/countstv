@@ -34,3 +34,5 @@ gradle-app.setting
 
 /build
 /buildSrc/build
+
+secring.gpg

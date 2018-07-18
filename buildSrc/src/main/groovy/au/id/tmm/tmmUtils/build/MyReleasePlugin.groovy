@@ -22,6 +22,8 @@ final class MyReleasePlugin implements Plugin<Project> {
             normal = new ScopeNormalStrategy(normalScopeCalc(target))
             preRelease = stageFromProp("final", "rc")
         }
+
+        target.ext.versionIsFinal = !target.version.toString().contains('rc')
     }
 
     private static Function<VcsInventory, Optional<String>> normalScopeCalc(Project project) {
