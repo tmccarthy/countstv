@@ -53,7 +53,7 @@ class PreferenceTableSerialisationSpec extends ImprovedFlatSpec {
   }
 
   private val emptyPreferenceTable = PreferenceTableConstruction.from(
-    Iterable.empty[java.util.Collection[Fruit]].asJava,
+    Iterator.empty.asInstanceOf[Iterator[java.util.Collection[Fruit]]].asJava,
     0,
     candidates.asJava,
     Fruit.ordering,
@@ -84,7 +84,7 @@ class PreferenceTableSerialisationSpec extends ImprovedFlatSpec {
     )
 
     PreferenceTableConstruction.from(
-      ballots.map(_.asJavaCollection).asJava,
+      ballots.map(_.asJavaCollection).iterator.asJava,
       ballots.size,
       candidates.asJava,
       Fruit.ordering,

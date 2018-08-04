@@ -5,7 +5,7 @@ import au.id.tmm.countstv.model.preferences.PreferenceTree.PreferenceTreeNode
 import au.id.tmm.countstv.model.values.NumPapers
 
 import scala.collection.JavaConverters
-import scala.collection.JavaConverters.asJavaIterableConverter
+import scala.collection.JavaConverters.asJavaIteratorConverter
 
 sealed abstract class PreferenceTree[C] private (private val view: PreferenceTable.View[C]) {
 
@@ -55,7 +55,14 @@ object PreferenceTree {
                           numBallotsHint: Int = 100,
                         )(
                           ballots: Iterable[NormalisedBallot[C]],
-                        ): RootPreferenceTree[C] = {
+                        ): RootPreferenceTree[C] = fromIterator(allCandidates, numBallotsHint)(ballots.toIterator)
+
+  def fromIterator[C : Ordering](
+                                  allCandidates: Set[C],
+                                  numBallotsHint: Int = 100,
+                                )(
+                                  ballots: Iterator[NormalisedBallot[C]],
+                                ): RootPreferenceTree[C] = {
 
     val ballotsAsJava = ballots
       .map { b =>

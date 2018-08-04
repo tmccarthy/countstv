@@ -8,6 +8,7 @@ import scala.Tuple2;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.SortedSet;
 
 public final class PreferenceTableConstruction {
@@ -19,7 +20,7 @@ public final class PreferenceTableConstruction {
 
     @SuppressWarnings("unchecked")
     public static <C> PreferenceTable<C> from(
-            Iterable<Collection<C>> ballotsIterable,
+            Iterator<Collection<C>> ballotsIterable,
             int numBallotsHint,
             Collection<C> allCandidates,
             Comparator<C> candidateOrdering
@@ -53,14 +54,16 @@ public final class PreferenceTableConstruction {
 
     @SuppressWarnings("unchecked")
     private static <C> short[][] readAllPreferencesIntoArray(
-            Iterable<Collection<C>> ballotsIterable,
+            Iterator<Collection<C>> ballotsIterator,
             int numBallotsHint,
             TObjectIntMap<C> candidateIndexLookup
     ) {
         short[][] allBallotPapers = new short[numBallotsHint][];
         int i = 0;
 
-        for (Collection<C> ballotPaper : ballotsIterable) {
+        while(ballotsIterator.hasNext()) {
+            Collection<C> ballotPaper = ballotsIterator.next();
+
             C[] preferences = (C[]) ballotPaper.toArray();
 
             short[] preferencesAsInts = convertToCandidateInts(preferences, candidateIndexLookup);
