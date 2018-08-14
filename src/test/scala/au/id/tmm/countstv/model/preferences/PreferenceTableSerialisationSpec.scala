@@ -123,9 +123,9 @@ class PreferenceTableSerialisationSpec extends ImprovedFlatSpec {
       bytes.updated(0, 0.toByte)
     }
 
-    assert(error === MagicWordMissing("00E1A1DE".fromHex.toVector, "ADE1A1DE".fromHex.toVector))
+    assert(error === MagicWordMissing("00E1A1DE".fromHex.toVector, "ADE1A1DE".fromHex.toVector, 4))
     assert(error.getMessage === "The magic word was missing from the start of the preference tree stream. Expected " +
-      "ade1a1de, found 00e1a1de")
+      "ade1a1de, found 00e1a1de at byte 4")
   }
 
   it can "not be deserialised if the version is 2" in {
@@ -133,15 +133,15 @@ class PreferenceTableSerialisationSpec extends ImprovedFlatSpec {
       bytes.updated(7, 2.toByte)
     }
 
-    assert(error === UnknownVersion(2))
-    assert(error.getMessage === s"Could not deserialise preference table serialisation version 2")
+    assert(error === UnknownVersion(2, streamPosition = 8))
+    assert(error.getMessage === s"Could not deserialise preference table serialisation version 2 at byte 8")
   }
 
   it can "not be deserialised if there is a mismatch in the number of candidates" in {
     val error = failToDeserialise(testPreferenceTable, candidates + Watermelon)(modifyStream = identity)
 
-    assert(error === NumCandidatesMismatch(numCandidates = 4, expectedNumCandidates = 5))
-    assert(error.getMessage === s"The preference table contains 4, but 5 candidates were expected")
+    assert(error === NumCandidatesMismatch(numCandidates = 4, expectedNumCandidates = 5, streamPosition = 16))
+    assert(error.getMessage === s"The preference table contains 4, but 5 candidates were expected at byte 16")
   }
 
   it can "not be deserialised if the digest doesn't match" in {
@@ -157,9 +157,10 @@ class PreferenceTableSerialisationSpec extends ImprovedFlatSpec {
         actualDigest = actualDigest.fromHex.toVector,
         expectedDigest = expectedDigest.fromHex.toVector,
         algorithm = "SHA-512",
+        streamPosition = 292,
       )
     )
-    assert(error.getMessage === s"SHA-512 Integrity check failed. Expected $expectedDigest, found $actualDigest")
+    assert(error.getMessage === s"SHA-512 Integrity check failed. Expected $expectedDigest, found $actualDigest at byte 292")
   }
 
   it can "not be deserialised if it ends prematurely" in {
@@ -167,8 +168,8 @@ class PreferenceTableSerialisationSpec extends ImprovedFlatSpec {
       bytes.take(160)
     }
 
-    assert(error === PrematureStreamEnd())
-    assert(error.getMessage === "Encountered an unexpected end of stream")
+    assert(error === PrematureStreamEnd(streamPosition = 160))
+    assert(error.getMessage === "Encountered an unexpected end of stream at byte 160")
   }
 
   it can "not be deserialised if it contains unexpected bytes at the end" in {
@@ -176,8 +177,8 @@ class PreferenceTableSerialisationSpec extends ImprovedFlatSpec {
       bytes ++ Vector(42.toByte)
     }
 
-    assert(error === UnexpectedContent())
-    assert(error.getMessage === "Encountered unexpected content at end of stream")
+    assert(error === UnexpectedContent(streamPosition = 293))
+    assert(error.getMessage === "Encountered unexpected content at end of stream at byte 293")
   }
 
 }

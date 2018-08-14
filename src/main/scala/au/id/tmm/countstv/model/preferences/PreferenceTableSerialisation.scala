@@ -46,7 +46,10 @@ private[model] object PreferenceTableSerialisation {
   private def writeInts(outputStream: OutputStream, ints: Iterable[Int]): Unit = {
     val bytes = ByteBuffer.allocate(ints.size * Integer.BYTES)
 
-    ints.foreach(bytes.putInt)
+    ints.foreach { int =>
+      assert(int >= 0)
+      bytes.putInt(int)
+    }
 
     outputStream.write(bytes.array())
   }
@@ -54,7 +57,10 @@ private[model] object PreferenceTableSerialisation {
   private def writeShorts(outputStream: OutputStream, shorts: Iterable[Short]): Unit = {
     val bytes = ByteBuffer.allocate(shorts.size * java.lang.Short.BYTES)
 
-    shorts.foreach(bytes.putShort)
+    shorts.foreach { short =>
+      assert(short >= 0)
+      bytes.putShort(short)
+    }
 
     outputStream.write(bytes.array())
   }

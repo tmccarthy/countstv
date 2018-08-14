@@ -1,12 +1,13 @@
 package au.id.tmm.countstv.model.preferences
 
-import java.io.InputStream
+import java.io.{DataInputStream, EOFException, InputStream}
 import java.nio.ByteBuffer
 import java.security.{DigestInputStream, MessageDigest}
 import java.util.zip.GZIPInputStream
 
 import au.id.tmm.countstv.model.preferences.PreferenceTableDeserialisation.Error._
 import au.id.tmm.utilities.encoding.EncodingUtils.ArrayConversions
+import com.google.common.io.CountingInputStream
 
 private[model] object PreferenceTableDeserialisation {
 
@@ -44,7 +45,7 @@ private[model] object PreferenceTableDeserialisation {
     inputStream.readBytes(magicWord.size)
       .flatMap { deserialisedMagicWord =>
         if (deserialisedMagicWord != magicWord) {
-          Left(Error.MagicWordMissing(deserialisedMagicWord, magicWord))
+          Left(Error.MagicWordMissing(deserialisedMagicWord, magicWord, inputStream.position()))
         } else {
           Right(Unit)
         }
@@ -54,7 +55,7 @@ private[model] object PreferenceTableDeserialisation {
   private def checkVersion(inputStream: EndSafeInputStream): Either[Error, Unit] = {
     inputStream.readInt().flatMap { version =>
       if (version != serialisationVerson) {
-        Left(Error.UnknownVersion(version))
+        Left(Error.UnknownVersion(version, inputStream.position()))
       } else {
         Right(Unit)
       }
@@ -64,7 +65,7 @@ private[model] object PreferenceTableDeserialisation {
   private def readNumCandidates[C](allCandidates: Set[C], inputStream: EndSafeInputStream): Either[Error, Int] = {
     inputStream.readInt().flatMap { numCandidates =>
       if (numCandidates != allCandidates.size) {
-        Left(Error.NumCandidatesMismatch(numCandidates, expectedNumCandidates = allCandidates.size))
+        Left(Error.NumCandidatesMismatch(numCandidates, expectedNumCandidates = allCandidates.size, inputStream.position()))
       } else {
         Right(numCandidates)
       }
@@ -77,15 +78,17 @@ private[model] object PreferenceTableDeserialisation {
       val preferenceArrays = new Array[Array[Short]](tableSize)
 
       for (i <- 0 until tableSize) {
-        for {
+        (for {
           numPapers <- inputStream.readInt()
           preferencesLength <- inputStream.readInt()
           preferencesArray <- inputStream.readShortArray(preferencesLength)
         } yield {
           rowPaperCounts(i) = numPapers
           preferenceArrays(i) = preferencesArray
+        }) match {
+          case Left(error) => return Left(error)
+          case _ =>
         }
-
       }
 
       Right((rowPaperCounts, preferenceArrays))
@@ -95,7 +98,7 @@ private[model] object PreferenceTableDeserialisation {
   private def checkDigest(inputStream: EndSafeInputStream, actualDigest: Vector[Byte]): Either[Error, Unit] = {
     inputStream.readBytes(64).map(_.toVector).flatMap { expectedDigest =>
       if (expectedDigest != actualDigest) {
-        Left(DigestMismatch(actualDigest, expectedDigest, messageDigestAlgorithm))
+        Left(DigestMismatch(actualDigest, expectedDigest, messageDigestAlgorithm, inputStream.position()))
       } else {
         Right(Unit)
       }
@@ -103,92 +106,86 @@ private[model] object PreferenceTableDeserialisation {
   }
 
   private def confirmStreamComplete(inputStream: EndSafeInputStream): Either[UnexpectedContent, Unit] = {
-    inputStream.readBytes(1).fold(_ => Right(Unit), _ => Left(UnexpectedContent()))
+    inputStream.readBytes(1).fold(_ => Right(Unit), _ => Left(UnexpectedContent(inputStream.position())))
   }
 
-  private final class EndSafeInputStream(inputStream: InputStream) {
+  private final class EndSafeInputStream(rawInputStream: InputStream) {
+    private val countingInputStream = new CountingInputStream(rawInputStream)
+    private val dataInputStream = new DataInputStream(countingInputStream)
+
+    def position(): Long = countingInputStream.getCount
+
     def readShortArray(length: Int): Either[PrematureStreamEnd, Array[Short]] = {
       val numBytesToRead = length * java.lang.Short.BYTES
 
       val bytes = new Array[Byte](numBytesToRead)
 
-      val numBytesRead = inputStream.read(bytes)
+      try {
+        dataInputStream.readFully(bytes)
 
-      if (numBytesRead != numBytesToRead) return Left(PrematureStreamEnd())
+        val shorts = new Array[Short](length)
 
-      val shorts = new Array[Short](length)
+        ByteBuffer.wrap(bytes).asShortBuffer().get(shorts)
 
-      ByteBuffer.wrap(bytes).asShortBuffer().get(shorts)
-
-      Right(shorts)
-    }
-
-    def readIntArray(length: Int): Either[PrematureStreamEnd, Array[Int]] = {
-      val numBytesToRead = length * Integer.BYTES
-
-      val bytes = new Array[Byte](numBytesToRead)
-
-      val numBytesRead = inputStream.read(bytes)
-
-      if (numBytesRead != numBytesToRead) return Left(PrematureStreamEnd())
-
-      val ints = new Array[Int](length)
-
-      ByteBuffer.wrap(bytes).asIntBuffer().get(ints)
-
-      Right(ints)
-    }
-
-    @inline def readInts(length: Int): Either[PrematureStreamEnd, Vector[Int]] = {
-      readIntArray(length).map(_.toVector)
+        Right(shorts)
+      } catch {
+        case _: EOFException => Left(PrematureStreamEnd(position()))
+      }
     }
 
     @inline def readInt(): Either[PrematureStreamEnd, Int] = {
-      readInts(1).map(_.head)
+      try {
+        Right(dataInputStream.readInt())
+      } catch {
+        case _: EOFException => Left(PrematureStreamEnd(position()))
+      }
     }
 
     def readBytes(length: Int): Either[PrematureStreamEnd, Vector[Byte]] = {
       val array = new Array[Byte](length)
-      val numBytesRead = inputStream.read(array)
-      if (numBytesRead != length) {
-        Left(PrematureStreamEnd())
-      } else {
+
+      try {
+        dataInputStream.readFully(array)
+
         Right(array.toVector)
+      } catch {
+        case _: EOFException => Left(PrematureStreamEnd(position()))
       }
     }
   }
 
   sealed trait Error extends Exception {
     def message: String
-    final override def getMessage: String = message
+    final override def getMessage: String = s"$message at byte $streamPosition"
+    def streamPosition: Long
   }
 
   object Error {
     private def render(bytes: Vector[Byte]): String = bytes.toArray.toHex
 
-    case class MagicWordMissing(actualMagicWord: Vector[Byte], expectedMagicWord: Vector[Byte]) extends Error {
+    case class MagicWordMissing(actualMagicWord: Vector[Byte], expectedMagicWord: Vector[Byte], streamPosition: Long) extends Error {
       override def message: String = s"The magic word was missing from the start of the preference tree stream. Expected ${render(expectedMagicWord)}, found ${render(actualMagicWord)}"
     }
 
-    case class UnknownVersion(unrecognisedVersion: Int) extends Error {
+    case class UnknownVersion(unrecognisedVersion: Int, streamPosition: Long) extends Error {
       override def message: String = s"Could not deserialise preference table serialisation version $unrecognisedVersion"
     }
 
-    case class NumCandidatesMismatch(numCandidates: Int, expectedNumCandidates: Int) extends Error {
+    case class NumCandidatesMismatch(numCandidates: Int, expectedNumCandidates: Int, streamPosition: Long) extends Error {
       override def message: String = s"The preference table contains $numCandidates, but $expectedNumCandidates " +
         s"candidates were expected"
     }
 
-    case class DigestMismatch(actualDigest: Vector[Byte], expectedDigest: Vector[Byte], algorithm: String) extends Error {
+    case class DigestMismatch(actualDigest: Vector[Byte], expectedDigest: Vector[Byte], algorithm: String, streamPosition: Long) extends Error {
       override def message: String = s"$messageDigestAlgorithm Integrity check failed. Expected ${render(expectedDigest)}, " +
         s"found ${render(actualDigest)}"
     }
 
-    case class PrematureStreamEnd() extends Error {
+    case class PrematureStreamEnd(streamPosition: Long) extends Error {
       override def message: String = "Encountered an unexpected end of stream"
     }
 
-    case class UnexpectedContent() extends Error {
+    case class UnexpectedContent(streamPosition: Long) extends Error {
       override def message: String = "Encountered unexpected content at end of stream"
     }
   }
