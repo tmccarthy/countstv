@@ -57,7 +57,7 @@ class ExcludedCandidateComputationsSpec extends ImprovedFlatSpec {
           Pear -> 5,
           Raspberry -> 4,
         ),
-        expectedResult = ProbabilityMeasure.always(Pear),
+        expectedResult = ProbabilityMeasure.Always(Pear),
       )
     }
   }
@@ -78,7 +78,7 @@ class ExcludedCandidateComputationsSpec extends ImprovedFlatSpec {
         Pear -> 5,
         Raspberry -> 4,
       ),
-      expectedResult = ProbabilityMeasure.always(Pear),
+      expectedResult = ProbabilityMeasure.Always(Pear),
     )
   }
 
@@ -141,7 +141,7 @@ class ExcludedCandidateComputationsSpec extends ImprovedFlatSpec {
           Raspberry -> 4,
         ),
       ),
-      expectedResult = ProbabilityMeasure.always(Pear),
+      expectedResult = ProbabilityMeasure.Always(Pear),
     )
   }
 }

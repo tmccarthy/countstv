@@ -40,7 +40,7 @@ case class CountFixture(
   }
 
   lazy val contextAfterIneligibles: CountContext.AfterIneligibleHandling[Fruit] = {
-    CountActionInterpreter.applyActionToContext(initialContext).onlyOutcome
+    CountActionInterpreter.applyActionToContext(initialContext).onlyOutcomeUnsafe
   }
 
   def getActualCountStep(count: Count): DistributionPhaseCountStep[Fruit] = {
@@ -67,7 +67,7 @@ case class CountFixture(
   private def firstContextAfterCount(count: Count, previousContext: CountContext.AllowingAppending[Fruit] = contextAfterIneligibles): CountContext.DistributionPhase[Fruit] = {
     require(count > Count.ofIneligibleCandidateHandling)
 
-    CountActionInterpreter.applyActionToContext(previousContext).onlyOutcome match {
+    CountActionInterpreter.applyActionToContext(previousContext).onlyOutcomeUnsafe match {
       case newContext: CountContext.DuringDistributions[Fruit] => {
         if (newContext.mostRecentCountStep.count >= count) {
           newContext

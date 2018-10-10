@@ -76,7 +76,7 @@ class CountStepRendererSpec extends ImprovedFlatSpec {
       Set.empty,
       fixture.numVacancies,
       fixture.preferenceTree,
-    ).onlyOutcome.countSteps
+    ).onlyOutcomeUnsafe.countSteps
 
     val stepPrior = countSteps.lift(count.decrement)
     val step = countSteps(count)
@@ -146,7 +146,7 @@ class CountStepRendererSpec extends ImprovedFlatSpec {
       Set.empty,
       fixture.numVacancies,
       fixture.preferenceTree,
-    ).onlyOutcome
+    ).onlyOutcomeUnsafe
 
     val actualRenderedRows = CountStepRenderer.renderRowsFor(completedCount).toList
 

@@ -56,15 +56,11 @@ object FullCountComputation {
       return Always(context)
     }
 
-
-
-
-
     val nextContextPossibilities = CountActionInterpreter.applyActionToContext(context)
 
     nextContextPossibilities match {
       case Always(onlyOutcome) => computeContextUntilFinal(onlyOutcome)
-      case possibilities @ Varied(_) => possibilities.flatMap { possibility =>
+      case possibilities: Varied[CountContext.DistributionPhase[C]] => possibilities.flatMap { possibility =>
         nonRecursiveComputeContextUntilFinal(possibility)
       }
     }

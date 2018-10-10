@@ -247,14 +247,15 @@ object DistributionComputation {
             distributionReason,
             bundlesToDistributeLater,
           )
-        case possibilities @ Varied(_) => possibilities.flatMap { newCountContextPossibility =>
-          nonRecursiveApplyDistributionsUntilAllBundlesDistributed(
-            newCountContextPossibility,
-            candidateToDistribute,
-            distributionReason,
-            bundlesToDistributeLater,
-          )
-        }
+        case possibilities: Varied[CountContext.DuringDistributions[C]] =>
+          possibilities.flatMap { newCountContextPossibility =>
+            nonRecursiveApplyDistributionsUntilAllBundlesDistributed(
+              newCountContextPossibility,
+              candidateToDistribute,
+              distributionReason,
+              bundlesToDistributeLater,
+            )
+          }
       }
     } else {
       val proposedCountStep = DistributionCountStep(

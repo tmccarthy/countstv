@@ -64,7 +64,7 @@ class ElectedCandidateComputationsSpec extends ImprovedFlatSpec {
         Pear -> 4,
         Raspberry -> 4,
       ),
-      expectedResult = ProbabilityMeasure.always(DupelessSeq.empty[Fruit]),
+      expectedResult = ProbabilityMeasure.Always(DupelessSeq.empty[Fruit]),
     )
   }
 
@@ -84,7 +84,7 @@ class ElectedCandidateComputationsSpec extends ImprovedFlatSpec {
         Pear -> 4,
         Raspberry -> 4,
       ),
-      expectedResult = ProbabilityMeasure.always(DupelessSeq.empty[Fruit]),
+      expectedResult = ProbabilityMeasure.Always(DupelessSeq.empty[Fruit]),
     )
   }
 
@@ -104,7 +104,7 @@ class ElectedCandidateComputationsSpec extends ImprovedFlatSpec {
         Pear -> 4,
         Raspberry -> 4,
       ),
-      expectedResult = ProbabilityMeasure.always(DupelessSeq(Apple)),
+      expectedResult = ProbabilityMeasure.Always(DupelessSeq(Apple)),
     )
   }
 
@@ -124,7 +124,7 @@ class ElectedCandidateComputationsSpec extends ImprovedFlatSpec {
         Pear -> 1,
         Raspberry -> 1,
       ),
-      expectedResult = ProbabilityMeasure.always(DupelessSeq(Apple)),
+      expectedResult = ProbabilityMeasure.Always(DupelessSeq(Apple)),
     )
   }
 
@@ -145,7 +145,7 @@ class ElectedCandidateComputationsSpec extends ImprovedFlatSpec {
         Raspberry -> 0,
       ),
       numVacancies = 3,
-      expectedResult = ProbabilityMeasure.always(DupelessSeq(Banana, Mango)),
+      expectedResult = ProbabilityMeasure.Always(DupelessSeq(Banana, Mango)),
     )
   }
 
@@ -210,7 +210,7 @@ class ElectedCandidateComputationsSpec extends ImprovedFlatSpec {
         ),
       ),
       numVacancies = 3,
-      expectedResult = ProbabilityMeasure.always(DupelessSeq(Mango, Banana)),
+      expectedResult = ProbabilityMeasure.Always(DupelessSeq(Mango, Banana)),
     )
   }
 

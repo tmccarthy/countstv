@@ -21,7 +21,7 @@ class FullCountComputationSpec extends ImprovedFlatSpec {
   }
 
   "a full vote count" should "produce the correct outcome" in {
-    val completedCount = runFullCountFor(CountFixture.withOneRemainingCandidate).onlyOutcome
+    val completedCount = runFullCountFor(CountFixture.withOneRemainingCandidate).onlyOutcomeUnsafe
 
     val expectedFinalOutcomes = CandidateStatuses[Fruit](
       Apple -> Elected(Ordinal.first,Count(4)),
@@ -37,7 +37,7 @@ class FullCountComputationSpec extends ImprovedFlatSpec {
   }
 
   it should "produce the correct outcome when we have ineligible candidates" in {
-    val completedCount = runFullCountFor(CountFixture.withOneIneligibleCandidate).onlyOutcome
+    val completedCount = runFullCountFor(CountFixture.withOneIneligibleCandidate).onlyOutcomeUnsafe
 
     val expectedFinalOutcomes = CandidateStatuses[Fruit](
       Apple -> Ineligible,
