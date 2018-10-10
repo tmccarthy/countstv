@@ -1,17 +1,16 @@
-import au.id.tmm.tmmUtils.build.MyVersionPlugin
-
 plugins {
     id 'scala'
     id 'com.github.maiflai.scalatest' version '0.19'
     id 'org.scoverage' version '2.1.0'
     id 'org.unbroken-dome.test-sets' version '1.4.2'
-    id 'io.codearte.nexus-staging' version '0.11.0'
 }
 
-apply plugin: MyVersionPlugin
+apply plugin: au.id.tmm.tmmUtils.build.MyVersionPlugin
 apply plugin: 'idea'
 apply plugin: 'maven'
 apply plugin: 'signing'
+apply plugin: 'io.codearte.nexus-staging'
+apply plugin: au.id.tmm.tmmUtils.build.MyReleasePlugin.class
 
 group = 'au.id.tmm'
 description =
@@ -106,5 +105,3 @@ checkScoverage {
 }
 
 check.dependsOn(checkScoverage)
-
-apply from: rootProject.file('gradle/maven-publishing.gradle')

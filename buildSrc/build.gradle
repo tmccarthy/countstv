@@ -8,4 +8,5 @@ repositories {
 dependencies {
     compile 'org.ajoberstar.reckon:reckon-gradle:0.6.0'
     compile 'org.ajoberstar:grgit:2.1.1'
+    compile 'io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.12.0'
 }
