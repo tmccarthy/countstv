@@ -11,7 +11,7 @@ import org.gradle.api.Project
 
 import java.util.function.Function
 
-final class MyReleasePlugin implements Plugin<Project> {
+final class MyVersionPlugin implements Plugin<Project> {
 
     @Override
     void apply(Project target) {
