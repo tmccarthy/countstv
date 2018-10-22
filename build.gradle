@@ -105,3 +105,14 @@ checkScoverage {
 }
 
 check.dependsOn(checkScoverage)
+
+myRelease {
+    githubUser = 'tmccarthy'
+    githubRepoName = 'countstv'
+
+    licenceName = 'Affero GPL v3.0'
+    licenceUrl = 'http://www.gnu.org/licenses/agpl.html'
+
+    developerName = 'Timothy McCarthy'
+    developerEmail = 'ebh042@gmail.com'
+}
