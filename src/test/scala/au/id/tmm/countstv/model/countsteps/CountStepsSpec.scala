@@ -121,12 +121,12 @@ class CountStepsSpec extends ImprovedFlatSpec {
       "))," +
       "CandidateVoteCounts(" +
       "Map(" +
-      "Apple -> VoteCount(NumPapers(32),NumVotes(42)), " +
-      "Banana -> VoteCount(NumPapers(32),NumVotes(42)), " +
-      "Pear -> VoteCount(NumPapers(32),NumVotes(42)), " +
-      "Strawberry -> VoteCount(NumPapers(32),NumVotes(42)))," +
-      "VoteCount(NumPapers(0),NumVotes(0))," +
-      "VoteCount(NumPapers(0),NumVotes(0)))))"
+      "Apple -> VoteCount(NumPapers(32),NumVotes(42.0)), " +
+      "Banana -> VoteCount(NumPapers(32),NumVotes(42.0)), " +
+      "Pear -> VoteCount(NumPapers(32),NumVotes(42.0)), " +
+      "Strawberry -> VoteCount(NumPapers(32),NumVotes(42.0)))," +
+      "VoteCount(NumPapers(0),NumVotes(0.0))," +
+      "VoteCount(NumPapers(0),NumVotes(0.0)))))"
 
     assert(testCountStepsInitial.toString === expectedToString)
   }

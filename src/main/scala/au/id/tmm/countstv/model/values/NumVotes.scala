@@ -3,18 +3,18 @@ package au.id.tmm.countstv.model.values
 /**
   * A count of a number of votes.
   */
-final case class NumVotes(asLong: Long) extends AnyVal {
+final case class NumVotes(asDouble: Double) extends AnyVal {
 
-  def + (that: NumVotes): NumVotes = NumVotes(this.asLong + that.asLong)
+  def + (that: NumVotes): NumVotes = NumVotes(this.asDouble + that.asDouble)
 
-  def - (that: NumVotes): NumVotes = NumVotes(this.asLong - that.asLong)
+  def - (that: NumVotes): NumVotes = NumVotes(this.asDouble - that.asDouble)
 
-  def >(that: NumVotes): Boolean = this.asLong > that.asLong
-  def >=(that: NumVotes): Boolean = this.asLong >= that.asLong
-  def <=(that: NumVotes): Boolean = this.asLong <= that.asLong
-  def <(that: NumVotes): Boolean = this.asLong < that.asLong
+  def >(that: NumVotes): Boolean = this.asDouble > that.asDouble
+  def >=(that: NumVotes): Boolean = this.asDouble >= that.asDouble
+  def <=(that: NumVotes): Boolean = this.asDouble <= that.asDouble
+  def <(that: NumVotes): Boolean = this.asDouble < that.asDouble
 
-  def /(that: NumPapers): TransferValue = TransferValue(this.asLong.toDouble / that.asLong.toDouble)
+  def /(that: NumPapers): TransferValue = TransferValue(this.asDouble / that.asLong.toDouble)
 
 }
 
