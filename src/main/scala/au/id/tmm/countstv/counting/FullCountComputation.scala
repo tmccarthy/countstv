@@ -3,6 +3,7 @@ package au.id.tmm.countstv.counting
 import au.id.tmm.countstv.counting.countsteps.{CountContext, InitialAllocationComputation}
 import au.id.tmm.countstv.model._
 import au.id.tmm.countstv.model.preferences.PreferenceTree
+import au.id.tmm.countstv.rules.RoundingRules
 import au.id.tmm.utilities.logging.Logger
 import au.id.tmm.utilities.probabilities.ProbabilityMeasure
 import au.id.tmm.utilities.probabilities.ProbabilityMeasure.{Always, Varied}
@@ -21,6 +22,8 @@ object FullCountComputation {
                    ineligibleCandidates: Set[C],
                    numVacancies: Int,
                    preferenceTree: PreferenceTree[C],
+                 )(implicit
+                   roundingRules: RoundingRules,
                  ): ProbabilityMeasure[CompletedCount[C]] = {
 
     val rootPaperBundle = PaperBundle.rootBundleFor(preferenceTree)

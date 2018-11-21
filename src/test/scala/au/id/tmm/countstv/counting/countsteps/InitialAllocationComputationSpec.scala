@@ -3,16 +3,19 @@ package au.id.tmm.countstv.counting.countsteps
 import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
 import au.id.tmm.countstv.counting.fixtures.CountFixture
-import au.id.tmm.countstv.counting.{AssignedPaperBundle, PaperBundle}
+import au.id.tmm.countstv.counting.{AssignedPaperBundle, PaperBundle, QuotaComputation}
 import au.id.tmm.countstv.model.CandidateStatus._
 import au.id.tmm.countstv.model._
 import au.id.tmm.countstv.model.countsteps.{CountSteps, InitialAllocation}
 import au.id.tmm.countstv.model.values.{NumPapers, TransferValue}
+import au.id.tmm.countstv.rules.RoundingRules
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
 import scala.collection.parallel.immutable.ParSet
 
 class InitialAllocationComputationSpec extends ImprovedFlatSpec {
+
+  private implicit val roundingRules: RoundingRules = RoundingRules.AEC
 
   "an initial allocation" can "be computed when there are no ineligible candidates" in {
     val fixture = CountFixture.withFinalElection
@@ -22,6 +25,7 @@ class InitialAllocationComputationSpec extends ImprovedFlatSpec {
     val expectedContext = CountContext.Initial(
       NumPapers(50),
       numVacancies = 2,
+      quota = QuotaComputation.computeQuota(numVacancies = 2, numFormalPapers = NumPapers(50)),
       paperBundles = ParSet[PaperBundle[Fruit]](
         AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Apple).get, PaperBundle.Origin.InitialAllocation),
         AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Banana).get, PaperBundle.Origin.InitialAllocation),
@@ -70,6 +74,7 @@ class InitialAllocationComputationSpec extends ImprovedFlatSpec {
     val expectedContext = CountContext.Initial(
       NumPapers(50),
       numVacancies = 2,
+      quota = QuotaComputation.computeQuota(numVacancies = 2, numFormalPapers = NumPapers(50)),
       paperBundles = ParSet[PaperBundle[Fruit]](
         AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Apple).get, PaperBundle.Origin.InitialAllocation),
         AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Banana).get, PaperBundle.Origin.InitialAllocation),

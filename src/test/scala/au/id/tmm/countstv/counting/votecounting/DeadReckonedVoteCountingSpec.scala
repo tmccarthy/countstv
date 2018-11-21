@@ -7,6 +7,7 @@ import au.id.tmm.countstv.model.CandidateStatus._
 import au.id.tmm.countstv.model._
 import au.id.tmm.countstv.model.preferences.PreferenceTree
 import au.id.tmm.countstv.model.values._
+import au.id.tmm.countstv.rules.RoundingRules
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
 import scala.collection.parallel.immutable.ParSet
@@ -14,6 +15,8 @@ import scala.collection.parallel.immutable.ParSet
 class DeadReckonedVoteCountingSpec extends ImprovedFlatSpec {
 
   "a dead-reckoned count" should "be computed correctly" in {
+    implicit val roundingRules: RoundingRules = RoundingRules.AEC
+
     val candidateStatuses = CandidateStatuses[Fruit](
       Apple -> Elected(Ordinal.first, Count(1)),
       Banana -> Remaining,

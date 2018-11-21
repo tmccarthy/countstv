@@ -1,6 +1,6 @@
 package au.id.tmm.countstv.counting.countsteps
 
-import au.id.tmm.countstv.counting.{CountAction, PaperBundles, QuotaComputation}
+import au.id.tmm.countstv.counting.{CountAction, PaperBundles}
 import au.id.tmm.countstv.model.countsteps._
 import au.id.tmm.countstv.model.values.{NumPapers, NumVotes}
 
@@ -8,7 +8,7 @@ private[counting] sealed trait CountContext[C] {
 
   def numFormalPapers: NumPapers
   def numVacancies: Int
-  lazy val quota: NumVotes = QuotaComputation.computeQuota(numVacancies, numFormalPapers)
+  def quota: NumVotes
 
   def paperBundles: PaperBundles[C]
 
@@ -24,6 +24,7 @@ private[counting] object CountContext {
   final case class Initial[C](
                                numFormalPapers: NumPapers,
                                numVacancies: Int,
+                               quota: NumVotes,
 
                                paperBundles: PaperBundles[C],
 
@@ -41,6 +42,7 @@ private[counting] object CountContext {
       AfterIneligibleHandling(
         numFormalPapers,
         numVacancies,
+        quota,
         newPaperBundles,
         previousCountSteps.append(newCountStep),
         nextAction,
@@ -62,6 +64,7 @@ private[counting] object CountContext {
   final case class AfterIneligibleHandling[C](
                                                numFormalPapers: NumPapers,
                                                numVacancies: Int,
+                                               quota: NumVotes,
 
                                                paperBundles: PaperBundles[C],
 
@@ -79,6 +82,7 @@ private[counting] object CountContext {
       DuringDistributions(
         this.numFormalPapers,
         this.numVacancies,
+        this.quota,
         newPaperBundles,
         this.previousCountSteps.append(newCountStep),
         nextAction
@@ -92,6 +96,7 @@ private[counting] object CountContext {
   final case class DuringDistributions[C](
                                            numFormalPapers: NumPapers,
                                            numVacancies: Int,
+                                           quota: NumVotes,
 
                                            paperBundles: PaperBundles[C],
 

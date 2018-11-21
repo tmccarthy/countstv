@@ -12,11 +12,14 @@ import au.id.tmm.countstv.model.CandidateStatus._
 import au.id.tmm.countstv.model.VoteCount
 import au.id.tmm.countstv.model.countsteps.DistributionCountStep
 import au.id.tmm.countstv.model.values._
+import au.id.tmm.countstv.rules.RoundingRules
 import au.id.tmm.utilities.collection.DupelessSeq
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 import org.scalatest.Assertion
 
 class CountStepRendererSpec extends ImprovedFlatSpec {
+
+  private implicit val roundingRules: RoundingRules = RoundingRules.AEC
 
   "the count step renderer" should "render an initial count step" in {
     testRenderedStep(

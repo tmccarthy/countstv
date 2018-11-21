@@ -6,10 +6,13 @@ import au.id.tmm.countstv.counting.fixtures.CountFixture
 import au.id.tmm.countstv.model.CandidateStatus._
 import au.id.tmm.countstv.model.values.{Count, Ordinal}
 import au.id.tmm.countstv.model.{CandidateStatuses, CompletedCount}
+import au.id.tmm.countstv.rules.RoundingRules
 import au.id.tmm.utilities.probabilities.ProbabilityMeasure
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
 class FullCountComputationSpec extends ImprovedFlatSpec {
+
+  private implicit val roundingRules: RoundingRules = RoundingRules.AEC
 
   private def runFullCountFor(countFixture: CountFixture): ProbabilityMeasure[CompletedCount[Fruit]] = {
     FullCountComputation.runCount(

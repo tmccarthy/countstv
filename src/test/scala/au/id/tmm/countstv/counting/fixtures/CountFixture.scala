@@ -9,6 +9,7 @@ import au.id.tmm.countstv.model.countsteps.DistributionPhaseCountStep
 import au.id.tmm.countstv.model.preferences.PreferenceTree
 import au.id.tmm.countstv.model.preferences.PreferenceTree.RootPreferenceTree
 import au.id.tmm.countstv.model.values.{Count, NumPapers, NumVotes}
+import au.id.tmm.countstv.rules.RoundingRules
 
 import scala.annotation.tailrec
 
@@ -25,6 +26,8 @@ case class CountFixture(
                          ),
                          numVacancies: Int = 2,
                          ineligibleCandidates: Set[Fruit] = Set.empty
+                       )(implicit
+                         roundingRules: RoundingRules,
                        ) {
 
   val numPapers: NumPapers = NumPapers(allBallots.size)
@@ -88,7 +91,10 @@ case class CountFixture(
 
 object CountFixture {
 
-  def apply(allBallots: Vector[Fruit]*): CountFixture = new CountFixture(allBallots.toVector)
+  def apply(allBallots: Vector[Fruit]*)(implicit roundingRules: RoundingRules): CountFixture =
+    new CountFixture(allBallots.toVector)
+
+  private implicit val roundingRules: RoundingRules = RoundingRules.AEC
 
   def withFinalElection = CountFixture(
     Vector[Fruit](Apple, Banana, Strawberry, Pear, Raspberry, Mango, Watermelon),

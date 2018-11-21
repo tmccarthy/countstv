@@ -4,6 +4,7 @@ import au.id.tmm.countstv.counting.votecounting.FullCountVoteCounting
 import au.id.tmm.countstv.counting.{QuotaComputation, RootPaperBundle}
 import au.id.tmm.countstv.model.countsteps.{CountSteps, InitialAllocation}
 import au.id.tmm.countstv.model.{CandidateStatus, CandidateStatuses}
+import au.id.tmm.countstv.rules.RoundingRules
 
 private[counting] object InitialAllocationComputation {
 
@@ -16,6 +17,8 @@ private[counting] object InitialAllocationComputation {
                                 ineligibleCandidates: Set[C],
                                 numVacancies: Int,
                                 rootPaperBundle: RootPaperBundle[C],
+                              )(implicit
+                                roundingRules: RoundingRules,
                               ): CountContext.Initial[C] = {
     val numFormalPapers = rootPaperBundle.numPapers
     val quota = QuotaComputation.computeQuota(numVacancies, numFormalPapers)
@@ -35,6 +38,7 @@ private[counting] object InitialAllocationComputation {
     CountContext.Initial[C](
       numFormalPapers = numFormalPapers,
       numVacancies = numVacancies,
+      quota = quota,
       paperBundles = firstSetOfPaperBundles,
       previousCountSteps = CountSteps.Initial(
         InitialAllocation(

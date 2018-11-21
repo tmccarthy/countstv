@@ -13,6 +13,7 @@ final case class NumPapers(asLong: Long) extends AnyVal {
   def <=(that: NumPapers): Boolean = this.asLong <= that.asLong
   def <(that: NumPapers): Boolean = this.asLong < that.asLong
 
+  // TODO make this dependent on rounding rules
   def *(transferValue: TransferValue): NumVotes = NumVotes.byRoundingDown(asLong * transferValue.factor)
 }
 
