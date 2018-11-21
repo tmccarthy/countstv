@@ -16,8 +16,6 @@ import org.gradle.plugins.signing.SigningExtension
 import org.gradle.util.GFileUtils
 
 final class MyReleasePlugin implements Plugin<Project> {
-    private static final String EXTENSION_NAME = 'myRelease'
-
     @Override
     void apply(Project target) {
         if (!target.rootProject.plugins.hasPlugin(NexusStagingPlugin.class)) {
@@ -34,7 +32,11 @@ final class MyReleasePlugin implements Plugin<Project> {
         target.ext.'signing.secretKeyRingFile' = target.rootProject.file('secring.gpg').absolutePath
         target.ext.'signing.password' = property(target, 'signing.password', 'GNU_KEY_PASSWORD')
 
-        target.extensions.add(MyReleasePluginExtension.class, EXTENSION_NAME, new MyReleasePluginExtension())
+        MyReleasePluginExtension extension = target.extensions.findByType(MyReleasePluginExtension.class)
+
+        if (extension == null) {
+            throw new GradleException("Must provide a release extension before the release plugin is applied")
+        }
 
         NexusStagingExtension nexusStaging = target.rootProject.extensions.getByName("nexusStaging")
 
@@ -89,7 +91,7 @@ final class MyReleasePlugin implements Plugin<Project> {
         target.install {
             repositories {
                 mavenInstaller {
-                    configurePom(target, pom)
+                    configurePom(target, extension, pom)
                 }
             }
         }
@@ -103,7 +105,7 @@ final class MyReleasePlugin implements Plugin<Project> {
                         authentication(userName: nexusStaging.username, password: nexusStaging.password)
                     }
 
-                    configurePom(target, pom)
+                    configurePom(target, extension, pom)
                 }
             }
 
@@ -123,9 +125,7 @@ final class MyReleasePlugin implements Plugin<Project> {
         }
     }
 
-    def configurePom(Project target, MavenPom pom) {
-        MyReleasePluginExtension extension = target.extensions.getByName(EXTENSION_NAME)
-
+    def configurePom(Project target, MyReleasePluginExtension extension, MavenPom pom) {
         pom.project {
             artifactId "${target.name}${target.ext.s}"
             name "$target.group:${target.name}"

@@ -48,7 +48,7 @@ sealed abstract class PreferenceTree[C] private (private val view: PreferenceTab
 
 object PreferenceTree {
 
-  def empty[C: Ordering](allCandidates: Set[C]): PreferenceTree[C] = from(allCandidates, numBallotsHint = 0)(Nil)
+  def empty[C: Ordering](allCandidates: Set[C]): RootPreferenceTree[C] = from(allCandidates, numBallotsHint = 0)(Nil)
 
   def from[C : Ordering](
                           allCandidates: Set[C],

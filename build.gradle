@@ -5,6 +5,19 @@ plugins {
     id 'org.unbroken-dome.test-sets' version '1.4.2'
 }
 
+extensions.add('release', new au.id.tmm.tmmUtils.build.MyReleasePlugin.MyReleasePluginExtension())
+
+release {
+    githubUser = 'tmccarthy'
+    githubRepoName = 'countstv'
+
+    licenceName = 'Affero GPL v3.0'
+    licenceUrl = 'http://www.gnu.org/licenses/agpl.html'
+
+    developerName = 'Timothy McCarthy'
+    developerEmail = 'ebh042@gmail.com'
+}
+
 apply plugin: au.id.tmm.tmmUtils.build.MyVersionPlugin
 apply plugin: 'idea'
 apply plugin: 'maven'
@@ -105,14 +118,3 @@ checkScoverage {
 }
 
 check.dependsOn(checkScoverage)
-
-myRelease {
-    githubUser = 'tmccarthy'
-    githubRepoName = 'countstv'
-
-    licenceName = 'Affero GPL v3.0'
-    licenceUrl = 'http://www.gnu.org/licenses/agpl.html'
-
-    developerName = 'Timothy McCarthy'
-    developerEmail = 'ebh042@gmail.com'
-}
