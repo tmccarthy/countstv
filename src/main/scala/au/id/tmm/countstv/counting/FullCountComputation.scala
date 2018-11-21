@@ -54,7 +54,7 @@ object FullCountComputation {
   }
 
   @tailrec
-  private def computeContextUntilFinal[C](context: CountContext.AllowingAppending[C]): ProbabilityMeasure[CountContext.AllowingAppending[C]] = {
+  private def computeContextUntilFinal[C](context: CountContext.AllowingAppending[C])(implicit roundingRules: RoundingRules): ProbabilityMeasure[CountContext.AllowingAppending[C]] = {
     if (context.nextAction == CountAction.NoAction) {
       return Always(context)
     }
@@ -71,6 +71,8 @@ object FullCountComputation {
 
   private def nonRecursiveComputeContextUntilFinal[C](
                                                        context: CountContext.AllowingAppending[C],
+                                                     )(implicit
+                                                       roundingRules: RoundingRules,
                                                      ): ProbabilityMeasure[CountContext.AllowingAppending[C]] =
     computeContextUntilFinal(context)
 

@@ -4,9 +4,12 @@ import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
 import au.id.tmm.countstv.model.VoteCount
 import au.id.tmm.countstv.model.values.{NumPapers, NumVotes, TransferValue}
+import au.id.tmm.countstv.rules.RoundingRules
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
 class CandidatePaperCountsSpec extends ImprovedFlatSpec {
+
+  private implicit val roundingRules: RoundingRules = RoundingRules.AEC
 
   private val testPaperCounts1 = CandidatePaperCounts[Fruit](
     perCandidate = Map(

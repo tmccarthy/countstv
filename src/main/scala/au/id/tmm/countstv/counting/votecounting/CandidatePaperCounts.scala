@@ -2,6 +2,7 @@ package au.id.tmm.countstv.counting.votecounting
 
 import au.id.tmm.countstv.model.VoteCount
 import au.id.tmm.countstv.model.values.{NumPapers, TransferValue}
+import au.id.tmm.countstv.rules.RoundingRules
 import au.id.tmm.countstv.utils.PerCandidateCounts
 
 private[votecounting] final case class CandidatePaperCounts[C](
@@ -20,7 +21,7 @@ private[votecounting] final case class CandidatePaperCounts[C](
       exhausted = this.exhausted - that.exhausted,
     )
 
-  def *(transferValue: TransferValue): CandidateVoteCountsSansRoundingError[C] =
+  def *(transferValue: TransferValue)(implicit roundingRules: RoundingRules): CandidateVoteCountsSansRoundingError[C] =
     CandidateVoteCountsSansRoundingError(
       perCandidate = perCandidate.mapValues(numPapers => VoteCount(numPapers, numPapers * transferValue)),
       exhausted = VoteCount(exhausted, exhausted * transferValue),

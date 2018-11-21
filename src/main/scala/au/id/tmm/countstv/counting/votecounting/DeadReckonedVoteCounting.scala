@@ -3,6 +3,7 @@ package au.id.tmm.countstv.counting.votecounting
 import au.id.tmm.countstv.counting.{AssignedPaperBundle, PaperBundles}
 import au.id.tmm.countstv.model.values.{NumPapers, NumVotes, TransferValue}
 import au.id.tmm.countstv.model.{CandidateStatuses, CandidateVoteCounts}
+import au.id.tmm.countstv.rules.RoundingRules
 
 import scala.collection.parallel.immutable.ParSet
 
@@ -16,7 +17,7 @@ object DeadReckonedVoteCounting {
                                    removedBundles: ParSet[AssignedPaperBundle[C]],
                                    addedBundles: PaperBundles[C],
                                    transferValue: TransferValue,
-                                 ): CandidateVoteCounts[C] = {
+                                 )(implicit roundingRules: RoundingRules): CandidateVoteCounts[C] = {
 
     // TODO probably do this concurrently
     val papersRemoved = countPapersFor(candidateStatuses.allCandidates, removedBundles.asInstanceOf[PaperBundles[C]])

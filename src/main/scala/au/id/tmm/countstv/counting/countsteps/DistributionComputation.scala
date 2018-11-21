@@ -7,6 +7,7 @@ import au.id.tmm.countstv.model.CandidateDistributionReason._
 import au.id.tmm.countstv.model.countsteps.{DistributionCountStep, ElectedNoSurplusCountStep, ExcludedNoVotesCountStep}
 import au.id.tmm.countstv.model.values._
 import au.id.tmm.countstv.model.{CandidateDistributionReason, CandidateStatuses, CandidateVoteCounts}
+import au.id.tmm.countstv.rules.RoundingRules
 import au.id.tmm.utilities.probabilities.ProbabilityMeasure
 import au.id.tmm.utilities.probabilities.ProbabilityMeasure.{Always, Varied}
 
@@ -21,6 +22,8 @@ object DistributionComputation {
                                       countContext: CountContext.AllowingAppending[C],
                                       candidate: C,
                                       distributionReason: CandidateDistributionReason,
+                                    )(implicit
+                                      roundingRules: RoundingRules,
                                     ): ProbabilityMeasure[CountContext.DistributionPhase[C]] = {
     val bundlesToDistribute = computeBundlesToDistribute(countContext, candidate, distributionReason)
 
@@ -150,6 +153,8 @@ object DistributionComputation {
                                                                            distributionReason: CandidateDistributionReason,
 
                                                                            bundlesToDistribute: Queue[ParSet[AssignedPaperBundle[C]]],
+                                                                         )(implicit
+                                                                           roundingRules: RoundingRules,
                                                                          ): ProbabilityMeasure[CountContext.DistributionPhase[C]] =
     applyDistributionsUntilAllBundlesDistributed(
       countContext,
@@ -165,7 +170,9 @@ object DistributionComputation {
                                                                distributionReason: CandidateDistributionReason,
 
                                                                bundlesToDistribute: Queue[ParSet[AssignedPaperBundle[C]]],
-                                                             ) : ProbabilityMeasure[CountContext.DistributionPhase[C]] = {
+                                                             )(implicit
+                                                               roundingRules: RoundingRules,
+                                                             ): ProbabilityMeasure[CountContext.DistributionPhase[C]] = {
     val count = countContext.mostRecentCountStep.count.increment
 
     val oldCandidateStatuses = countContext.mostRecentCountStep.candidateStatuses

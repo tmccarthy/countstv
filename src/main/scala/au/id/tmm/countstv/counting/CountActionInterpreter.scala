@@ -2,6 +2,7 @@ package au.id.tmm.countstv.counting
 
 import au.id.tmm.countstv.counting.CountAction._
 import au.id.tmm.countstv.counting.countsteps.{AllocationAfterIneligiblesComputation, CountContext, DistributionComputation}
+import au.id.tmm.countstv.rules.RoundingRules
 import au.id.tmm.utilities.probabilities.ProbabilityMeasure
 
 object CountActionInterpreter {
@@ -16,6 +17,8 @@ object CountActionInterpreter {
 
   def applyActionToContext[C](
                                countContext: CountContext.AllowingAppending[C],
+                             )(implicit
+                               roundingRules: RoundingRules,
                              ): ProbabilityMeasure[CountContext.DistributionPhase[C]] = {
     countContext.nextAction match {
       case DistributeFromCandidate(candidate, reason) =>

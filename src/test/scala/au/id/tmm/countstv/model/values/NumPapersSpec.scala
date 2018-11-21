@@ -1,8 +1,11 @@
 package au.id.tmm.countstv.model.values
 
+import au.id.tmm.countstv.rules.RoundingRules
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
 class NumPapersSpec extends ImprovedFlatSpec {
+
+  private implicit val roundingRules: RoundingRules = RoundingRules.AEC
 
   "a number of papers" can "be added to another" in {
     assert(NumPapers(2) + NumPapers(5) === NumPapers(7))
@@ -34,6 +37,12 @@ class NumPapersSpec extends ImprovedFlatSpec {
 
   it can "be multiplied by a transferValue" in {
     assert(NumPapers(5) * TransferValue(0.75) === NumVotes(3))
+  }
+
+  it can "be multiplied by a transferValue without rounding" in {
+    implicit val roundingRules: RoundingRules = RoundingRules.AEC.copy(roundTransferValueMultiplication = false)
+
+    assert(NumPapers(5) * TransferValue(0.75) === NumVotes(3.75))
   }
 
 }
