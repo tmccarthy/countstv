@@ -23,7 +23,7 @@ object CountStepRenderer {
       val nextStep = liftedCountSteps(count.increment)
 
       CountStepRenderer.renderRowsFor(
-        completedCount.numVacancies,
+        completedCount.countParams.numVacancies,
         completedCount.numFormalPapers,
         completedCount.quota,
       )(previousStep, thisStep, nextStep)

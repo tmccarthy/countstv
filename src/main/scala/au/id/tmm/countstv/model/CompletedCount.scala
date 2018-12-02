@@ -4,7 +4,8 @@ import au.id.tmm.countstv.model.countsteps.CountSteps
 import au.id.tmm.countstv.model.values.{NumPapers, NumVotes}
 
 final case class CompletedCount[C](
-                                    numVacancies: Int,
+                                    countParams: CountParams[C],
+
                                     numFormalPapers: NumPapers,
                                     quota: NumVotes,
 

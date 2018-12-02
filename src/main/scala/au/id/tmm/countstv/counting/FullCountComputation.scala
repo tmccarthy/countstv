@@ -4,7 +4,6 @@ import au.id.tmm.countstv.counting.countsteps.{CountContext, InitialAllocationCo
 import au.id.tmm.countstv.model._
 import au.id.tmm.countstv.model.preferences.PreferenceTree
 import au.id.tmm.countstv.rules.RoundingRules
-import au.id.tmm.utilities.logging.Logger
 import au.id.tmm.utilities.probabilities.ProbabilityMeasure
 import au.id.tmm.utilities.probabilities.ProbabilityMeasure.{Always, Varied}
 
@@ -12,27 +11,23 @@ import scala.annotation.tailrec
 
 object FullCountComputation {
 
-  implicit val logger: Logger = Logger()
-
   /**
     * Runs a full count according to the given parameters, returning the count steps through the count.
     */
   def runCount[C](
-                   candidates: Set[C],
-                   ineligibleCandidates: Set[C],
-                   numVacancies: Int,
+                   params: CountParams[C],
                    preferenceTree: PreferenceTree[C],
-                 )(implicit
-                   roundingRules: RoundingRules,
                  ): ProbabilityMeasure[CompletedCount[C]] = {
 
     val rootPaperBundle = PaperBundle.rootBundleFor(preferenceTree)
 
+    implicit val roundingRules: RoundingRules = params.roundingRules
+
     val initialContextPossibilities = ProbabilityMeasure.Always {
       InitialAllocationComputation.computeInitialContext(
-        candidates,
-        ineligibleCandidates,
-        numVacancies,
+        params.candidates,
+        params.ineligibleCandidates,
+        params.numVacancies,
         rootPaperBundle,
       )
     }
@@ -45,7 +40,7 @@ object FullCountComputation {
 
     finalContexts.map { finalContext =>
       CompletedCount(
-        numVacancies,
+        params,
         finalContext.numFormalPapers,
         finalContext.quota,
         finalContext.previousCountSteps,

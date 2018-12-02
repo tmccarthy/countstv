@@ -5,6 +5,7 @@ import au.id.tmm.countstv.Fruit._
 import au.id.tmm.countstv.counting.countsteps.CountContext.DuringDistributions
 import au.id.tmm.countstv.counting.countsteps.{CountContext, InitialAllocationComputation}
 import au.id.tmm.countstv.counting.{CountActionInterpreter, PaperBundle, QuotaComputation, RootPaperBundle}
+import au.id.tmm.countstv.model.CountParams
 import au.id.tmm.countstv.model.countsteps.DistributionPhaseCountStep
 import au.id.tmm.countstv.model.preferences.PreferenceTree
 import au.id.tmm.countstv.model.preferences.PreferenceTree.RootPreferenceTree
@@ -29,6 +30,8 @@ case class CountFixture(
                        )(implicit
                          roundingRules: RoundingRules,
                        ) {
+
+  val countParams: CountParams[Fruit] = CountParams(candidates, ineligibleCandidates, numVacancies, roundingRules)
 
   val numPapers: NumPapers = NumPapers(allBallots.size)
 
