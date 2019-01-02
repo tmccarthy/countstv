@@ -63,6 +63,7 @@ class PaperBundleSpec extends ImprovedFlatSpec {
       transferValue = TransferValue(0.5d),
       origin = PaperBundle.Origin.InitialAllocation,
       exhaustedAtCount = Count(1),
+      originatingNode = testPreferenceTree.childFor(Fruit.Banana).get,
     )
 
     assert(paperBundle.assignedCandidate === None)
@@ -187,6 +188,7 @@ class PaperBundleSpec extends ImprovedFlatSpec {
         transferValue = TransferValue(1d),
         origin = origin,
         exhaustedAtCount = Count(2),
+        originatingNode = originalBundle.preferenceTreeNode,
       ),
     )
 
@@ -241,6 +243,7 @@ class PaperBundleSpec extends ImprovedFlatSpec {
       transferValue = TransferValue(1d),
       origin = IneligibleCandidate(Banana),
       exhaustedAtCount = Count(1),
+      originatingNode = testPreferenceTree.childFor(Fruit.Banana).get,
     )
 
     val origin: PaperBundle.Origin[Fruit] =

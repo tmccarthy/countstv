@@ -83,11 +83,12 @@ private[counting] final case class AssignedPaperBundle[C](
   * representation is just number of papers and a transfer value.
   */
 private[counting] final case class ExhaustedPaperBundle[C](
-                                          numPapers: NumPapers,
-                                          transferValue: TransferValue,
-                                          origin: Origin[C],
-                                          exhaustedAtCount: Count,
-                                        ) extends PaperBundle[C] {
+                                                            numPapers: NumPapers,
+                                                            transferValue: TransferValue,
+                                                            origin: Origin[C],
+                                                            exhaustedAtCount: Count,
+                                                            originatingNode: PreferenceTree[C],
+                                                          ) extends PaperBundle[C] {
   override def assignedCandidate: Option[C] = None
 }
 
@@ -150,6 +151,11 @@ private[counting] object PaperBundle {
           transferValue = distributedTransferValue,
           origin = origin,
           exhaustedAtCount = count,
+          originatingNode = bundle match {
+            case RootPaperBundle(preferenceTree) => preferenceTree
+            case AssignedPaperBundle(_, preferenceTreeNode, _) => preferenceTreeNode
+            case ExhaustedPaperBundle(_, _, _, _, originatingNode) => originatingNode
+          },
         ))
       } else {
         None

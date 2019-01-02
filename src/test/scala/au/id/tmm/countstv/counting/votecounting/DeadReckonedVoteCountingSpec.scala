@@ -69,6 +69,7 @@ class DeadReckonedVoteCountingSpec extends ImprovedFlatSpec {
         TransferValue(0.5d),
         PaperBundle.Origin.ElectedCandidate(Apple, TransferValue(0.5d), Count(2)),
         exhaustedAtCount = Count(1),
+        originatingNode = preferenceTree.childFor(Apple).get,
       )
     )
 
