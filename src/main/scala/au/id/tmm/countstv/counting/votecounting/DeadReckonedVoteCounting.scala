@@ -71,7 +71,7 @@ object DeadReckonedVoteCounting {
         perCandidate = voteCounts.perCandidate.mapValues { voteCount =>
           if (voteCount.numVotes < NumVotes(0)) voteCount.copy(numVotes = NumVotes(0)) else voteCount
         },
-        exhausted = voteCounts.exhausted.copy(numVotes = NumVotes(0)),
+        exhausted = if (voteCounts.exhausted.numVotes < NumVotes(0)) voteCounts.exhausted.copy(numVotes = NumVotes(0)) else voteCounts.exhausted,
       )
     } else {
       voteCounts
