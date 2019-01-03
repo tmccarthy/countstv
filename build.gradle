@@ -114,7 +114,7 @@ scoverage {
 }
 
 checkScoverage {
-    minimumRate = 0.97
+    minimumRate = 0.96
 }
 
 check.dependsOn(checkScoverage)
