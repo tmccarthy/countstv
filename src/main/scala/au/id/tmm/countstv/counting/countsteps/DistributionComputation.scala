@@ -219,7 +219,32 @@ object DistributionComputation {
       transferValue = transferValue,
     )
 
-    if (bundlesToDistributeLater.nonEmpty) {
+    val proposedCountStep = DistributionCountStep(
+      count,
+      oldCandidateStatuses,
+      newVoteCounts,
+      distributionSource,
+    )
+
+    val proposedCountSteps = countContext.previousCountSteps.append(proposedCountStep)
+
+    val shortCircuitingNextAction = NextActionComputation.computeShortCircuitingNextAction(
+      countContext.numVacancies,
+      countContext.quota,
+      proposedCountSteps,
+    )
+
+    if (shortCircuitingNextAction.nonEmpty) {
+      shortCircuitingNextAction.get.map { case NewStatusesAndNextAction(newStatuses, nextAction) =>
+        val newCountStep = proposedCountStep.copy(candidateStatuses = newStatuses)
+
+        countContext.updated(
+          paperBundlesAfterDistribution,
+          newCountStep,
+          nextAction,
+        )
+      }
+    } else if (bundlesToDistributeLater.nonEmpty) {
 
       // Because we know what the the next count step will be (the continued distribution of these bundles) we can
       // handle candidate status changes ourselves.
@@ -265,15 +290,6 @@ object DistributionComputation {
           }
       }
     } else {
-      val proposedCountStep = DistributionCountStep(
-        count,
-        oldCandidateStatuses,
-        newVoteCounts,
-        distributionSource,
-      )
-
-      val proposedCountSteps = countContext.previousCountSteps.append(proposedCountStep)
-
       NextActionComputation.computeNextAction(countContext.numVacancies, countContext.quota, proposedCountSteps)
         .map { case NewStatusesAndNextAction(newStatuses, nextAction) =>
           val newCountStep = proposedCountStep.copy(candidateStatuses = newStatuses)
