@@ -8,11 +8,11 @@ import au.id.tmm.countstv.model.CandidateStatus._
 import au.id.tmm.countstv.model._
 import au.id.tmm.countstv.model.countsteps.DistributionCountStep
 import au.id.tmm.countstv.model.values._
-import au.id.tmm.utilities.testing.ImprovedFlatSpec
+import org.scalatest.FlatSpec
 
 import scala.collection.parallel.immutable.ParSet
 
-class DistributingPapersSpec extends ImprovedFlatSpec {
+class DistributingPapersSpec extends FlatSpec {
 
   "count step 2, when Watermelon is distributed and Strawberry is excluded" should "have the correct number of formal papers" in {
     val actualContext = CountContextFixtures.DuringDistributions.whereExcludedCandidateDistributed

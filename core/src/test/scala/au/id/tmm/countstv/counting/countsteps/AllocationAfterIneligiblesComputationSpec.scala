@@ -10,11 +10,11 @@ import au.id.tmm.countstv.model.CandidateStatus._
 import au.id.tmm.countstv.model.countsteps.AllocationAfterIneligibles
 import au.id.tmm.countstv.model.values.{Count, Ordinal, TransferValue}
 import au.id.tmm.countstv.model.{CandidateStatuses, CandidateVoteCounts, VoteCount}
-import au.id.tmm.utilities.testing.ImprovedFlatSpec
+import org.scalatest.FlatSpec
 
 import scala.collection.parallel.immutable.ParSet
 
-class AllocationAfterIneligiblesComputationSpec extends ImprovedFlatSpec {
+class AllocationAfterIneligiblesComputationSpec extends FlatSpec {
 
   "an allocation after ineligibles when there are no ineligible candidates" should "have the right paper bundles" in {
     val fixture = CountFixture.withFinalElection

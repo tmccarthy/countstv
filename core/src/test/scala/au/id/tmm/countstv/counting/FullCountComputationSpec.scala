@@ -7,9 +7,9 @@ import au.id.tmm.countstv.model.CandidateStatus._
 import au.id.tmm.countstv.model.values.{Count, Ordinal}
 import au.id.tmm.countstv.model.{CandidateStatuses, CompletedCount}
 import au.id.tmm.probabilitymeasure.ProbabilityMeasure
-import au.id.tmm.utilities.testing.ImprovedFlatSpec
+import org.scalatest.FlatSpec
 
-class FullCountComputationSpec extends ImprovedFlatSpec {
+class FullCountComputationSpec extends FlatSpec {
 
   private def runFullCountFor(countFixture: CountFixture): ProbabilityMeasure[CompletedCount[Fruit]] = {
     FullCountComputation.runCount(

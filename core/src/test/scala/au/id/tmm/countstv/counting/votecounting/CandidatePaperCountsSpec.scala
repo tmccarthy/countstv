@@ -5,9 +5,9 @@ import au.id.tmm.countstv.Fruit._
 import au.id.tmm.countstv.model.VoteCount
 import au.id.tmm.countstv.model.values.{NumPapers, NumVotes, TransferValue}
 import au.id.tmm.countstv.rules.RoundingRules
-import au.id.tmm.utilities.testing.ImprovedFlatSpec
+import org.scalatest.FlatSpec
 
-class CandidatePaperCountsSpec extends ImprovedFlatSpec {
+class CandidatePaperCountsSpec extends FlatSpec {
 
   private implicit val roundingRules: RoundingRules = RoundingRules.AEC
 

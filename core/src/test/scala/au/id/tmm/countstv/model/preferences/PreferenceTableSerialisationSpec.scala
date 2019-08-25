@@ -5,13 +5,12 @@ import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
 import au.id.tmm.countstv.model.preferences.PreferenceTableDeserialisation.Error._
-import au.id.tmm.utilities.encoding.EncodingUtils.StringConversions
-import au.id.tmm.utilities.testing.ImprovedFlatSpec
-import org.scalatest.Assertion
+import au.id.tmm.utilities.codec.binarycodecs._
+import org.scalatest.{Assertion, FlatSpec}
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
-class PreferenceTableSerialisationSpec extends ImprovedFlatSpec {
+class PreferenceTableSerialisationSpec extends FlatSpec {
 
   private val candidates: Set[Fruit] = Set(Apple, Banana, Strawberry, Pear)
 
@@ -123,7 +122,7 @@ class PreferenceTableSerialisationSpec extends ImprovedFlatSpec {
       bytes.updated(0, 0.toByte)
     }
 
-    assert(error === MagicWordMissing("00E1A1DE".fromHex.toVector, "ADE1A1DE".fromHex.toVector, 4))
+    assert(error === MagicWordMissing(hex"00E1A1DE", hex"ADE1A1DE", 4))
     assert(error.getMessage === "The magic word was missing from the start of the preference tree stream. Expected " +
       "ade1a1de, found 00e1a1de at byte 4")
   }
@@ -154,8 +153,8 @@ class PreferenceTableSerialisationSpec extends ImprovedFlatSpec {
 
     assert(error ===
       DigestMismatch(
-        actualDigest = actualDigest.fromHex.toVector,
-        expectedDigest = expectedDigest.fromHex.toVector,
+        actualDigest = actualDigest.parseHexUnsafe,
+        expectedDigest = expectedDigest.parseHexUnsafe,
         algorithm = "SHA-512",
         streamPosition = 292,
       )

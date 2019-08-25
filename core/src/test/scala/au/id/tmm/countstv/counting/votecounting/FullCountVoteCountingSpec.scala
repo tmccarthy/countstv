@@ -6,11 +6,11 @@ import au.id.tmm.countstv.counting.{AssignedPaperBundle, ExhaustedPaperBundle, P
 import au.id.tmm.countstv.model._
 import au.id.tmm.countstv.model.preferences.PreferenceTree
 import au.id.tmm.countstv.model.values._
-import au.id.tmm.utilities.testing.ImprovedFlatSpec
+import org.scalatest.FlatSpec
 
 import scala.collection.parallel.immutable.ParSet
 
-class FullCountVoteCountingSpec extends ImprovedFlatSpec {
+class FullCountVoteCountingSpec extends FlatSpec {
 
   private val testPreferenceTree = PreferenceTree.from[Fruit](Set(Apple, Pear, Banana, Strawberry), numBallotsHint = 3)(List(
     Vector(Apple, Pear, Banana, Strawberry),

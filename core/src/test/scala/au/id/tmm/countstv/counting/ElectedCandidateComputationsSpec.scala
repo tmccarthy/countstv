@@ -6,12 +6,11 @@ import au.id.tmm.countstv.model.CandidateStatus._
 import au.id.tmm.countstv.model.values.{Count, NumPapers, Ordinal}
 import au.id.tmm.countstv.model.{CandidateStatuses, CandidateVoteCounts, VoteCount}
 import au.id.tmm.countstv.rules.RoundingRules
-import au.id.tmm.utilities.collection.DupelessSeq
 import au.id.tmm.probabilitymeasure.ProbabilityMeasure
-import au.id.tmm.utilities.testing.ImprovedFlatSpec
-import org.scalatest.Assertion
+import au.id.tmm.utilities.collection.DupelessSeq
+import org.scalatest.{Assertion, FlatSpec}
 
-class ElectedCandidateComputationsSpec extends ImprovedFlatSpec {
+class ElectedCandidateComputationsSpec extends FlatSpec {
 
   private implicit val roundingRules: RoundingRules = RoundingRules.AEC
 

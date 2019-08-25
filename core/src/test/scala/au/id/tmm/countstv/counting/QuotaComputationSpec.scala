@@ -2,9 +2,9 @@ package au.id.tmm.countstv.counting
 
 import au.id.tmm.countstv.model.values.NumPapers
 import au.id.tmm.countstv.rules.RoundingRules
-import au.id.tmm.utilities.testing.ImprovedFlatSpec
+import org.scalatest.FlatSpec
 
-class QuotaComputationSpec extends ImprovedFlatSpec {
+class QuotaComputationSpec extends FlatSpec {
 
   private def testQuota(numVacancies: Int, numBallots: Long, expectedQuota: Double, round: Boolean): Unit = {
     s"the ${if (round) "rounded" else "unrounded"} quota with $numBallots ballots for $numVacancies vacancies" should s"be $expectedQuota" in {

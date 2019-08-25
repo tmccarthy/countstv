@@ -1,8 +1,8 @@
 package au.id.tmm.countstv.model
 
-import au.id.tmm.utilities.testing.ImprovedFlatSpec
+import org.scalatest.FlatSpec
 
-class VoteCountSpec extends ImprovedFlatSpec {
+class VoteCountSpec extends FlatSpec {
   "a vote count" can "be added to another" in {
     assert(VoteCount(1) + VoteCount(2) === VoteCount(3))
   }

@@ -1,8 +1,8 @@
 package au.id.tmm.countstv.model.values
 
-import au.id.tmm.utilities.testing.ImprovedFlatSpec
+import org.scalatest.FlatSpec
 
-class OrdinalSpec extends ImprovedFlatSpec {
+class OrdinalSpec extends FlatSpec {
 
   "an ordinal" can "be compared to another" in {
     assert(Ordinal(5) > Ordinal(4))

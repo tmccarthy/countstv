@@ -5,9 +5,9 @@ import au.id.tmm.countstv.Fruit._
 import au.id.tmm.countstv.model.CandidateStatus._
 import au.id.tmm.countstv.model.values.{Count, Ordinal}
 import au.id.tmm.utilities.collection.DupelessSeq
-import au.id.tmm.utilities.testing.ImprovedFlatSpec
+import org.scalatest.FlatSpec
 
-class CandidateStatusesSpec extends ImprovedFlatSpec {
+class CandidateStatusesSpec extends FlatSpec {
 
   private val testCandidateStatuses: CandidateStatuses[Fruit] = CandidateStatuses(
     Apple -> Elected(Ordinal.first, electedAtCount = Count(1)),

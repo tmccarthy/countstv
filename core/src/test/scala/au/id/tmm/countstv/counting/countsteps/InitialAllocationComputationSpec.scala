@@ -9,11 +9,11 @@ import au.id.tmm.countstv.model._
 import au.id.tmm.countstv.model.countsteps.{CountSteps, InitialAllocation}
 import au.id.tmm.countstv.model.values.{NumPapers, TransferValue}
 import au.id.tmm.countstv.rules.RoundingRules
-import au.id.tmm.utilities.testing.ImprovedFlatSpec
+import org.scalatest.FlatSpec
 
 import scala.collection.parallel.immutable.ParSet
 
-class InitialAllocationComputationSpec extends ImprovedFlatSpec {
+class InitialAllocationComputationSpec extends FlatSpec {
 
   private implicit val roundingRules: RoundingRules = RoundingRules.AEC
 

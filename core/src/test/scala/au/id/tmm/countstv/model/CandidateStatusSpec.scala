@@ -1,9 +1,9 @@
 package au.id.tmm.countstv.model
 
 import au.id.tmm.countstv.model.values.{Count, Ordinal}
-import au.id.tmm.utilities.testing.ImprovedFlatSpec
+import org.scalatest.FlatSpec
 
-class CandidateStatusSpec extends ImprovedFlatSpec {
+class CandidateStatusSpec extends FlatSpec {
 
   "a candidate status" can "be 'remaining'" in {
     assert(CandidateStatus.Remaining !== null)

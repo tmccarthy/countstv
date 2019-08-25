@@ -6,9 +6,9 @@ import au.id.tmm.countstv.counting.votecounting.CandidateVoteCountsSansRoundingE
 import au.id.tmm.countstv.model.CandidateStatus._
 import au.id.tmm.countstv.model.values.Count
 import au.id.tmm.countstv.model.{CandidateStatuses, CandidateVoteCounts, VoteCount}
-import au.id.tmm.utilities.testing.ImprovedFlatSpec
+import org.scalatest.FlatSpec
 
-class AllocationAfterIneligiblesSpec extends ImprovedFlatSpec {
+class AllocationAfterIneligiblesSpec extends FlatSpec {
 
   private val testAllocationAfterIneligibles = AllocationAfterIneligibles(
     candidateStatuses = CandidateStatuses[Fruit](

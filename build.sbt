@@ -27,6 +27,7 @@ lazy val core = project
     libraryDependencies += "au.id.tmm.tmm-utils" %% "tmm-utils-codec" % tmmUtilsVersion,
     libraryDependencies += "org.slf4j" % "slf4j-simple" % "1.7.25",
     libraryDependencies += "com.google.guava" % "guava" % "28.0-jre",
+    libraryDependencies += "au.id.tmm.tmm-utils" %% "tmm-utils-testing" % tmmUtilsVersion % Test,
   )
 
 lazy val circe = project

@@ -1,8 +1,8 @@
 package au.id.tmm.countstv.model.values
 
-import au.id.tmm.utilities.testing.ImprovedFlatSpec
+import org.scalatest.FlatSpec
 
-class CountSpec extends ImprovedFlatSpec {
+class CountSpec extends FlatSpec {
 
   "a count number" can "be incremented" in {
     assert(Count(0).increment === Count(1))

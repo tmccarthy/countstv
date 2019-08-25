@@ -13,10 +13,10 @@ import au.id.tmm.countstv.model.VoteCount
 import au.id.tmm.countstv.model.countsteps.DistributionCountStep
 import au.id.tmm.countstv.model.values._
 import au.id.tmm.utilities.collection.DupelessSeq
-import au.id.tmm.utilities.testing.ImprovedFlatSpec
+import org.scalatest.FlatSpec
 import org.scalatest.Assertion
 
-class CountStepRendererSpec extends ImprovedFlatSpec {
+class CountStepRendererSpec extends FlatSpec {
 
   "the count step renderer" should "render an initial count step" in {
     testRenderedStep(

@@ -1,8 +1,8 @@
 package au.id.tmm.countstv.model.values
 
-import au.id.tmm.utilities.testing.ImprovedFlatSpec
+import org.scalatest.FlatSpec
 
-class NumVotesSpec extends ImprovedFlatSpec {
+class NumVotesSpec extends FlatSpec {
 
   "a number of votes" can "be built from a rounded down float" in {
     assert(NumVotes.byRoundingDown(42.42d) === NumVotes(42))

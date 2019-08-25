@@ -8,11 +8,11 @@ import au.id.tmm.countstv.model._
 import au.id.tmm.countstv.model.preferences.PreferenceTree
 import au.id.tmm.countstv.model.values._
 import au.id.tmm.countstv.rules.RoundingRules
-import au.id.tmm.utilities.testing.ImprovedFlatSpec
+import org.scalatest.FlatSpec
 
 import scala.collection.parallel.immutable.ParSet
 
-class DeadReckonedVoteCountingSpec extends ImprovedFlatSpec {
+class DeadReckonedVoteCountingSpec extends FlatSpec {
 
   "a dead-reckoned count" should "be computed correctly" in {
     implicit val roundingRules: RoundingRules = RoundingRules.AEC

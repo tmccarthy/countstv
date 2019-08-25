@@ -4,9 +4,9 @@ import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
 import au.id.tmm.countstv.model.values.{NumPapers, NumVotes}
 import au.id.tmm.countstv.model.{CandidateVoteCounts, VoteCount}
-import au.id.tmm.utilities.testing.ImprovedFlatSpec
+import org.scalatest.FlatSpec
 
-class CandidateVoteCountsSansRoundingErrorSpec extends ImprovedFlatSpec {
+class CandidateVoteCountsSansRoundingErrorSpec extends FlatSpec {
 
   private val testVoteCounts1 = CandidateVoteCountsSansRoundingError[Fruit](
     perCandidate = Map(

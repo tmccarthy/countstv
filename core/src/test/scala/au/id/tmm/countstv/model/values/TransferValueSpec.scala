@@ -1,8 +1,8 @@
 package au.id.tmm.countstv.model.values
 
-import au.id.tmm.utilities.testing.ImprovedFlatSpec
+import org.scalatest.FlatSpec
 
-class TransferValueSpec extends ImprovedFlatSpec {
+class TransferValueSpec extends FlatSpec {
 
   "a transfer value" can "be compared to another" in {
     assert(TransferValue(0.5) > TransferValue(0.4))

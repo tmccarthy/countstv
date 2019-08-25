@@ -3,9 +3,9 @@ package au.id.tmm.countstv.model.preferences
 import au.id.tmm.countstv.Fruit._
 import au.id.tmm.countstv.model.values.NumPapers
 import au.id.tmm.countstv.{Fruit, NormalisedBallot}
-import au.id.tmm.utilities.testing.ImprovedFlatSpec
+import org.scalatest.FlatSpec
 
-class PreferenceTreeSpec extends ImprovedFlatSpec {
+class PreferenceTreeSpec extends FlatSpec {
 
   private val ballotWith4Preferences: NormalisedBallot[Fruit] = Vector(
     Banana,

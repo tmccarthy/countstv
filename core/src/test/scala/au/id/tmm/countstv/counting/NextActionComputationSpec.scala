@@ -10,9 +10,9 @@ import au.id.tmm.countstv.model.CandidateStatuses
 import au.id.tmm.countstv.model.countsteps.{CountSteps, DistributionCountStep, ElectedNoSurplusCountStep, ExcludedNoVotesCountStep}
 import au.id.tmm.countstv.model.values.{Count, Ordinal}
 import au.id.tmm.probabilitymeasure.ProbabilityMeasure
-import au.id.tmm.utilities.testing.ImprovedFlatSpec
+import org.scalatest.FlatSpec
 
-class NextActionComputationSpec extends ImprovedFlatSpec {
+class NextActionComputationSpec extends FlatSpec {
 
   /**
     * Returns the countSteps in the given context, but with the candidate statuses not updated in the last count step.

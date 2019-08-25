@@ -6,9 +6,9 @@ import au.id.tmm.countstv.counting.votecounting.CandidateVoteCountsSansRoundingE
 import au.id.tmm.countstv.model.CandidateStatus._
 import au.id.tmm.countstv.model._
 import au.id.tmm.countstv.model.values._
-import au.id.tmm.utilities.testing.ImprovedFlatSpec
+import org.scalatest.FlatSpec
 
-class CountStepsSpec extends ImprovedFlatSpec {
+class CountStepsSpec extends FlatSpec {
 
   private val testInitialAllocation = InitialAllocation(
     candidateStatuses = CandidateStatuses[Fruit](
@@ -87,7 +87,7 @@ class CountStepsSpec extends ImprovedFlatSpec {
   private val testCountStepsAfterIneligibleHandling: CountSteps.AfterIneligibleHandling[Fruit] = CountSteps.AfterIneligibleHandling(testInitialAllocation, testAllocationAfterIneligibles)
   private val testCountStepsDuringDistributions: CountSteps.DuringDistributions[Fruit] = CountSteps.DuringDistributions(testInitialAllocation, testAllocationAfterIneligibles, List(testDistributionCountStep))
 
-  behaviour of "an initial CountSteps instance"
+  behavior of "an initial CountSteps instance"
 
   standardTests(testCountStepsInitial)(
     expectedHead = testInitialAllocation,
@@ -131,7 +131,7 @@ class CountStepsSpec extends ImprovedFlatSpec {
     assert(testCountStepsInitial.toString === expectedToString)
   }
 
-  behaviour of "a CountSteps instance after ineligible handling"
+  behavior of "a CountSteps instance after ineligible handling"
 
   standardTests(testCountStepsAfterIneligibleHandling)(
     expectedHead = testInitialAllocation,
@@ -162,7 +162,7 @@ class CountStepsSpec extends ImprovedFlatSpec {
     assert(withAppendedDistributionStep === CountSteps.DuringDistributions(testInitialAllocation, testAllocationAfterIneligibles, List(testDistributionCountStep)))
   }
 
-  behaviour of "a CountSteps instance during distribution steps"
+  behavior of "a CountSteps instance during distribution steps"
 
   standardTests(testCountStepsDuringDistributions)(
     expectedHead = testInitialAllocation,

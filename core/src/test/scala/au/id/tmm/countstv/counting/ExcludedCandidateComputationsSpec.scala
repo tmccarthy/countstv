@@ -6,10 +6,10 @@ import au.id.tmm.countstv.model.CandidateStatus._
 import au.id.tmm.countstv.model.values.{Count, Ordinal}
 import au.id.tmm.countstv.model.{CandidateStatuses, CandidateVoteCounts, VoteCount}
 import au.id.tmm.probabilitymeasure.ProbabilityMeasure
-import au.id.tmm.utilities.testing.ImprovedFlatSpec
+import org.scalatest.FlatSpec
 import org.scalatest.Assertion
 
-class ExcludedCandidateComputationsSpec extends ImprovedFlatSpec {
+class ExcludedCandidateComputationsSpec extends FlatSpec {
 
   private def testComputeExcluded(
                                    candidateStatuses: CandidateStatuses[Fruit],

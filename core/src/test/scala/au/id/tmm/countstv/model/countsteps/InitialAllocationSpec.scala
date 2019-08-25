@@ -4,9 +4,9 @@ import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
 import au.id.tmm.countstv.model.values.{Count, NumPapers, NumVotes, Ordinal}
 import au.id.tmm.countstv.model.{CandidateStatus, CandidateStatuses, CandidateVoteCounts, VoteCount}
-import au.id.tmm.utilities.testing.ImprovedFlatSpec
+import org.scalatest.FlatSpec
 
-class InitialAllocationSpec extends ImprovedFlatSpec {
+class InitialAllocationSpec extends FlatSpec {
 
   private val testInitialAllocation = InitialAllocation(
     candidateStatuses = CandidateStatuses[Fruit](

@@ -7,9 +7,9 @@ import au.id.tmm.countstv.model.CandidateStatus._
 import au.id.tmm.countstv.model.countsteps.{AllocationAfterIneligibles, DistributionCountStep}
 import au.id.tmm.countstv.model.values._
 import au.id.tmm.countstv.model.{CandidateDistributionReason, CandidateStatuses, CandidateVoteCounts, VoteCount}
-import au.id.tmm.utilities.testing.ImprovedFlatSpec
+import org.scalatest.FlatSpec
 
-class FinalElectionComputationSpec extends ImprovedFlatSpec {
+class FinalElectionComputationSpec extends FlatSpec {
 
   "count 7, where Raspberry is distributed and Pear is elected" should "have produced the correct count step" in {
     val actualCountStep =

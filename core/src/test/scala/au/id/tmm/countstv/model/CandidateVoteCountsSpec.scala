@@ -3,9 +3,9 @@ package au.id.tmm.countstv.model
 import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
 import au.id.tmm.countstv.model.values.{NumPapers, NumVotes}
-import au.id.tmm.utilities.testing.ImprovedFlatSpec
+import org.scalatest.FlatSpec
 
-class CandidateVoteCountsSpec extends ImprovedFlatSpec {
+class CandidateVoteCountsSpec extends FlatSpec {
 
   private val testCandidateVoteCounts = CandidateVoteCounts[Fruit](
     perCandidate = Map(

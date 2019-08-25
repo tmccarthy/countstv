@@ -7,9 +7,9 @@ import au.id.tmm.countstv.model.CandidateStatus._
 import au.id.tmm.countstv.model.countsteps.{ElectedNoSurplusCountStep, ExcludedNoVotesCountStep}
 import au.id.tmm.countstv.model.values.{Count, NumPapers, NumVotes, Ordinal}
 import au.id.tmm.countstv.model.{CandidateStatuses, CandidateVoteCounts, VoteCount}
-import au.id.tmm.utilities.testing.ImprovedFlatSpec
+import org.scalatest.FlatSpec
 
-class SpecialCaseDistributingPapersSpec extends ImprovedFlatSpec {
+class SpecialCaseDistributingPapersSpec extends FlatSpec {
 
   "an election where a candidate has zero votes" should "exclude that candidate in a step without distributing anything" in {
 

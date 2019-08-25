@@ -6,10 +6,10 @@ import au.id.tmm.countstv.counting.PaperBundle.Origin.IneligibleCandidate
 import au.id.tmm.countstv.model.preferences.PreferenceTree
 import au.id.tmm.countstv.model.values._
 import au.id.tmm.countstv.model.{CandidateStatus, CandidateStatuses}
-import au.id.tmm.utilities.testing.ImprovedFlatSpec
+import org.scalatest.FlatSpec
 import org.scalatest.Assertion
 
-class PaperBundleSpec extends ImprovedFlatSpec {
+class PaperBundleSpec extends FlatSpec {
 
   private val testPreferenceTree = PreferenceTree.from[Fruit](Set(Apple, Pear, Banana, Strawberry), numBallotsHint = 3)(List(
     Vector(Apple, Pear, Banana, Strawberry),

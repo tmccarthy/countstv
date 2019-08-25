@@ -3,26 +3,30 @@ package au.id.tmm.countstv.normalisation
 import au.id.tmm.countstv.Fruit
 import au.id.tmm.countstv.Fruit._
 import au.id.tmm.countstv.normalisation.BallotNormalisation.Result
-import au.id.tmm.utilities.testing.ImprovedFlatSpec
+import org.scalatest.FlatSpec
 
-class BallotNormalisationSpec extends ImprovedFlatSpec {
+import scala.collection.immutable.ArraySeq
+
+class BallotNormalisationSpec extends FlatSpec {
 
   private def UnNormalisedBallot(preferences: (Fruit, Any)*): UnNormalisedBallot[Fruit] =
     preferences
       .toMap
+      .view
       .mapValues {
         case i: Int => Preference.Numbered(i)
         case "✓" => Preference.Tick
         case "x" => Preference.Cross
       }
+      .toMap
 
   private def testRule(
-                        rule: BallotNormalisationRule,
+    rule: BallotNormalisationRule,
 
-                        passingBallots: List[(String, (UnNormalisedBallot[Fruit], Vector[Fruit]))],
-                        violatingBallots: List[(String, (UnNormalisedBallot[Fruit], Vector[Fruit]))],
-                      ): Unit = {
-    behaviour of rule.toString
+    passingBallots: List[(String, (UnNormalisedBallot[Fruit], ArraySeq[Fruit]))],
+    violatingBallots: List[(String, (UnNormalisedBallot[Fruit], ArraySeq[Fruit]))],
+  ): Unit = {
+    behavior of rule.toString
 
     val rules = BallotNormalisationRules(Set(rule))
 
@@ -65,24 +69,24 @@ class BallotNormalisationSpec extends ImprovedFlatSpec {
     BallotNormalisationRule.MinimumPreferences(3),
     passingBallots = List(
       "a ballot with 5 preferences" -> (
-        UnNormalisedBallot(Apple -> 1, Banana -> 2, Mango -> 3, Peach -> 4, Pear -> 5) -> Vector(Apple, Banana, Mango, Peach, Pear),
+        UnNormalisedBallot(Apple -> 1, Banana -> 2, Mango -> 3, Peach -> 4, Pear -> 5) -> ArraySeq(Apple, Banana, Mango, Peach, Pear),
         ),
       "a ballot that misses a number after the third preference" -> (
-        UnNormalisedBallot(Apple -> 1, Banana -> 2, Mango -> 3, Peach -> 4, Pear -> 6) -> Vector(Apple, Banana, Mango, Peach),
+        UnNormalisedBallot(Apple -> 1, Banana -> 2, Mango -> 3, Peach -> 4, Pear -> 6) -> ArraySeq(Apple, Banana, Mango, Peach),
         ),
       "a ballot that repeats a number after the third preference" -> (
-        UnNormalisedBallot(Apple -> 1, Banana -> 2, Mango -> 3, Peach -> 4, Pear -> 4, Raspberry -> 5) -> Vector(Apple, Banana, Mango),
+        UnNormalisedBallot(Apple -> 1, Banana -> 2, Mango -> 3, Peach -> 4, Pear -> 4, Raspberry -> 5) -> ArraySeq(Apple, Banana, Mango),
         ),
     ),
     violatingBallots = List(
       "a ballot with 2 preferences" -> (
-        UnNormalisedBallot(Apple -> 1, Banana -> 2) -> Vector(Apple, Banana),
+        UnNormalisedBallot(Apple -> 1, Banana -> 2) -> ArraySeq(Apple, Banana),
         ),
       "a ballot that misses a number before the third preference" -> (
-        UnNormalisedBallot(Apple -> 1, Banana -> 2, Mango -> 4, Peach -> 5) -> Vector(Apple, Banana),
+        UnNormalisedBallot(Apple -> 1, Banana -> 2, Mango -> 4, Peach -> 5) -> ArraySeq(Apple, Banana),
         ),
       "a ballot that repeats a number before the third preference" -> (
-        UnNormalisedBallot(Apple -> 1, Banana -> 2, Mango -> 3, Peach -> 3, Pear -> 4) -> Vector(Apple, Banana),
+        UnNormalisedBallot(Apple -> 1, Banana -> 2, Mango -> 3, Peach -> 3, Pear -> 4) -> ArraySeq(Apple, Banana),
         ),
     )
   )
@@ -91,12 +95,12 @@ class BallotNormalisationSpec extends ImprovedFlatSpec {
     BallotNormalisationRule.TicksForbidden,
     passingBallots = List(
       "a ballot with 5 preferences" -> (
-        UnNormalisedBallot(Apple -> 1, Banana -> 2, Mango -> 3, Peach -> 4, Pear -> 5) -> Vector(Apple, Banana, Mango, Peach, Pear),
+        UnNormalisedBallot(Apple -> 1, Banana -> 2, Mango -> 3, Peach -> 4, Pear -> 5) -> ArraySeq(Apple, Banana, Mango, Peach, Pear),
         ),
     ),
     violatingBallots = List(
       "a ballot with a tick" -> (
-        UnNormalisedBallot(Apple -> "✓", Banana -> 2) -> Vector(Apple, Banana),
+        UnNormalisedBallot(Apple -> "✓", Banana -> 2) -> ArraySeq(Apple, Banana),
         ),
     )
   )
@@ -105,12 +109,12 @@ class BallotNormalisationSpec extends ImprovedFlatSpec {
     BallotNormalisationRule.CrossesForbidden,
     passingBallots = List(
       "a ballot with 5 preferences" -> (
-        UnNormalisedBallot(Apple -> 1, Banana -> 2, Mango -> 3, Peach -> 4, Pear -> 5) -> Vector(Apple, Banana, Mango, Peach, Pear),
+        UnNormalisedBallot(Apple -> 1, Banana -> 2, Mango -> 3, Peach -> 4, Pear -> 5) -> ArraySeq(Apple, Banana, Mango, Peach, Pear),
         ),
     ),
     violatingBallots = List(
       "a ballot with a tick" -> (
-        UnNormalisedBallot(Apple -> "x", Banana -> 2) -> Vector(Apple, Banana),
+        UnNormalisedBallot(Apple -> "x", Banana -> 2) -> ArraySeq(Apple, Banana),
         ),
     )
   )
@@ -119,16 +123,16 @@ class BallotNormalisationSpec extends ImprovedFlatSpec {
     BallotNormalisationRule.CountingErrorsForbidden,
     passingBallots = List(
       "a ballot with 5 preferences" -> (
-        UnNormalisedBallot(Apple -> 1, Banana -> 2, Mango -> 3, Peach -> 4, Pear -> 5) -> Vector(Apple, Banana, Mango, Peach, Pear),
+        UnNormalisedBallot(Apple -> 1, Banana -> 2, Mango -> 3, Peach -> 4, Pear -> 5) -> ArraySeq(Apple, Banana, Mango, Peach, Pear),
         ),
     ),
     violatingBallots = List(
       "a ballot that misses a number" -> (
-        UnNormalisedBallot(Apple -> 1, Banana -> 2, Mango -> 4, Peach -> 5) -> Vector(Apple, Banana),
-      ),
+        UnNormalisedBallot(Apple -> 1, Banana -> 2, Mango -> 4, Peach -> 5) -> ArraySeq(Apple, Banana),
+        ),
       "a ballot that repeats a number" -> (
-        UnNormalisedBallot(Apple -> 1, Banana -> 2, Mango -> 3, Peach -> 3, Pear -> 4) -> Vector(Apple, Banana),
-      ),
+        UnNormalisedBallot(Apple -> 1, Banana -> 2, Mango -> 3, Peach -> 3, Pear -> 4) -> ArraySeq(Apple, Banana),
+        ),
     )
   )
 
