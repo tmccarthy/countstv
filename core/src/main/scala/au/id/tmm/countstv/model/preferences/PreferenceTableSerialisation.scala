@@ -5,11 +5,13 @@ import java.nio.ByteBuffer
 import java.security.{DigestOutputStream, MessageDigest}
 import java.util.zip.GZIPOutputStream
 
+import scala.collection.immutable.ArraySeq
+
 private[model] object PreferenceTableSerialisation {
 
   def serialiseAndCompress[C](preferenceTable: PreferenceTable[C], rawOutputStream: OutputStream): Unit =
     try {
-      val outputStream = new GZIPOutputStream(rawOutputStream)
+      val outputStream = new GZIPOutputStream(rawOutputStream, true)
       serialise(preferenceTable, outputStream)
     } finally {
       rawOutputStream.close()
@@ -23,10 +25,11 @@ private[model] object PreferenceTableSerialisation {
     writeBytes(outputStream, magicWord)
 
     writeInts(outputStream,
-      Vector() :+
-      serialisationVerson :+
-      preferenceTable.getTotalNumPapers :+
-      preferenceTable.getCandidateLookup.length
+      ArraySeq(
+        serialisationVerson,
+        preferenceTable.getTotalNumPapers,
+        preferenceTable.getCandidateLookup.length,
+      ),
     )
 
     writeInt(outputStream, preferenceTable.getLength)
@@ -34,7 +37,7 @@ private[model] object PreferenceTableSerialisation {
     for (i <- 0 until preferenceTable.getLength) {
       writeInt(outputStream, preferenceTable.getRowPaperCounts()(i))
       writeInt(outputStream, preferenceTable.getPreferenceArrays()(i).length)
-      writeShorts(outputStream, preferenceTable.getPreferenceArrays()(i))
+      writeShorts(outputStream, ArraySeq.unsafeWrapArray(preferenceTable.getPreferenceArrays()(i)))
     }
 
     val messageDigest = digest.digest()
@@ -43,9 +46,9 @@ private[model] object PreferenceTableSerialisation {
     outputStream.flush()
   }
 
-  private def writeInt(outputStream: OutputStream, int: Int): Unit = writeInts(outputStream, List(int))
+  private def writeInt(outputStream: OutputStream, int: Int): Unit = writeInts(outputStream, ArraySeq(int))
 
-  private def writeInts(outputStream: OutputStream, ints: Iterable[Int]): Unit = {
+  private def writeInts(outputStream: OutputStream, ints: ArraySeq[Int]): Unit = {
     val bytes = ByteBuffer.allocate(ints.size * Integer.BYTES)
 
     ints.foreach { int =>
@@ -56,7 +59,7 @@ private[model] object PreferenceTableSerialisation {
     outputStream.write(bytes.array())
   }
 
-  private def writeShorts(outputStream: OutputStream, shorts: Iterable[Short]): Unit = {
+  private def writeShorts(outputStream: OutputStream, shorts: ArraySeq[Short]): Unit = {
     val bytes = ByteBuffer.allocate(shorts.size * java.lang.Short.BYTES)
 
     shorts.foreach { short =>
@@ -67,8 +70,8 @@ private[model] object PreferenceTableSerialisation {
     outputStream.write(bytes.array())
   }
 
-  private def writeBytes(outputStream: OutputStream, bytes: Iterable[Byte]): Unit = {
-    outputStream.write(bytes.toArray)
+  private def writeBytes(outputStream: OutputStream, bytes: ArraySeq[Byte]): Unit = {
+    outputStream.write(bytes.unsafeArray.asInstanceOf[Array[Byte]])
   }
 
 }
