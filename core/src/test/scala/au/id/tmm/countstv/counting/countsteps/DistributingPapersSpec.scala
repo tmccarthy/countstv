@@ -108,7 +108,7 @@ class DistributingPapersSpec extends FlatSpec {
       AssignedPaperBundle(TransferValue(1), preferenceTree.childFor(Watermelon, Mango).get, PaperBundle.Origin.ExcludedCandidate(Watermelon, Count(2))),
     )
 
-    assert(actualPaperBundles === expectedPaperBundles)
+    assert(actualPaperBundles.seq === expectedPaperBundles)
   }
 
   it should "have produced the correct count step" in {

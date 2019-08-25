@@ -97,9 +97,9 @@ class PaperBundleSpec extends FlatSpec {
     val actualBundlesAfterDistribution = originalBundle.distributeToRemainingCandidates(origin, Count(1), candidateStatuses)
 
     if (expectBundleUnchanged) {
-      assert(actualBundlesAfterDistribution === Set[PaperBundle[Fruit]](originalBundle))
+      assert(actualBundlesAfterDistribution.seq === Set[PaperBundle[Fruit]](originalBundle))
     } else {
-      assert(actualBundlesAfterDistribution === expectedBundlesAfterDistribution)
+      assert(actualBundlesAfterDistribution.seq === expectedBundlesAfterDistribution)
     }
   }
 
@@ -192,7 +192,7 @@ class PaperBundleSpec extends FlatSpec {
       ),
     )
 
-    assert(actualBundlesAfterDistribution === expectedBundlesAfterDistribution)
+    assert(actualBundlesAfterDistribution.seq === expectedBundlesAfterDistribution)
   }
 
   it can "be distributed with a reduced transfer value" in {
@@ -227,7 +227,7 @@ class PaperBundleSpec extends FlatSpec {
       ),
     )
 
-    assert(actualBundlesAfterDistribution === expectedBundlesAfterDistribution)
+    assert(actualBundlesAfterDistribution.seq === expectedBundlesAfterDistribution)
   }
 
   "a bundle of exhausted papers" can "not be distributed further" in {
@@ -253,7 +253,7 @@ class PaperBundleSpec extends FlatSpec {
 
     val expectedBundlesAfterDistribution = Set[PaperBundle[Fruit]](originalBundle)
 
-    assert(actualBundlesAfterDistribution === expectedBundlesAfterDistribution)
+    assert(actualBundlesAfterDistribution.seq === expectedBundlesAfterDistribution)
   }
 
   "a root paper bundle" can "be constructed from a PreferenceTree" in {
@@ -306,7 +306,7 @@ class PaperBundleSpec extends FlatSpec {
       )
     )
 
-    assert(actualBundles === expectedBundles)
+    assert(actualBundles.seq === expectedBundles)
   }
 
   it can "distribute its papers regardless of their status" in {
@@ -326,6 +326,6 @@ class PaperBundleSpec extends FlatSpec {
       )
     )
 
-    assert(actualBundles === expectedBundles)
+    assert(actualBundles.seq === expectedBundles)
   }
 }
