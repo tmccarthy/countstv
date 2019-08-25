@@ -7,11 +7,13 @@ import java.util.zip.GZIPOutputStream
 
 private[model] object PreferenceTableSerialisation {
 
-  def serialiseAndCompress[C](preferenceTable: PreferenceTable[C], rawOutputStream: OutputStream): Unit = {
-    for (outputStream <- resource.managed(new GZIPOutputStream(rawOutputStream))) {
+  def serialiseAndCompress[C](preferenceTable: PreferenceTable[C], rawOutputStream: OutputStream): Unit =
+    try {
+      val outputStream = new GZIPOutputStream(rawOutputStream)
       serialise(preferenceTable, outputStream)
+    } finally {
+      rawOutputStream.close()
     }
-  }
 
   def serialise[C](preferenceTable: PreferenceTable[C], rawOutputStream: OutputStream): Unit = {
 

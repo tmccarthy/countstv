@@ -9,7 +9,7 @@ import au.id.tmm.countstv.model.CandidateStatus._
 import au.id.tmm.countstv.model.CandidateStatuses
 import au.id.tmm.countstv.model.countsteps.{CountSteps, DistributionCountStep, ElectedNoSurplusCountStep, ExcludedNoVotesCountStep}
 import au.id.tmm.countstv.model.values.{Count, Ordinal}
-import au.id.tmm.utilities.probabilities.ProbabilityMeasure
+import au.id.tmm.probabilitymeasure.ProbabilityMeasure
 import au.id.tmm.utilities.testing.ImprovedFlatSpec
 
 class NextActionComputationSpec extends ImprovedFlatSpec {

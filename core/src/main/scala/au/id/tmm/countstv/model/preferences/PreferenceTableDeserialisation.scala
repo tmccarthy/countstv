@@ -6,8 +6,10 @@ import java.security.{DigestInputStream, MessageDigest}
 import java.util.zip.GZIPInputStream
 
 import au.id.tmm.countstv.model.preferences.PreferenceTableDeserialisation.Error._
-import au.id.tmm.utilities.encoding.EncodingUtils.ArrayConversions
+import au.id.tmm.utilities.codec.binarycodecs._
 import com.google.common.io.CountingInputStream
+
+import scala.collection.immutable.ArraySeq
 
 private[model] object PreferenceTableDeserialisation {
 
@@ -26,7 +28,7 @@ private[model] object PreferenceTableDeserialisation {
       totalNumPapers <- inputStream.readInt()
       numCandidates <- readNumCandidates(allCandidates, inputStream)
       table <- readTable(inputStream)
-      actualDigest = digest.digest().toVector
+      actualDigest = ArraySeq.unsafeWrapArray(digest.digest())
       _ <- checkDigest(inputStream, actualDigest)
       _ <- confirmStreamComplete(inputStream)
     } yield {
@@ -95,8 +97,8 @@ private[model] object PreferenceTableDeserialisation {
     }
   }
 
-  private def checkDigest(inputStream: EndSafeInputStream, actualDigest: Vector[Byte]): Either[Error, Unit] = {
-    inputStream.readBytes(64).map(_.toVector).flatMap { expectedDigest =>
+  private def checkDigest(inputStream: EndSafeInputStream, actualDigest: ArraySeq[Byte]): Either[Error, Unit] = {
+    inputStream.readBytes(64).flatMap { expectedDigest =>
       if (expectedDigest != actualDigest) {
         Left(DigestMismatch(actualDigest, expectedDigest, messageDigestAlgorithm, inputStream.position()))
       } else {
@@ -141,13 +143,13 @@ private[model] object PreferenceTableDeserialisation {
       }
     }
 
-    def readBytes(length: Int): Either[PrematureStreamEnd, Vector[Byte]] = {
+    def readBytes(length: Int): Either[PrematureStreamEnd, ArraySeq[Byte]] = {
       val array = new Array[Byte](length)
 
       try {
         dataInputStream.readFully(array)
 
-        Right(array.toVector)
+        Right(ArraySeq.unsafeWrapArray(array))
       } catch {
         case _: EOFException => Left(PrematureStreamEnd(position()))
       }
@@ -161,9 +163,9 @@ private[model] object PreferenceTableDeserialisation {
   }
 
   object Error {
-    private def render(bytes: Vector[Byte]): String = bytes.toArray.toHex
+    private def render(bytes: ArraySeq[Byte]): String = bytes.toArray.asHexString
 
-    case class MagicWordMissing(actualMagicWord: Vector[Byte], expectedMagicWord: Vector[Byte], streamPosition: Long) extends Error {
+    case class MagicWordMissing(actualMagicWord: ArraySeq[Byte], expectedMagicWord: ArraySeq[Byte], streamPosition: Long) extends Error {
       override def message: String = s"The magic word was missing from the start of the preference tree stream. Expected ${render(expectedMagicWord)}, found ${render(actualMagicWord)}"
     }
 
@@ -176,7 +178,7 @@ private[model] object PreferenceTableDeserialisation {
         s"candidates were expected"
     }
 
-    case class DigestMismatch(actualDigest: Vector[Byte], expectedDigest: Vector[Byte], algorithm: String, streamPosition: Long) extends Error {
+    case class DigestMismatch(actualDigest: ArraySeq[Byte], expectedDigest: ArraySeq[Byte], algorithm: String, streamPosition: Long) extends Error {
       override def message: String = s"$messageDigestAlgorithm Integrity check failed. Expected ${render(expectedDigest)}, " +
         s"found ${render(actualDigest)}"
     }

@@ -2,6 +2,8 @@ package au.id.tmm.countstv.normalisation
 
 import au.id.tmm.countstv.normalisation.BallotNormalisationRule.MinimumPreferences
 
+import scala.collection.immutable.ArraySeq
+
 object BallotNormalisation {
 
   sealed trait Result[C]
@@ -9,31 +11,31 @@ object BallotNormalisation {
   object Result {
 
     final case class Formal[C](
-                                normalisedBallot: Vector[C],
-                              ) extends Result[C]
+      normalisedBallot: ArraySeq[C],
+    ) extends Result[C]
 
     final case class Saved[C](
-                               normalisedBallot: Vector[C],
-                               rulesViolated: Set[BallotNormalisationRule],
-                             ) extends Result[C]
+      normalisedBallot: ArraySeq[C],
+      rulesViolated: Set[BallotNormalisationRule],
+    ) extends Result[C]
 
     final case class Informal[C](
-                                  normalisedBallot: Vector[C],
-                                  optionalRulesViolated: Set[BallotNormalisationRule],
-                                  mandatoryRulesViolated: Set[BallotNormalisationRule],
-                                ) extends Result[C]
+      normalisedBallot: ArraySeq[C],
+      optionalRulesViolated: Set[BallotNormalisationRule],
+      mandatoryRulesViolated: Set[BallotNormalisationRule],
+    ) extends Result[C]
 
   }
 
   def normalise[C](
-                    mandatoryRules: BallotNormalisationRules,
-                    optionalRules: BallotNormalisationRules,
-                  )(ballot: UnNormalisedBallot[C]): Result[C] = {
+    mandatoryRules: BallotNormalisationRules,
+    optionalRules: BallotNormalisationRules,
+  )(ballot: UnNormalisedBallot[C]): Result[C] = {
 
     val potentialViolationsBuilder = Set.newBuilder[BallotNormalisationRule]
 
-    def orderAccordingToPreferences(preferences: Map[C, Preference]): Vector[Set[C]] = {
-      val returnedVector: scala.collection.mutable.Buffer[Set[C]] = Vector.fill(preferences.size)(Set.empty[C]).toBuffer
+    def orderAccordingToPreferences(preferences: Map[C, Preference]): ArraySeq[Set[C]] = {
+      val returnedArraySeq: scala.collection.mutable.Buffer[Set[C]] = ArraySeq.fill(preferences.size)(Set.empty[C]).toBuffer
 
       @inline def isWithinValidPreferencesRange(prefAsNumber: Int) = prefAsNumber <= preferences.size
       @inline def indexForPreference(prefAsNumber: Int) = prefAsNumber - 1
@@ -43,11 +45,11 @@ object BallotNormalisation {
 
         if (isWithinValidPreferencesRange(preferenceAsNumber)) {
           val index = indexForPreference(preferenceAsNumber)
-          returnedVector.update(index, returnedVector(index) + x)
+          returnedArraySeq.update(index, returnedArraySeq(index) + x)
         }
       }
 
-      returnedVector.toVector
+      returnedArraySeq.to(ArraySeq)
     }
 
     def preferenceToNumber(preference: Preference): Int = {
@@ -64,13 +66,13 @@ object BallotNormalisation {
       }
     }
 
-    def truncateAtCountError(rowsInPreferenceOrder: Vector[Set[C]]): Vector[C] = {
+    def truncateAtCountError(rowsInPreferenceOrder: ArraySeq[Set[C]]): ArraySeq[C] = {
       // As long as we have only one row with each preference, we haven't encountered a count error
       rowsInPreferenceOrder
-        .toStream
+        .to(LazyList)
         .takeWhile(_.size == 1)
         .map(_.head)
-        .toVector
+        .to(ArraySeq)
     }
 
     val rowsInPreferenceOrder = orderAccordingToPreferences(ballot)

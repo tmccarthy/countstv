@@ -23,7 +23,7 @@ private[votecounting] final case class CandidatePaperCounts[C](
 
   def *(transferValue: TransferValue)(implicit roundingRules: RoundingRules): CandidateVoteCountsSansRoundingError[C] =
     CandidateVoteCountsSansRoundingError(
-      perCandidate = perCandidate.mapValues(numPapers => VoteCount(numPapers, numPapers * transferValue)),
+      perCandidate = perCandidate.view.mapValues(numPapers => VoteCount(numPapers, numPapers * transferValue)).toMap,
       exhausted = VoteCount(exhausted, exhausted * transferValue),
     )
 

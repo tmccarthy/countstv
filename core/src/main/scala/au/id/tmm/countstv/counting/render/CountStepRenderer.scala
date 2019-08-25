@@ -72,7 +72,7 @@ object CountStepRenderer {
               }
               .sortBy { case (_, status) => status.ordinalElected }
               .map { case (candidate, _) => candidate }
-              .to[DupelessSeq]
+              .to(DupelessSeq)
 
             StepComment.FinalElection(finallyElectedCandidates)
           }

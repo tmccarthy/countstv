@@ -135,11 +135,11 @@ private[counting] object PaperBundle {
 
     val bundlesDistributedToCandidates = nodesForDistributedBundles
       .map(childNode => AssignedPaperBundle(distributedTransferValue, childNode, origin))
-      .to[ParSet]
+      .to(ParSet)
 
     val exhaustedPaperBundle = {
       val numPapersDistributedToCandidates = bundlesDistributedToCandidates
-        .toStream
+        .to(LazyList)
         .map(_.numPapers)
         .foldLeft(NumPapers(0))(_ + _)
 

@@ -3,7 +3,7 @@ package au.id.tmm.countstv.counting
 import au.id.tmm.countstv.model.values.{Count, NumVotes, Ordinal}
 import au.id.tmm.countstv.model.{CandidateStatus, CandidateStatuses, CandidateVoteCounts}
 import au.id.tmm.utilities.collection.DupelessSeq
-import au.id.tmm.utilities.probabilities.{ProbabilityMeasure, TieSensitiveSorting}
+import au.id.tmm.probabilitymeasure.{ProbabilityMeasure, TieSensitiveSorting}
 
 private[counting] object ElectedCandidateComputations {
 
@@ -19,7 +19,7 @@ private[counting] object ElectedCandidateComputations {
                             ): ProbabilityMeasure[DupelessSeq[C]] = {
 
     val unelectedCandidatesExceedingQuota = candidateStatuses.remainingCandidates
-      .toStream
+      .to(LazyList)
       .filter { candidate =>
         currentCandidateVoteCounts.perCandidate(candidate).numVotes >= quota
       }
@@ -27,7 +27,7 @@ private[counting] object ElectedCandidateComputations {
     val ordering = new CandidateVoteCountOrdering[C](currentCandidateVoteCounts, previousCandidateVoteCountsAscending)
 
     TieSensitiveSorting.sort[C](unelectedCandidatesExceedingQuota)(ordering)
-      .map(_.reverse.to[DupelessSeq])
+      .map(_.reverse.to(DupelessSeq))
   }
 
   def newCandidateStatusesAfterElectionOf[C](

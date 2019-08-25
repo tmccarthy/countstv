@@ -5,8 +5,8 @@ import au.id.tmm.countstv.model.countsteps._
 import au.id.tmm.countstv.model.values.{Count, NumVotes, Ordinal}
 import au.id.tmm.countstv.model.{CandidateStatus, CandidateStatuses, CandidateVoteCounts}
 import au.id.tmm.utilities.collection.DupelessSeq
-import au.id.tmm.utilities.probabilities.ProbabilityMeasure.Always
-import au.id.tmm.utilities.probabilities.{ProbabilityMeasure, TieSensitiveSorting}
+import au.id.tmm.probabilitymeasure.ProbabilityMeasure.Always
+import au.id.tmm.probabilitymeasure.{ProbabilityMeasure, TieSensitiveSorting}
 
 object NextActionComputation {
 
@@ -35,14 +35,14 @@ object NextActionComputation {
     val previousCandidateVoteCountsAscending = proposedCountSteps.tail.dropRight(1).map(_.candidateVoteCounts).toList
 
     firstPresentIn[NewStatusesAndNextAction[C, CountAction.DuringDistribution[C]]](
-      Stream(
-        Always(newStatusesAndActionIfCountFinished(numVacancies, oldCandidateStatuses)),
-        newStatusesAndActionIfRemainingCandidatesEqualsUnfilledVacancies(count, numVacancies, currentVoteCounts, previousCandidateVoteCountsAscending, oldCandidateStatuses) match {
+      List(
+        () => Always(newStatusesAndActionIfCountFinished(numVacancies, oldCandidateStatuses)),
+        () => newStatusesAndActionIfRemainingCandidatesEqualsUnfilledVacancies(count, numVacancies, currentVoteCounts, previousCandidateVoteCountsAscending, oldCandidateStatuses) match {
           case Some(probabilityMeasure) => probabilityMeasure.map(Some(_))
           case None => Always(None)
         },
-        newStatusesAndActionFromDistributionOfElectedCandidate(count, currentVoteCounts, previousCandidateVoteCountsAscending, oldCandidateStatuses, numVacancies, quota, proposedCountSteps),
-        newStatusesAndActionIfTwoRemaining(count, numVacancies, currentVoteCounts, previousCandidateVoteCountsAscending, oldCandidateStatuses),
+        () => newStatusesAndActionFromDistributionOfElectedCandidate(count, currentVoteCounts, previousCandidateVoteCountsAscending, oldCandidateStatuses, numVacancies, quota, proposedCountSteps),
+        () => newStatusesAndActionIfTwoRemaining(count, numVacancies, currentVoteCounts, previousCandidateVoteCountsAscending, oldCandidateStatuses),
       ),
     ).flatMap {
       case Some(newStatusesAndNextAction) => Always(newStatusesAndNextAction)
@@ -65,10 +65,10 @@ object NextActionComputation {
       newStatusesAndActionIfRemainingCandidatesEqualsUnfilledVacancies(count, numVacancies, currentVoteCounts, previousCandidateVoteCountsAscending, oldCandidateStatuses)
   }
 
-  private def firstPresentIn[A](possibilities: Stream[ProbabilityMeasure[Option[A]]]): ProbabilityMeasure[Option[A]] =
+  private def firstPresentIn[A](possibilities: List[() => ProbabilityMeasure[Option[A]]]): ProbabilityMeasure[Option[A]] =
     possibilities match {
-      case Stream.Empty => Always(None)
-      case head #:: tail => head.flatMap {
+      case Nil => Always(None)
+      case head :: tail => head().flatMap {
         case Some(value) => Always(Some(value))
         case None => firstPresentIn(tail)
       }
@@ -101,7 +101,7 @@ object NextActionComputation {
     if (numUnfilledVacancies >= oldCandidateStatuses.remainingCandidates.size) {
       Some(
         TieSensitiveSorting.sort(oldCandidateStatuses.remainingCandidates)(ordering)
-        .map(_.reverse.to[DupelessSeq])
+        .map(_.reverse.to(DupelessSeq))
         .map { electedCandidates =>
           val newStatuses = ElectedCandidateComputations.newCandidateStatusesAfterElectionOf(electedCandidates, count, oldCandidateStatuses)
 

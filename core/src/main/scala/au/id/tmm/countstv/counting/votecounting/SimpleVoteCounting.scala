@@ -61,7 +61,7 @@ object SimpleVoteCounting {
       InterimCount(
         perCandidate =
           (this.perCandidate.keys ++ that.perCandidate.keys)
-            .toStream
+            .to(LazyList)
             .distinct
             .map { candidate =>
               val newInterimCount =

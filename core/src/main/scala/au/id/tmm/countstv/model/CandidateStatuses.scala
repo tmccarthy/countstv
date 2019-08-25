@@ -11,11 +11,11 @@ final case class CandidateStatuses[C](asMap: Map[C, CandidateStatus]) {
 
   val electedCandidates: DupelessSeq[C] =
     asMap
-      .toStream
+      .to(LazyList)
       .collect { case (candidate, status: CandidateStatus.Elected) => candidate -> status }
       .sortBy { case (candidate, status) => status.ordinalElected }
       .map { case (candidate, status) => candidate }
-      .to[DupelessSeq]
+      .to(DupelessSeq)
 
   val remainingCandidates: Set[C] = candidatesWithStatusMatching(_ == CandidateStatus.Remaining)
 
@@ -27,10 +27,10 @@ final case class CandidateStatuses[C](asMap: Map[C, CandidateStatus]) {
       .collect { case (candidate, status: CandidateStatus.Excluded) => candidate -> status }
       .sortBy { case (candidate, status) => status.ordinalExcluded }
       .map { case (candidate, status) => candidate }
-      .to[DupelessSeq]
+      .to(DupelessSeq)
 
   private def candidatesWithStatusMatching(p: CandidateStatus => Boolean) = asMap
-    .toStream
+    .to(LazyList)
     .collect {
       case (candidate, status) if p(status) => candidate
     }

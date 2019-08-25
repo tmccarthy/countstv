@@ -8,10 +8,6 @@ use_jdk_11: &use_jdk_11
   docker:
     - image: circleci/openjdk:11.0.2-jdk
 
-use_scala_2_12: &use_scala_2_12
-  environment:
-    SCALA_VERSION: 2.12.8
-
 use_scala_2_13: &use_scala_2_13
   environment:
     SCALA_VERSION: 2.13.0
@@ -94,12 +90,6 @@ jobs:
     <<: *use_environment
     <<: *test
 
-  release_scala_2_12:
-    <<: *use_jdk_8
-    <<: *use_scala_2_12
-    <<: *use_environment
-    <<: *release
-
   release_scala_2_13:
     <<: *use_jdk_8
     <<: *use_scala_2_13
@@ -123,17 +113,6 @@ workflows:
           requires:
             - test_jdk_8
             - test_jdk_11
-          filters:
-            tags:
-              only: /^v\d+\.\d+\.\d+$/
-            branches:
-              ignore: /.*/
-      - release_scala_2_12:
-          context: Sonatype
-          requires:
-            - test_jdk_8
-            - test_jdk_11
-            - release_scala_2_13
           filters:
             tags:
               only: /^v\d+\.\d+\.\d+$/

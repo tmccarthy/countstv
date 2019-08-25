@@ -3,7 +3,7 @@ package au.id.tmm.countstv.counting
 import au.id.tmm.countstv.counting.CountAction._
 import au.id.tmm.countstv.counting.countsteps.{AllocationAfterIneligiblesComputation, CountContext, DistributionComputation}
 import au.id.tmm.countstv.rules.RoundingRules
-import au.id.tmm.utilities.probabilities.ProbabilityMeasure
+import au.id.tmm.probabilitymeasure.ProbabilityMeasure
 
 object CountActionInterpreter {
 

@@ -8,8 +8,8 @@ import au.id.tmm.countstv.model.countsteps.{DistributionCountStep, ElectedNoSurp
 import au.id.tmm.countstv.model.values._
 import au.id.tmm.countstv.model.{CandidateDistributionReason, CandidateStatuses, CandidateVoteCounts}
 import au.id.tmm.countstv.rules.RoundingRules
-import au.id.tmm.utilities.probabilities.ProbabilityMeasure
-import au.id.tmm.utilities.probabilities.ProbabilityMeasure.{Always, Varied}
+import au.id.tmm.probabilitymeasure.ProbabilityMeasure
+import au.id.tmm.probabilitymeasure.ProbabilityMeasure.{Always, Varied}
 
 import scala.annotation.tailrec
 import scala.collection.immutable.Queue
@@ -71,8 +71,8 @@ object DistributionComputation {
 
         bundlesPerTransferValue
           .valuesIterator
-          .map(_.to[ParSet])
-          .to[Queue]
+          .map(_.to(ParSet))
+          .to(Queue)
       }
     }
   }
