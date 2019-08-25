@@ -49,7 +49,7 @@ private[model] object PreferenceTableDeserialisation {
         if (deserialisedMagicWord != magicWord) {
           Left(Error.MagicWordMissing(deserialisedMagicWord, magicWord, inputStream.position()))
         } else {
-          Right(Unit)
+          Right(())
         }
       }
   }
@@ -59,7 +59,7 @@ private[model] object PreferenceTableDeserialisation {
       if (version != serialisationVerson) {
         Left(Error.UnknownVersion(version, inputStream.position()))
       } else {
-        Right(Unit)
+        Right(())
       }
     }
   }
@@ -102,13 +102,13 @@ private[model] object PreferenceTableDeserialisation {
       if (expectedDigest != actualDigest) {
         Left(DigestMismatch(actualDigest, expectedDigest, messageDigestAlgorithm, inputStream.position()))
       } else {
-        Right(Unit)
+        Right(())
       }
     }
   }
 
   private def confirmStreamComplete(inputStream: EndSafeInputStream): Either[UnexpectedContent, Unit] = {
-    inputStream.readBytes(1).fold(_ => Right(Unit), _ => Left(UnexpectedContent(inputStream.position())))
+    inputStream.readBytes(1).fold(_ => Right(()), _ => Left(UnexpectedContent(inputStream.position())))
   }
 
   private final class EndSafeInputStream(rawInputStream: InputStream) {

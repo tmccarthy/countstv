@@ -4,8 +4,8 @@ import au.id.tmm.countstv.NormalisedBallot
 import au.id.tmm.countstv.model.preferences.PreferenceTree.PreferenceTreeNode
 import au.id.tmm.countstv.model.values.NumPapers
 
-import scala.collection.JavaConverters
-import scala.collection.JavaConverters.asJavaIteratorConverter
+import scala.collection.immutable.ArraySeq
+import scala.jdk.CollectionConverters._
 
 sealed abstract class PreferenceTree[C] private (private val view: PreferenceTable.View[C]) {
 
@@ -17,7 +17,7 @@ sealed abstract class PreferenceTree[C] private (private val view: PreferenceTab
   /**
     * The child nodes of this node.
     */
-  def children: List[PreferenceTreeNode[C]] = view.children().map(new PreferenceTreeNode[C](_))
+  def children: ArraySeq[PreferenceTreeNode[C]] = view.children().map(new PreferenceTreeNode[C](_))
 
   def childFor(candidate: C): Option[PreferenceTreeNode[C]] = children.find(_.associatedCandidate == candidate)
 
@@ -55,7 +55,7 @@ object PreferenceTree {
                           numBallotsHint: Int = 100,
                         )(
                           ballots: Iterable[NormalisedBallot[C]],
-                        ): RootPreferenceTree[C] = fromIterator(allCandidates, numBallotsHint)(ballots.toIterator)
+                        ): RootPreferenceTree[C] = fromIterator(allCandidates, numBallotsHint)(ballots.iterator)
 
   def fromIterator[C : Ordering](
                                   allCandidates: Set[C],
@@ -69,13 +69,13 @@ object PreferenceTree {
         require(b.nonEmpty)
         b
       }
-      .map(JavaConverters.seqAsJavaList(_).asInstanceOf[java.util.Collection[C]])
+      .map(ballot => ballot.asJavaCollection)
       .asJava
 
     val preferenceTable = PreferenceTableConstruction.from(
       ballotsAsJava,
       numBallotsHint,
-      JavaConverters.setAsJavaSet(allCandidates),
+      allCandidates.asJavaCollection,
       implicitly[Ordering[C]],
     )
 

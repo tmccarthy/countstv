@@ -72,7 +72,7 @@ object BallotNormalisation {
         .to(LazyList)
         .takeWhile(_.size == 1)
         .map(_.head)
-        .to(ArraySeq)
+        .to(ArraySeq.untagged)
     }
 
     val rowsInPreferenceOrder = orderAccordingToPreferences(ballot)

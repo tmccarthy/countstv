@@ -1,7 +1,7 @@
 package au.id.tmm.countstv.model.preferences;
 
 import scala.Option;
-import scala.collection.immutable.List;
+import scala.collection.immutable.ArraySeq;
 import scala.collection.mutable.Builder;
 
 import java.util.Arrays;
@@ -69,14 +69,15 @@ class PreferenceTable<C> {
             this.numPapers = numPapers;
         }
 
-        public scala.collection.immutable.List<C> path() {
-            Builder<C, List<C>> pathBuilder = List.<C>canBuildFrom().apply();
+        @SuppressWarnings("unchecked")
+        public ArraySeq<C> path() {
+            Object[] path = new Object[preferenceIndex];
 
             for (int i = 0; i < preferenceIndex; i++) {
-                pathBuilder.$plus$eq(candidateAtPreferenceIndex(i));
+                path[i] = candidateAtPreferenceIndex(i);
             }
 
-            return pathBuilder.result();
+            return ArraySeq.unsafeWrapArray((C[]) path);
         }
 
         public Option<C> assignedCandidate() {
@@ -93,8 +94,9 @@ class PreferenceTable<C> {
             return candidate;
         }
 
-        public scala.collection.immutable.List<View<C>> children() {
-            Builder<View<C>, List<View<C>>> childrenBuilder = List.<View<C>>canBuildFrom().apply();
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        public ArraySeq<View<C>> children() {
+            Builder<View<C>, ArraySeq> childrenBuilder = ArraySeq.untagged().<View<C>>newBuilder();
 
             int preferenceIndexForChildren = preferenceIndex + 1;
 

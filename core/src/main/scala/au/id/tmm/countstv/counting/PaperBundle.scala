@@ -6,6 +6,7 @@ import au.id.tmm.countstv.model.preferences.PreferenceTree
 import au.id.tmm.countstv.model.preferences.PreferenceTree.PreferenceTreeNode
 import au.id.tmm.countstv.model.values.{Count, NumPapers, TransferValue}
 
+import scala.collection.immutable.ArraySeq
 import scala.collection.parallel.immutable.ParSet
 
 /**
@@ -124,7 +125,7 @@ private[counting] object PaperBundle {
                                                   bundle: PaperBundle[C],
                                                   origin: Origin[C],
                                                   count: Count,
-                                                  nodesForDistributedBundles: List[PreferenceTreeNode[C]],
+                                                  nodesForDistributedBundles: ArraySeq[PreferenceTreeNode[C]],
                                                 ): PaperBundles[C] = {
 
     val distributedTransferValue = origin match {
@@ -168,7 +169,7 @@ private[counting] object PaperBundle {
   private def childNodesAssignedToRemainingCandidates[C](
                                                           rootNode: PreferenceTree[C],
                                                           remainingCandidates: Set[C],
-                                                        ): List[PreferenceTreeNode[C]] = {
+                                                        ): ArraySeq[PreferenceTreeNode[C]] = {
     rootNode.children.flatMap { childNode =>
       if (remainingCandidates contains childNode.associatedCandidate) {
         Set(childNode)
