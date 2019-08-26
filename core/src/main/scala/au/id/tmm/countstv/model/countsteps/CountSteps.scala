@@ -42,7 +42,7 @@ object CountSteps {
 
     override def apply(count: Count): CountStep[C] = count match {
       case Count.ofInitialAllocation => initialAllocation
-      case _ => throw new IndexOutOfBoundsException(count.asInt.toString)
+      case _                         => throw new IndexOutOfBoundsException(count.asInt.toString)
     }
 
     override def truncateAfter(count: Count): CountSteps[C] = this
@@ -56,9 +56,9 @@ object CountSteps {
   }
 
   final case class AfterIneligibleHandling[C](
-                                               initialAllocation: InitialAllocation[C],
-                                               allocationAfterIneligibles: AllocationAfterIneligibles[C],
-                                             ) extends AllowingAppending[C] {
+    initialAllocation: InitialAllocation[C],
+    allocationAfterIneligibles: AllocationAfterIneligibles[C],
+  ) extends AllowingAppending[C] {
     override def last: AllocationAfterIneligibles[C] = allocationAfterIneligibles
 
     override def iterator: Iterator[CountStep[C]] = Iterator(initialAllocation, allocationAfterIneligibles)
@@ -69,14 +69,14 @@ object CountSteps {
       count >= Count.ofInitialAllocation && count <= Count.ofIneligibleCandidateHandling
 
     override def apply(count: Count): CountStep[C] = count match {
-      case Count.ofInitialAllocation => initialAllocation
+      case Count.ofInitialAllocation           => initialAllocation
       case Count.ofIneligibleCandidateHandling => allocationAfterIneligibles
-      case _ => throw new IndexOutOfBoundsException(count.asInt.toString)
+      case _                                   => throw new IndexOutOfBoundsException(count.asInt.toString)
     }
 
     override def truncateAfter(count: Count): CountSteps[C] = count match {
       case Count.ofInitialAllocation => Initial(initialAllocation)
-      case _ => this
+      case _                         => this
     }
 
     override def append(distributionCountStep: DistributionPhaseCountStep[C]): DuringDistributions[C] =
@@ -84,10 +84,10 @@ object CountSteps {
   }
 
   final case class DuringDistributions[C](
-                                           initialAllocation: InitialAllocation[C],
-                                           allocationAfterIneligibles: AllocationAfterIneligibles[C],
-                                           distributionCountSteps: List[DistributionPhaseCountStep[C]],
-                                         ) extends AllowingAppending[C] {
+    initialAllocation: InitialAllocation[C],
+    allocationAfterIneligibles: AllocationAfterIneligibles[C],
+    distributionCountSteps: List[DistributionPhaseCountStep[C]],
+  ) extends AllowingAppending[C] {
     require(distributionCountSteps.nonEmpty)
 
     private val lastCount: Count = Count(distributionCountSteps.size + 1)
@@ -102,16 +102,16 @@ object CountSteps {
     override def isDefinedAt(count: Count): Boolean = count >= Count.ofInitialAllocation && count <= lastCount
 
     override def apply(count: Count): CountStep[C] = count match {
-      case Count.ofInitialAllocation => initialAllocation
+      case Count.ofInitialAllocation           => initialAllocation
       case Count.ofIneligibleCandidateHandling => allocationAfterIneligibles
-      case c if c <= lastCount => distributionCountSteps(c.asInt - numStepsBeforeDistributionSteps)
-      case _ => throw new IndexOutOfBoundsException(count.asInt.toString)
+      case c if c <= lastCount                 => distributionCountSteps(c.asInt - numStepsBeforeDistributionSteps)
+      case _                                   => throw new IndexOutOfBoundsException(count.asInt.toString)
     }
 
     override def truncateAfter(count: Count): CountSteps[C] = count match {
-      case Count.ofInitialAllocation => Initial(initialAllocation)
+      case Count.ofInitialAllocation           => Initial(initialAllocation)
       case Count.ofIneligibleCandidateHandling => AfterIneligibleHandling(initialAllocation, allocationAfterIneligibles)
-      case _: Count => this.copy(distributionCountSteps = this.distributionCountSteps.take(count.asInt - 1))
+      case _: Count                            => this.copy(distributionCountSteps = this.distributionCountSteps.take(count.asInt - 1))
     }
 
     override def append(distributionCountStep: DistributionPhaseCountStep[C]): DuringDistributions[C] =

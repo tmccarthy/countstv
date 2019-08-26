@@ -11,24 +11,23 @@ import org.scalatest.FlatSpec
 
 class FullCountComputationSpec extends FlatSpec {
 
-  private def runFullCountFor(countFixture: CountFixture): ProbabilityMeasure[CompletedCount[Fruit]] = {
+  private def runFullCountFor(countFixture: CountFixture): ProbabilityMeasure[CompletedCount[Fruit]] =
     FullCountComputation.runCount(
       countFixture.countParams,
       countFixture.preferenceTree,
     )
-  }
 
   "a full vote count" should "produce the correct outcome" in {
     val completedCount = runFullCountFor(CountFixture.withOneRemainingCandidate).onlyOutcomeUnsafe
 
     val expectedFinalOutcomes = CandidateStatuses[Fruit](
-      Apple -> Elected(Ordinal.first,Count(4)),
-      Banana -> Excluded(Ordinal.third,Count(3)),
-      Mango -> Remaining,
-      Pear -> Elected(Ordinal.second,Count(7)),
-      Raspberry -> Excluded(Ordinal.fourth,Count(5)),
-      Strawberry -> Excluded(Ordinal.second,Count(2)),
-      Watermelon -> Excluded(Ordinal.first,Count(1)),
+      Apple      -> Elected(Ordinal.first, Count(4)),
+      Banana     -> Excluded(Ordinal.third, Count(3)),
+      Mango      -> Remaining,
+      Pear       -> Elected(Ordinal.second, Count(7)),
+      Raspberry  -> Excluded(Ordinal.fourth, Count(5)),
+      Strawberry -> Excluded(Ordinal.second, Count(2)),
+      Watermelon -> Excluded(Ordinal.first, Count(1)),
     )
 
     assert(completedCount.outcomes === expectedFinalOutcomes)
@@ -38,11 +37,11 @@ class FullCountComputationSpec extends FlatSpec {
     val completedCount = runFullCountFor(CountFixture.withOneIneligibleCandidate).onlyOutcomeUnsafe
 
     val expectedFinalOutcomes = CandidateStatuses[Fruit](
-      Apple -> Ineligible,
-      Banana -> Excluded(Ordinal.second, Count(2)),
-      Mango -> Remaining,
-      Pear -> Elected(Ordinal.first, Count(4)),
-      Raspberry -> Elected(Ordinal.second, Count(4)),
+      Apple      -> Ineligible,
+      Banana     -> Excluded(Ordinal.second, Count(2)),
+      Mango      -> Remaining,
+      Pear       -> Elected(Ordinal.first, Count(4)),
+      Raspberry  -> Elected(Ordinal.second, Count(4)),
       Strawberry -> Excluded(Ordinal.third, Count(3)),
       Watermelon -> Excluded(Ordinal.first, Count(1)),
     )
@@ -55,22 +54,22 @@ class FullCountComputationSpec extends FlatSpec {
 
     val expectedFinalOutcomes = ProbabilityMeasure.evenly(
       CandidateStatuses(
-        Apple -> Elected(Ordinal(0),Count(4)),
-        Banana -> Excluded(Ordinal(2),Count(3)),
-        Mango -> Remaining,
-        Strawberry -> Excluded(Ordinal(0),Count(1)),
-        Pear -> Elected(Ordinal(1),Count(7)),
-        Raspberry -> Excluded(Ordinal(3),Count(5)),
-        Watermelon -> Excluded(Ordinal(1),Count(2)),
+        Apple      -> Elected(Ordinal(0), Count(4)),
+        Banana     -> Excluded(Ordinal(2), Count(3)),
+        Mango      -> Remaining,
+        Strawberry -> Excluded(Ordinal(0), Count(1)),
+        Pear       -> Elected(Ordinal(1), Count(7)),
+        Raspberry  -> Excluded(Ordinal(3), Count(5)),
+        Watermelon -> Excluded(Ordinal(1), Count(2)),
       ),
       CandidateStatuses(
-        Apple -> Elected(Ordinal(0),Count(4)),
-        Banana -> Excluded(Ordinal(2),Count(3)),
-        Mango -> Remaining,
-        Strawberry -> Excluded(Ordinal(1),Count(2)),
-        Pear -> Elected(Ordinal(1),Count(7)),
-        Raspberry -> Excluded(Ordinal(3),Count(5)),
-        Watermelon -> Excluded(Ordinal(0),Count(1)),
+        Apple      -> Elected(Ordinal(0), Count(4)),
+        Banana     -> Excluded(Ordinal(2), Count(3)),
+        Mango      -> Remaining,
+        Strawberry -> Excluded(Ordinal(1), Count(2)),
+        Pear       -> Elected(Ordinal(1), Count(7)),
+        Raspberry  -> Excluded(Ordinal(3), Count(5)),
+        Watermelon -> Excluded(Ordinal(0), Count(1)),
       ),
     )
 
@@ -82,22 +81,22 @@ class FullCountComputationSpec extends FlatSpec {
 
     val expectedFinalOutcomes = ProbabilityMeasure.evenly(
       CandidateStatuses(
-        Apple -> Elected(Ordinal(0),Count(4)),
-        Banana -> Excluded(Ordinal(2),Count(3)),
-        Mango -> Elected(Ordinal(1),Count(7)),
-        Pear -> Remaining,
-        Raspberry -> Excluded(Ordinal(3),Count(5)),
-        Strawberry -> Excluded(Ordinal(1),Count(2)),
-        Watermelon -> Excluded(Ordinal(0),Count(1)),
+        Apple      -> Elected(Ordinal(0), Count(4)),
+        Banana     -> Excluded(Ordinal(2), Count(3)),
+        Mango      -> Elected(Ordinal(1), Count(7)),
+        Pear       -> Remaining,
+        Raspberry  -> Excluded(Ordinal(3), Count(5)),
+        Strawberry -> Excluded(Ordinal(1), Count(2)),
+        Watermelon -> Excluded(Ordinal(0), Count(1)),
       ),
       CandidateStatuses(
-        Apple -> Elected(Ordinal(0),Count(5)),
-        Banana -> Excluded(Ordinal(3),Count(4)),
-        Mango -> Elected(Ordinal(1),Count(6)),
-        Pear -> Remaining,
-        Raspberry -> Excluded(Ordinal(2),Count(3)),
-        Strawberry -> Excluded(Ordinal(1),Count(2)),
-        Watermelon -> Excluded(Ordinal(0),Count(1)),
+        Apple      -> Elected(Ordinal(0), Count(5)),
+        Banana     -> Excluded(Ordinal(3), Count(4)),
+        Mango      -> Elected(Ordinal(1), Count(6)),
+        Pear       -> Remaining,
+        Raspberry  -> Excluded(Ordinal(2), Count(3)),
+        Strawberry -> Excluded(Ordinal(1), Count(2)),
+        Watermelon -> Excluded(Ordinal(0), Count(1)),
       ),
     )
 
@@ -109,14 +108,14 @@ class FullCountComputationSpec extends FlatSpec {
 
     val expectedFinalOutcome = ProbabilityMeasure.Always(
       CandidateStatuses[Fruit](
-        Apple -> Elected(Ordinal.first,Count(4)),
-        Banana -> Excluded(Ordinal.third,Count(3)),
-        Mango -> Remaining,
-        Pear -> Elected(Ordinal.second,Count(7)),
-        Raspberry -> Excluded(Ordinal.fourth,Count(5)),
-        Strawberry -> Excluded(Ordinal.second,Count(2)),
-        Watermelon -> Excluded(Ordinal.first,Count(1)),
-      )
+        Apple      -> Elected(Ordinal.first, Count(4)),
+        Banana     -> Excluded(Ordinal.third, Count(3)),
+        Mango      -> Remaining,
+        Pear       -> Elected(Ordinal.second, Count(7)),
+        Raspberry  -> Excluded(Ordinal.fourth, Count(5)),
+        Strawberry -> Excluded(Ordinal.second, Count(2)),
+        Watermelon -> Excluded(Ordinal.first, Count(1)),
+      ),
     )
 
     assert(actualOutcome === expectedFinalOutcome)
@@ -127,32 +126,33 @@ class FullCountComputationSpec extends FlatSpec {
 
     val expectedFinalOutcome = ProbabilityMeasure.Always(
       CandidateStatuses[Fruit](
-        Apple -> Elected(Ordinal.first, Count(1)),
-        Banana -> Elected(Ordinal.fifth, Count(1)),
-        Mango -> Elected(Ordinal.second, Count(1)),
-        Pear -> Elected(Ordinal.third, Count(1)),
-        Raspberry -> Elected(Ordinal.fourth, Count(1)),
+        Apple      -> Elected(Ordinal.first, Count(1)),
+        Banana     -> Elected(Ordinal.fifth, Count(1)),
+        Mango      -> Elected(Ordinal.second, Count(1)),
+        Pear       -> Elected(Ordinal.third, Count(1)),
+        Raspberry  -> Elected(Ordinal.fourth, Count(1)),
         Strawberry -> Elected(Ordinal.sixth, Count(1)),
         Watermelon -> Elected(Ordinal.seventh, Count(1)),
-      )
+      ),
     )
 
     assert(actualOutcome === expectedFinalOutcome)
   }
 
   it should "produce the correct outcome where all vacancies are filled by candidates exceeding quota after the initial allocation" in {
-    val actualOutcome = runFullCountFor(CountFixture.whereEnoughCandidatesExceedQuotaWithoutDistribution).map(_.outcomes)
+    val actualOutcome =
+      runFullCountFor(CountFixture.whereEnoughCandidatesExceedQuotaWithoutDistribution).map(_.outcomes)
 
     val expectedFinalOutcome = ProbabilityMeasure.Always(
       CandidateStatuses[Fruit](
-        Apple -> Elected(Ordinal.first, Count(1)),
-        Banana -> Elected(Ordinal.second, Count(1)),
-        Mango -> Remaining,
-        Pear -> Remaining,
-        Raspberry -> Remaining,
+        Apple      -> Elected(Ordinal.first, Count(1)),
+        Banana     -> Elected(Ordinal.second, Count(1)),
+        Mango      -> Remaining,
+        Pear       -> Remaining,
+        Raspberry  -> Remaining,
         Strawberry -> Remaining,
         Watermelon -> Remaining,
-      )
+      ),
     )
 
     assert(actualOutcome === expectedFinalOutcome)

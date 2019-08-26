@@ -12,23 +12,25 @@ import scala.collection.parallel.immutable.ParSet
 
 class FullCountVoteCountingSpec extends FlatSpec {
 
-  private val testPreferenceTree = PreferenceTree.from[Fruit](Set(Apple, Pear, Banana, Strawberry), numBallotsHint = 3)(List(
-    Vector(Apple, Pear, Banana, Strawberry),
-    Vector(Apple, Banana, Strawberry, Pear),
-    Vector(Apple, Strawberry, Pear),
-    Vector(Banana, Pear),
-    Vector(Strawberry),
-  ))
+  private val testPreferenceTree = PreferenceTree.from[Fruit](Set(Apple, Pear, Banana, Strawberry), numBallotsHint = 3)(
+    List(
+      Vector(Apple, Pear, Banana, Strawberry),
+      Vector(Apple, Banana, Strawberry, Pear),
+      Vector(Apple, Strawberry, Pear),
+      Vector(Banana, Pear),
+      Vector(Strawberry),
+    ))
 
   "a voteCount" should "correctly count the votes when no candidates are elected" in {
     val candidateStatuses = CandidateStatuses[Fruit](
-      Apple -> CandidateStatus.Remaining,
-      Banana -> CandidateStatus.Remaining,
-      Pear -> CandidateStatus.Remaining,
+      Apple      -> CandidateStatus.Remaining,
+      Banana     -> CandidateStatus.Remaining,
+      Pear       -> CandidateStatus.Remaining,
       Strawberry -> CandidateStatus.Remaining,
     )
 
-    val paperBundles = PaperBundle.rootBundleFor(testPreferenceTree)
+    val paperBundles = PaperBundle
+      .rootBundleFor(testPreferenceTree)
       .distributeToRemainingCandidates(PaperBundle.Origin.InitialAllocation, Count(2), candidateStatuses)
 
     val actualVoteCounts = FullCountVoteCounting.performFullRecount[Fruit](
@@ -40,9 +42,9 @@ class FullCountVoteCountingSpec extends FlatSpec {
 
     val expectedVoteCounts = CandidateVoteCounts[Fruit](
       perCandidate = Map(
-        Apple -> VoteCount(3),
-        Banana -> VoteCount(1),
-        Pear -> VoteCount.zero,
+        Apple      -> VoteCount(3),
+        Banana     -> VoteCount(1),
+        Pear       -> VoteCount.zero,
         Strawberry -> VoteCount(1),
       ),
       exhausted = VoteCount.zero,
@@ -54,21 +56,22 @@ class FullCountVoteCountingSpec extends FlatSpec {
 
   it should "correctly count the votes when a candidate has been elected" in {
     val candidateStatuses = CandidateStatuses[Fruit](
-      Apple -> CandidateStatus.Elected(Ordinal.first, Count(1)),
-      Banana -> CandidateStatus.Remaining,
-      Pear -> CandidateStatus.Remaining,
+      Apple      -> CandidateStatus.Elected(Ordinal.first, Count(1)),
+      Banana     -> CandidateStatus.Remaining,
+      Pear       -> CandidateStatus.Remaining,
       Strawberry -> CandidateStatus.Remaining,
     )
 
     val transferValue = TransferValue(0.666666666d)
 
-    val paperBundles = PaperBundle.rootBundleFor(testPreferenceTree)
+    val paperBundles = PaperBundle
+      .rootBundleFor(testPreferenceTree)
       .distributeToRemainingCandidates(PaperBundle.Origin.InitialAllocation, Count(0), candidateStatuses)
       .flatMap { b =>
         b.distributeToRemainingCandidates(
           PaperBundle.Origin.ElectedCandidate(Apple, transferValue, Count(1)),
           Count(1),
-          candidateStatuses
+          candidateStatuses,
         )
       }
 
@@ -81,9 +84,9 @@ class FullCountVoteCountingSpec extends FlatSpec {
 
     val expectedVoteCounts = CandidateVoteCounts[Fruit](
       perCandidate = Map(
-        Apple -> VoteCount(NumPapers(0), NumVotes(2)),
-        Banana -> VoteCount(NumPapers(2), NumVotes(1)),
-        Pear -> VoteCount(NumPapers(1), NumVotes(0)),
+        Apple      -> VoteCount(NumPapers(0), NumVotes(2)),
+        Banana     -> VoteCount(NumPapers(2), NumVotes(1)),
+        Pear       -> VoteCount(NumPapers(1), NumVotes(0)),
         Strawberry -> VoteCount(NumPapers(2), NumVotes(1)),
       ),
       exhausted = VoteCount.zero,
@@ -95,13 +98,14 @@ class FullCountVoteCountingSpec extends FlatSpec {
 
   it should "correctly count the votes when a candidate has been elected but its ballots haven't been transferred" in {
     val candidateStatuses = CandidateStatuses[Fruit](
-      Apple -> CandidateStatus.Elected(Ordinal.first, Count(1)),
-      Banana -> CandidateStatus.Remaining,
-      Pear -> CandidateStatus.Remaining,
+      Apple      -> CandidateStatus.Elected(Ordinal.first, Count(1)),
+      Banana     -> CandidateStatus.Remaining,
+      Pear       -> CandidateStatus.Remaining,
       Strawberry -> CandidateStatus.Remaining,
     )
 
-    val paperBundles = PaperBundle.rootBundleFor(testPreferenceTree)
+    val paperBundles = PaperBundle
+      .rootBundleFor(testPreferenceTree)
       .distributeToRemainingCandidates(PaperBundle.Origin.InitialAllocation, Count(2), candidateStatuses)
 
     val actualVoteCounts = FullCountVoteCounting.performFullRecount[Fruit](
@@ -113,9 +117,9 @@ class FullCountVoteCountingSpec extends FlatSpec {
 
     val expectedVoteCounts = CandidateVoteCounts[Fruit](
       perCandidate = Map(
-        Apple -> VoteCount(3),
-        Banana -> VoteCount(1),
-        Pear -> VoteCount(0),
+        Apple      -> VoteCount(3),
+        Banana     -> VoteCount(1),
+        Pear       -> VoteCount(0),
         Strawberry -> VoteCount(1),
       ),
       exhausted = VoteCount.zero,
@@ -127,9 +131,9 @@ class FullCountVoteCountingSpec extends FlatSpec {
 
   it should "correctly count the votes when some ballots have exhausted" in {
     val candidateStatuses = CandidateStatuses[Fruit](
-      Apple -> CandidateStatus.Elected(Ordinal.first, Count(1)),
-      Banana -> CandidateStatus.Remaining,
-      Pear -> CandidateStatus.Excluded(Ordinal.first, Count(2)),
+      Apple      -> CandidateStatus.Elected(Ordinal.first, Count(1)),
+      Banana     -> CandidateStatus.Remaining,
+      Pear       -> CandidateStatus.Excluded(Ordinal.first, Count(2)),
       Strawberry -> CandidateStatus.Excluded(Ordinal.second, Count(3)),
     )
 
@@ -162,7 +166,7 @@ class FullCountVoteCountingSpec extends FlatSpec {
         origin = PaperBundle.Origin.ElectedCandidate(Apple, TransferValue(0.666666666d), Count(2)),
         exhaustedAtCount = Count(3),
         originatingNode = testPreferenceTree.childFor(Apple).get,
-      )
+      ),
     )
 
     val actualVoteCounts = FullCountVoteCounting.performFullRecount[Fruit](
@@ -174,9 +178,9 @@ class FullCountVoteCountingSpec extends FlatSpec {
 
     val expectedVoteCounts = CandidateVoteCounts[Fruit](
       perCandidate = Map(
-        Apple -> VoteCount(NumPapers(0), NumVotes(2)),
-        Banana -> VoteCount(NumPapers(3), NumVotes(2)),
-        Pear -> VoteCount(NumPapers(0), NumVotes(0)),
+        Apple      -> VoteCount(NumPapers(0), NumVotes(2)),
+        Banana     -> VoteCount(NumPapers(3), NumVotes(2)),
+        Pear       -> VoteCount(NumPapers(0), NumVotes(0)),
         Strawberry -> VoteCount(NumPapers(0), NumVotes(0)),
       ),
       exhausted = VoteCount(NumPapers(2), NumVotes(1)),

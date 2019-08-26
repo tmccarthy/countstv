@@ -22,19 +22,19 @@ final case class CandidateStatuses[C](asMap: Map[C, CandidateStatus]) {
   val ineligibleCandidates: Set[C] = candidatesWithStatusMatching(_ == CandidateStatus.Ineligible)
 
   val excludedCandidates: DupelessSeq[C] =
-    asMap
-      .toList
+    asMap.toList
       .collect { case (candidate, status: CandidateStatus.Excluded) => candidate -> status }
       .sortBy { case (candidate, status) => status.ordinalExcluded }
       .map { case (candidate, status) => candidate }
       .to(DupelessSeq)
 
-  private def candidatesWithStatusMatching(p: CandidateStatus => Boolean) = asMap
-    .to(LazyList)
-    .collect {
-      case (candidate, status) if p(status) => candidate
-    }
-    .toSet
+  private def candidatesWithStatusMatching(p: CandidateStatus => Boolean) =
+    asMap
+      .to(LazyList)
+      .collect {
+        case (candidate, status) if p(status) => candidate
+      }
+      .toSet
 
   /**
     * Candidates that are not remaining.
@@ -55,25 +55,24 @@ final case class CandidateStatuses[C](asMap: Map[C, CandidateStatus]) {
   /**
     * Returns a new object with updated statuses for the given candidates.
     */
-  def updateFrom(newStatuses: Map[C, CandidateStatus]): CandidateStatuses[C] = {
+  def updateFrom(newStatuses: Map[C, CandidateStatus]): CandidateStatuses[C] =
     CandidateStatuses(asMap ++ newStatuses)
-  }
 
   /**
     * Returns a `Map` containing every candidate with a status that differs in the given set of statuses. The values in
     * the map are the new statuses.
     */
-  def diff(that: CandidateStatuses[C]): Map[C, CandidateStatus] = {
-    this.asMap.flatMap { case (candidate, newStatus) =>
-      val oldStatus = that.asMap(candidate)
+  def diff(that: CandidateStatuses[C]): Map[C, CandidateStatus] =
+    this.asMap.flatMap {
+      case (candidate, newStatus) =>
+        val oldStatus = that.asMap(candidate)
 
-      if (newStatus != oldStatus) {
-        Some(candidate -> newStatus)
-      } else {
-        None
-      }
+        if (newStatus != oldStatus) {
+          Some(candidate -> newStatus)
+        } else {
+          None
+        }
     }
-  }
 
 }
 

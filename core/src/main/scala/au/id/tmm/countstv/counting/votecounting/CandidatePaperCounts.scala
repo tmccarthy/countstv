@@ -6,9 +6,9 @@ import au.id.tmm.countstv.rules.RoundingRules
 import au.id.tmm.countstv.utils.PerCandidateCounts
 
 private[votecounting] final case class CandidatePaperCounts[C](
-                                                                perCandidate: Map[C, NumPapers],
-                                                                exhausted: NumPapers,
-                                                              ) {
+  perCandidate: Map[C, NumPapers],
+  exhausted: NumPapers,
+) {
   def +(that: CandidatePaperCounts[C]): CandidatePaperCounts[C] =
     CandidatePaperCounts(
       perCandidate = PerCandidateCounts.combine(this.perCandidate, that.perCandidate)(_ + _),
@@ -30,7 +30,7 @@ private[votecounting] final case class CandidatePaperCounts[C](
   def increment(candidate: C, delta: NumPapers): CandidatePaperCounts[C] =
     this.perCandidate.get(candidate) match {
       case Some(oldValue) => this.copy(perCandidate = this.perCandidate.updated(candidate, oldValue + delta))
-      case None => this
+      case None           => this
     }
 }
 

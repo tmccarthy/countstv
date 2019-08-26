@@ -20,10 +20,10 @@ private[counting] sealed trait PaperBundle[C] {
   def origin: Origin[C]
 
   def distributeToRemainingCandidates(
-                                       origin: Origin[C],
-                                       count: Count,
-                                       candidateStatuses: CandidateStatuses[C],
-                                     ): PaperBundles[C] =
+    origin: Origin[C],
+    count: Count,
+    candidateStatuses: CandidateStatuses[C],
+  ): PaperBundles[C] =
     PaperBundle.distributeIfCandidateNotRemaining(this, origin, count, candidateStatuses)
 
   def numPapers: NumPapers
@@ -67,10 +67,10 @@ private[counting] final case class RootPaperBundle[C](preferenceTree: Preference
   * along with the origin of the papers in the count and their transfer value.
   */
 private[counting] final case class AssignedPaperBundle[C](
-                                                           transferValue: TransferValue,
-                                                           preferenceTreeNode: PreferenceTreeNode[C],
-                                                           origin: PaperBundle.Origin[C]
-                                                         ) extends PaperBundle[C] {
+  transferValue: TransferValue,
+  preferenceTreeNode: PreferenceTreeNode[C],
+  origin: PaperBundle.Origin[C],
+) extends PaperBundle[C] {
 
   override def assignedCandidate: Option[C] = Some(preferenceTreeNode.associatedCandidate)
 
@@ -84,12 +84,12 @@ private[counting] final case class AssignedPaperBundle[C](
   * representation is just number of papers and a transfer value.
   */
 private[counting] final case class ExhaustedPaperBundle[C](
-                                                            numPapers: NumPapers,
-                                                            transferValue: TransferValue,
-                                                            origin: Origin[C],
-                                                            exhaustedAtCount: Count,
-                                                            originatingNode: PreferenceTree[C],
-                                                          ) extends PaperBundle[C] {
+  numPapers: NumPapers,
+  transferValue: TransferValue,
+  origin: Origin[C],
+  exhaustedAtCount: Count,
+  originatingNode: PreferenceTree[C],
+) extends PaperBundle[C] {
   override def assignedCandidate: Option[C] = None
 }
 
@@ -98,14 +98,13 @@ private[counting] object PaperBundle {
   def rootBundleFor[C](preferenceTree: PreferenceTree[C]): RootPaperBundle[C] = RootPaperBundle[C](preferenceTree)
 
   private def distributeIfCandidateNotRemaining[C](
-                                                    bundle: PaperBundle[C],
-                                                    origin: Origin[C],
-                                                    count: Count,
-                                                    candidateStatuses: CandidateStatuses[C],
-                                                  ): PaperBundles[C] = {
-
+    bundle: PaperBundle[C],
+    origin: Origin[C],
+    count: Count,
+    candidateStatuses: CandidateStatuses[C],
+  ): PaperBundles[C] =
     bundle match {
-      case b: ExhaustedPaperBundle[C] => ParSet[PaperBundle[C]](b)
+      case b: ExhaustedPaperBundle[C]                                                      => ParSet[PaperBundle[C]](b)
       case b if b.assignedCandidate.exists(candidateStatuses.remainingCandidates.contains) => ParSet[PaperBundle[C]](b)
       case b: AssignedPaperBundle[C] =>
         val nodesForDistributedBundles = childNodesAssignedToRemainingCandidates(
@@ -119,14 +118,13 @@ private[counting] object PaperBundle {
 
         distributeToRemainingCandidates(b, origin, count, nodesForDistributedBundles)
     }
-  }
 
   private def distributeToRemainingCandidates[C](
-                                                  bundle: PaperBundle[C],
-                                                  origin: Origin[C],
-                                                  count: Count,
-                                                  nodesForDistributedBundles: ArraySeq[PreferenceTreeNode[C]],
-                                                ): PaperBundles[C] = {
+    bundle: PaperBundle[C],
+    origin: Origin[C],
+    count: Count,
+    nodesForDistributedBundles: ArraySeq[PreferenceTreeNode[C]],
+  ): PaperBundles[C] = {
 
     val distributedTransferValue = origin match {
       case PaperBundle.Origin.ElectedCandidate(_, appliedTransferValue, _) =>
@@ -147,17 +145,18 @@ private[counting] object PaperBundle {
       val numExhaustedPapers = bundle.numPapers - numPapersDistributedToCandidates
 
       if (numExhaustedPapers > NumPapers(0)) {
-        Some(ExhaustedPaperBundle(
-          numPapers = numExhaustedPapers,
-          transferValue = distributedTransferValue,
-          origin = origin,
-          exhaustedAtCount = count,
-          originatingNode = bundle match {
-            case RootPaperBundle(preferenceTree) => preferenceTree
-            case AssignedPaperBundle(_, preferenceTreeNode, _) => preferenceTreeNode
-            case ExhaustedPaperBundle(_, _, _, _, originatingNode) => originatingNode
-          },
-        ))
+        Some(
+          ExhaustedPaperBundle(
+            numPapers = numExhaustedPapers,
+            transferValue = distributedTransferValue,
+            origin = origin,
+            exhaustedAtCount = count,
+            originatingNode = bundle match {
+              case RootPaperBundle(preferenceTree)                   => preferenceTree
+              case AssignedPaperBundle(_, preferenceTreeNode, _)     => preferenceTreeNode
+              case ExhaustedPaperBundle(_, _, _, _, originatingNode) => originatingNode
+            },
+          ))
       } else {
         None
       }
@@ -167,9 +166,9 @@ private[counting] object PaperBundle {
   }
 
   private def childNodesAssignedToRemainingCandidates[C](
-                                                          rootNode: PreferenceTree[C],
-                                                          remainingCandidates: Set[C],
-                                                        ): ArraySeq[PreferenceTreeNode[C]] = {
+    rootNode: PreferenceTree[C],
+    remainingCandidates: Set[C],
+  ): ArraySeq[PreferenceTreeNode[C]] =
     rootNode.children.flatMap { childNode =>
       if (remainingCandidates contains childNode.associatedCandidate) {
         Set(childNode)
@@ -177,7 +176,6 @@ private[counting] object PaperBundle {
         childNodesAssignedToRemainingCandidates(childNode, remainingCandidates)
       }
     }
-  }
 
   /**
     * The origin of a PaperBundle
@@ -205,7 +203,11 @@ private[counting] object PaperBundle {
     /**
       * The origin of a paper bundle that was distributed away from an elected candidate.
       */
-    final case class ElectedCandidate[C](source: C, transferValue: TransferValue, count: Count) extends Origin[C]
+    final case class ElectedCandidate[C](
+      source: C,
+      transferValue: TransferValue,
+      count: Count,
+    ) extends Origin[C]
 
     /**
       * The origin of a paper bundle that was distributed away from an excluded candidate.

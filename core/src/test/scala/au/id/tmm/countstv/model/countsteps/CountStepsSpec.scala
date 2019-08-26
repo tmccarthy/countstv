@@ -12,35 +12,35 @@ class CountStepsSpec extends FlatSpec {
 
   private val testInitialAllocation = InitialAllocation(
     candidateStatuses = CandidateStatuses[Fruit](
-      Apple -> CandidateStatus.Remaining,
-      Banana -> CandidateStatus.Remaining,
-      Pear -> CandidateStatus.Ineligible,
+      Apple      -> CandidateStatus.Remaining,
+      Banana     -> CandidateStatus.Remaining,
+      Pear       -> CandidateStatus.Ineligible,
       Strawberry -> CandidateStatus.Ineligible,
     ),
     candidateVoteCounts = CandidateVoteCounts[Fruit](
       perCandidate = Map(
-        Apple -> VoteCount(NumPapers(32), NumVotes(42)),
-        Banana -> VoteCount(NumPapers(32), NumVotes(42)),
-        Pear -> VoteCount(NumPapers(32), NumVotes(42)),
+        Apple      -> VoteCount(NumPapers(32), NumVotes(42)),
+        Banana     -> VoteCount(NumPapers(32), NumVotes(42)),
+        Pear       -> VoteCount(NumPapers(32), NumVotes(42)),
         Strawberry -> VoteCount(NumPapers(32), NumVotes(42)),
       ),
       exhausted = VoteCount(NumPapers(0), NumVotes(0)),
       roundingError = VoteCount(NumPapers(0), NumVotes(0)),
-    )
+    ),
   )
 
   private val testAllocationAfterIneligibles = AllocationAfterIneligibles(
     candidateStatuses = CandidateStatuses[Fruit](
-      Apple -> Remaining,
-      Banana -> Remaining,
-      Pear -> Remaining,
+      Apple      -> Remaining,
+      Banana     -> Remaining,
+      Pear       -> Remaining,
       Strawberry -> Remaining,
     ),
     candidateVoteCounts = CandidateVoteCounts[Fruit](
       perCandidate = Map[Fruit, VoteCount](
-        Apple -> VoteCount(40),
-        Banana -> VoteCount(30),
-        Pear -> VoteCount(20),
+        Apple      -> VoteCount(40),
+        Banana     -> VoteCount(30),
+        Pear       -> VoteCount(20),
         Strawberry -> VoteCount(10),
       ),
       exhausted = VoteCount.zero,
@@ -52,21 +52,21 @@ class CountStepsSpec extends FlatSpec {
   private val testDistributionCountStep = DistributionCountStep[Fruit](
     count = Count(2),
     candidateStatuses = CandidateStatuses[Fruit](
-      Apple -> Remaining,
-      Banana -> Remaining,
-      Mango -> Remaining,
-      Pear -> Remaining,
-      Raspberry -> Remaining,
+      Apple      -> Remaining,
+      Banana     -> Remaining,
+      Mango      -> Remaining,
+      Pear       -> Remaining,
+      Raspberry  -> Remaining,
       Strawberry -> Remaining,
       Watermelon -> Excluded(Ordinal.first, Count(2)),
     ),
     candidateVoteCounts = CandidateVoteCounts(
       perCandidate = Map(
-        Apple -> VoteCount(11),
-        Banana -> VoteCount(6),
-        Mango -> VoteCount(10),
-        Pear -> VoteCount(11),
-        Raspberry -> VoteCount(7),
+        Apple      -> VoteCount(11),
+        Banana     -> VoteCount(6),
+        Mango      -> VoteCount(10),
+        Pear       -> VoteCount(11),
+        Raspberry  -> VoteCount(7),
         Strawberry -> VoteCount(5),
         Watermelon -> VoteCount(0),
       ),
@@ -84,8 +84,12 @@ class CountStepsSpec extends FlatSpec {
   private val secondDistributionStep = testDistributionCountStep.copy(count = testDistributionCountStep.count.increment)
 
   private val testCountStepsInitial: CountSteps.Initial[Fruit] = CountSteps.Initial(testInitialAllocation)
-  private val testCountStepsAfterIneligibleHandling: CountSteps.AfterIneligibleHandling[Fruit] = CountSteps.AfterIneligibleHandling(testInitialAllocation, testAllocationAfterIneligibles)
-  private val testCountStepsDuringDistributions: CountSteps.DuringDistributions[Fruit] = CountSteps.DuringDistributions(testInitialAllocation, testAllocationAfterIneligibles, List(testDistributionCountStep))
+  private val testCountStepsAfterIneligibleHandling: CountSteps.AfterIneligibleHandling[Fruit] =
+    CountSteps.AfterIneligibleHandling(testInitialAllocation, testAllocationAfterIneligibles)
+  private val testCountStepsDuringDistributions: CountSteps.DuringDistributions[Fruit] = CountSteps.DuringDistributions(
+    testInitialAllocation,
+    testAllocationAfterIneligibles,
+    List(testDistributionCountStep))
 
   behavior of "an initial CountSteps instance"
 
@@ -96,7 +100,7 @@ class CountStepsSpec extends FlatSpec {
     expectedSize = 1,
     expectedDefinedUpToCount = Count.ofInitialAllocation,
     expectedWhenTruncatedAtCount = List(
-      Count(0) -> testCountStepsInitial,
+      Count(0)  -> testCountStepsInitial,
       Count(42) -> testCountStepsInitial,
     ),
   )
@@ -140,10 +144,10 @@ class CountStepsSpec extends FlatSpec {
     expectedSize = 2,
     expectedDefinedUpToCount = Count.ofIneligibleCandidateHandling,
     expectedWhenTruncatedAtCount = List(
-      Count(0) -> testCountStepsInitial,
-      Count(1) -> testCountStepsAfterIneligibleHandling,
+      Count(0)  -> testCountStepsInitial,
+      Count(1)  -> testCountStepsAfterIneligibleHandling,
       Count(42) -> testCountStepsAfterIneligibleHandling,
-    )
+    ),
   )
 
   it should "contain an initial step" in {
@@ -159,7 +163,9 @@ class CountStepsSpec extends FlatSpec {
 
     val withAppendedDistributionStep = countSteps.append(testDistributionCountStep)
 
-    assert(withAppendedDistributionStep === CountSteps.DuringDistributions(testInitialAllocation, testAllocationAfterIneligibles, List(testDistributionCountStep)))
+    assert(
+      withAppendedDistributionStep === CountSteps
+        .DuringDistributions(testInitialAllocation, testAllocationAfterIneligibles, List(testDistributionCountStep)))
   }
 
   behavior of "a CountSteps instance during distribution steps"
@@ -171,11 +177,11 @@ class CountStepsSpec extends FlatSpec {
     expectedSize = 3,
     expectedDefinedUpToCount = Count(2),
     expectedWhenTruncatedAtCount = List(
-      Count(0) -> testCountStepsInitial,
-      Count(1) -> testCountStepsAfterIneligibleHandling,
-      Count(2) -> testCountStepsDuringDistributions,
+      Count(0)  -> testCountStepsInitial,
+      Count(1)  -> testCountStepsAfterIneligibleHandling,
+      Count(2)  -> testCountStepsDuringDistributions,
       Count(42) -> testCountStepsDuringDistributions,
-    )
+    ),
   )
 
   it should "contain an initial step" in {
@@ -195,7 +201,8 @@ class CountStepsSpec extends FlatSpec {
 
     val withAppendedDistributionStep = countSteps.append(secondDistributionStep)
 
-    assert(withAppendedDistributionStep.distributionCountSteps === List(testDistributionCountStep, secondDistributionStep))
+    assert(
+      withAppendedDistributionStep.distributionCountSteps === List(testDistributionCountStep, secondDistributionStep))
   }
 
   it can "be truncated to a distribution step" in {
@@ -214,15 +221,16 @@ class CountStepsSpec extends FlatSpec {
     }
   }
 
-  private def standardTests(testInstance: CountSteps[Fruit])
-                           (
-                             expectedHead: InitialAllocation[Fruit],
-                             expectedLast: CountStep[Fruit],
-                             expectedAsList: List[CountStep[Fruit]],
-                             expectedSize: Int,
-                             expectedDefinedUpToCount: Count,
-                             expectedWhenTruncatedAtCount: List[(Count, CountSteps[Fruit])],
-                           ): Unit = {
+  private def standardTests(
+    testInstance: CountSteps[Fruit],
+  )(
+    expectedHead: InitialAllocation[Fruit],
+    expectedLast: CountStep[Fruit],
+    expectedAsList: List[CountStep[Fruit]],
+    expectedSize: Int,
+    expectedDefinedUpToCount: Count,
+    expectedWhenTruncatedAtCount: List[(Count, CountSteps[Fruit])],
+  ): Unit = {
     it should "have the initial allocation as the head" in {
       assert(testInstance.head === expectedHead)
     }

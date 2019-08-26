@@ -19,16 +19,16 @@ import scala.collection.parallel.immutable.ParSet
 object DistributionComputation {
 
   def distributeAwayFromCandidate[C](
-                                      countContext: CountContext.AllowingAppending[C],
-                                      candidate: C,
-                                      distributionReason: CandidateDistributionReason,
-                                    )(implicit
-                                      roundingRules: RoundingRules,
-                                    ): ProbabilityMeasure[CountContext.DistributionPhase[C]] = {
+    countContext: CountContext.AllowingAppending[C],
+    candidate: C,
+    distributionReason: CandidateDistributionReason,
+  )(implicit
+    roundingRules: RoundingRules,
+  ): ProbabilityMeasure[CountContext.DistributionPhase[C]] = {
     val bundlesToDistribute = computeBundlesToDistribute(countContext, candidate, distributionReason)
 
     val votesForCandidate = countContext.mostRecentCountStep.candidateVoteCounts.perCandidate(candidate).numVotes
-    val surplus = votesForCandidate - countContext.quota
+    val surplus           = votesForCandidate - countContext.quota
 
     if (distributionReason == Election && surplus == NumVotes(0)) {
       applyElectionWithoutSurplus(countContext, candidate)
@@ -47,16 +47,17 @@ object DistributionComputation {
   }
 
   private def computeBundlesToDistribute[C](
-                                             countContext: CountContext.AllowingAppending[C],
-                                             candidateToDistribute: C,
-                                             distributionReason: CandidateDistributionReason,
-                                           ): Queue[ParSet[AssignedPaperBundle[C]]] = {
+    countContext: CountContext.AllowingAppending[C],
+    candidateToDistribute: C,
+    distributionReason: CandidateDistributionReason,
+  ): Queue[ParSet[AssignedPaperBundle[C]]] =
     distributionReason match {
-      case Election => Queue(
-        countContext.paperBundles.collect {
-          case b: AssignedPaperBundle[C] if b.assignedCandidate.contains(candidateToDistribute) => b
-        }
-      )
+      case Election =>
+        Queue(
+          countContext.paperBundles.collect {
+            case b: AssignedPaperBundle[C] if b.assignedCandidate.contains(candidateToDistribute) => b
+          },
+        )
       case Exclusion => {
         val bundlesPerTransferValue =
           new mutable.TreeMap[TransferValue, mutable.Set[AssignedPaperBundle[C]]]()(TransferValue.ordering.reverse)
@@ -69,21 +70,20 @@ object DistributionComputation {
           }
         }
 
-        bundlesPerTransferValue
-          .valuesIterator
+        bundlesPerTransferValue.valuesIterator
           .map(_.to(ParSet))
           .to(Queue)
       }
     }
-  }
 
   private def applyElectionWithoutSurplus[C](
-                                              countContext: CountContext.AllowingAppending[C],
-                                              candidate: C,
-                                            ): ProbabilityMeasure[CountContext.DistributionPhase[C]] = {
+    countContext: CountContext.AllowingAppending[C],
+    candidate: C,
+  ): ProbabilityMeasure[CountContext.DistributionPhase[C]] = {
     val count = countContext.mostRecentCountStep.count.increment
 
-    val paperBundlesForCandidate: PaperBundles[C] = countContext.paperBundles.filter(_.assignedCandidate contains candidate)
+    val paperBundlesForCandidate: PaperBundles[C] =
+      countContext.paperBundles.filter(_.assignedCandidate contains candidate)
 
     val newPaperBundles = countContext.paperBundles diff paperBundlesForCandidate
 
@@ -106,22 +106,24 @@ object DistributionComputation {
 
     val proposedCountSteps = countContext.previousCountSteps.append(proposedCountStep)
 
-    NextActionComputation.computeNextAction(countContext.numVacancies, countContext.quota, proposedCountSteps)
-      .map { case NewStatusesAndNextAction(newStatuses, nextAction) =>
-        val newCountStep = proposedCountStep.copy(candidateStatuses = newStatuses)
+    NextActionComputation
+      .computeNextAction(countContext.numVacancies, countContext.quota, proposedCountSteps)
+      .map {
+        case NewStatusesAndNextAction(newStatuses, nextAction) =>
+          val newCountStep = proposedCountStep.copy(candidateStatuses = newStatuses)
 
-        countContext.updated(
-          newPaperBundles,
-          newCountStep,
-          nextAction,
-        )
+          countContext.updated(
+            newPaperBundles,
+            newCountStep,
+            nextAction,
+          )
       }
   }
 
   private def applyExclusionWithoutPapers[C](
-                                              countContext: CountContext.AllowingAppending[C],
-                                              candidate: C,
-                                            ): ProbabilityMeasure[CountContext.DistributionPhase[C]] = {
+    countContext: CountContext.AllowingAppending[C],
+    candidate: C,
+  ): ProbabilityMeasure[CountContext.DistributionPhase[C]] = {
     val count = countContext.mostRecentCountStep.count.increment
 
     val oldCandidateStatuses = countContext.mostRecentCountStep.candidateStatuses
@@ -135,27 +137,28 @@ object DistributionComputation {
 
     val proposedCountSteps = countContext.previousCountSteps.append(proposedCountStep)
 
-    NextActionComputation.computeNextAction(countContext.numVacancies, countContext.quota, proposedCountSteps)
-      .map { case NewStatusesAndNextAction(newStatuses, nextAction) =>
-        val newCountStep = proposedCountStep.copy(candidateStatuses = newStatuses)
+    NextActionComputation
+      .computeNextAction(countContext.numVacancies, countContext.quota, proposedCountSteps)
+      .map {
+        case NewStatusesAndNextAction(newStatuses, nextAction) =>
+          val newCountStep = proposedCountStep.copy(candidateStatuses = newStatuses)
 
-        countContext.updated(
-          countContext.paperBundles,
-          newCountStep,
-          nextAction,
-        )
+          countContext.updated(
+            countContext.paperBundles,
+            newCountStep,
+            nextAction,
+          )
       }
   }
 
   private def nonRecursiveApplyDistributionsUntilAllBundlesDistributed[C](
-                                                                           countContext: CountContext.AllowingAppending[C],
-                                                                           candidateToDistribute: C,
-                                                                           distributionReason: CandidateDistributionReason,
-
-                                                                           bundlesToDistribute: Queue[ParSet[AssignedPaperBundle[C]]],
-                                                                         )(implicit
-                                                                           roundingRules: RoundingRules,
-                                                                         ): ProbabilityMeasure[CountContext.DistributionPhase[C]] =
+    countContext: CountContext.AllowingAppending[C],
+    candidateToDistribute: C,
+    distributionReason: CandidateDistributionReason,
+    bundlesToDistribute: Queue[ParSet[AssignedPaperBundle[C]]],
+  )(implicit
+    roundingRules: RoundingRules,
+  ): ProbabilityMeasure[CountContext.DistributionPhase[C]] =
     applyDistributionsUntilAllBundlesDistributed(
       countContext,
       candidateToDistribute,
@@ -165,14 +168,13 @@ object DistributionComputation {
 
   @tailrec
   private def applyDistributionsUntilAllBundlesDistributed[C](
-                                                               countContext: CountContext.AllowingAppending[C],
-                                                               candidateToDistribute: C,
-                                                               distributionReason: CandidateDistributionReason,
-
-                                                               bundlesToDistribute: Queue[ParSet[AssignedPaperBundle[C]]],
-                                                             )(implicit
-                                                               roundingRules: RoundingRules,
-                                                             ): ProbabilityMeasure[CountContext.DistributionPhase[C]] = {
+    countContext: CountContext.AllowingAppending[C],
+    candidateToDistribute: C,
+    distributionReason: CandidateDistributionReason,
+    bundlesToDistribute: Queue[ParSet[AssignedPaperBundle[C]]],
+  )(implicit
+    roundingRules: RoundingRules,
+  ): ProbabilityMeasure[CountContext.DistributionPhase[C]] = {
     val count = countContext.mostRecentCountStep.count.increment
 
     val oldCandidateStatuses = countContext.mostRecentCountStep.candidateStatuses
@@ -235,14 +237,15 @@ object DistributionComputation {
     )
 
     if (shortCircuitingNextAction.nonEmpty) {
-      shortCircuitingNextAction.get.map { case NewStatusesAndNextAction(newStatuses, nextAction) =>
-        val newCountStep = proposedCountStep.copy(candidateStatuses = newStatuses)
+      shortCircuitingNextAction.get.map {
+        case NewStatusesAndNextAction(newStatuses, nextAction) =>
+          val newCountStep = proposedCountStep.copy(candidateStatuses = newStatuses)
 
-        countContext.updated(
-          paperBundlesAfterDistribution,
-          newCountStep,
-          nextAction,
-        )
+          countContext.updated(
+            paperBundlesAfterDistribution,
+            newCountStep,
+            nextAction,
+          )
       }
     } else if (bundlesToDistributeLater.nonEmpty) {
 
@@ -290,15 +293,17 @@ object DistributionComputation {
           }
       }
     } else {
-      NextActionComputation.computeNextAction(countContext.numVacancies, countContext.quota, proposedCountSteps)
-        .map { case NewStatusesAndNextAction(newStatuses, nextAction) =>
-          val newCountStep = proposedCountStep.copy(candidateStatuses = newStatuses)
+      NextActionComputation
+        .computeNextAction(countContext.numVacancies, countContext.quota, proposedCountSteps)
+        .map {
+          case NewStatusesAndNextAction(newStatuses, nextAction) =>
+            val newCountStep = proposedCountStep.copy(candidateStatuses = newStatuses)
 
-          countContext.updated(
-            paperBundlesAfterDistribution,
-            newCountStep,
-            nextAction,
-          )
+            countContext.updated(
+              paperBundlesAfterDistribution,
+              newCountStep,
+              nextAction,
+            )
         }
     }
   }
@@ -306,18 +311,16 @@ object DistributionComputation {
   private final case class BundleUpdate[C](newBundles: PaperBundles[C], allBundlesIncludingNewOnes: PaperBundles[C])
 
   private def allPaperBundlesAfterDistributingSome[C](
-                                                       count: Count,
-                                                       candidateStatuses: CandidateStatuses[C],
-
-                                                       candidateToDistribute: C,
-                                                       distributionReason: CandidateDistributionReason,
-                                                       transferValue: TransferValue,
-
-                                                       allPaperBundles: PaperBundles[C],
-                                                       bundlesToDistribute: ParSet[AssignedPaperBundle[C]],
-                                                     ): BundleUpdate[C] = {
+    count: Count,
+    candidateStatuses: CandidateStatuses[C],
+    candidateToDistribute: C,
+    distributionReason: CandidateDistributionReason,
+    transferValue: TransferValue,
+    allPaperBundles: PaperBundles[C],
+    bundlesToDistribute: ParSet[AssignedPaperBundle[C]],
+  ): BundleUpdate[C] = {
     val distributionOrigin = distributionReason match {
-      case Election => PaperBundle.Origin.ElectedCandidate(candidateToDistribute, transferValue, count)
+      case Election  => PaperBundle.Origin.ElectedCandidate(candidateToDistribute, transferValue, count)
       case Exclusion => PaperBundle.Origin.ExcludedCandidate(candidateToDistribute, count)
     }
 
@@ -336,21 +339,25 @@ object DistributionComputation {
   }
 
   private def updateStatusesOfAnyNewlyElected[C](
-                                                  count: Count,
-                                                  quota: NumVotes,
-                                                  numVacancies: Int,
-                                                  candidateStatuses: CandidateStatuses[C],
-                                                  newVoteCounts: CandidateVoteCounts[C],
-                                                  previousCandidateVoteCounts: List[CandidateVoteCounts[C]],
-                                                ): ProbabilityMeasure[CandidateStatuses[C]] = {
-    ElectedCandidateComputations.newlyExceedingQuota(
-      newVoteCounts,
-      previousCandidateVoteCounts,
-      candidateStatuses,
-      numVacancies,
-      quota,
-    ).map { newlyElectedCandidates =>
-      ElectedCandidateComputations.newCandidateStatusesAfterElectionOf(newlyElectedCandidates, count, candidateStatuses)
-    }
-  }
+    count: Count,
+    quota: NumVotes,
+    numVacancies: Int,
+    candidateStatuses: CandidateStatuses[C],
+    newVoteCounts: CandidateVoteCounts[C],
+    previousCandidateVoteCounts: List[CandidateVoteCounts[C]],
+  ): ProbabilityMeasure[CandidateStatuses[C]] =
+    ElectedCandidateComputations
+      .newlyExceedingQuota(
+        newVoteCounts,
+        previousCandidateVoteCounts,
+        candidateStatuses,
+        numVacancies,
+        quota,
+      )
+      .map { newlyElectedCandidates =>
+        ElectedCandidateComputations.newCandidateStatusesAfterElectionOf(
+          newlyElectedCandidates,
+          count,
+          candidateStatuses)
+      }
 }

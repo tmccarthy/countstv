@@ -8,11 +8,12 @@ import org.scalatest.FlatSpec
 
 class PaperBundleOriginSpec extends FlatSpec {
 
-  private val testPreferenceTree = PreferenceTree.from[Fruit](Set(Apple, Pear, Banana, Strawberry), numBallotsHint = 3)(List(
-    Vector(Apple, Pear, Banana, Strawberry),
-    Vector(Apple, Banana, Strawberry, Pear),
-    Vector(Banana, Pear),
-  ))
+  private val testPreferenceTree = PreferenceTree.from[Fruit](Set(Apple, Pear, Banana, Strawberry), numBallotsHint = 3)(
+    List(
+      Vector(Apple, Pear, Banana, Strawberry),
+      Vector(Apple, Banana, Strawberry, Pear),
+      Vector(Banana, Pear),
+    ))
 
   "a paper bundle's origin" can "be the initial allocation" in {
     val paperBundle = AssignedPaperBundle[Fruit](
@@ -34,8 +35,8 @@ class PaperBundleOriginSpec extends FlatSpec {
 
   it can "be distribution from an elected candidate" in {
     val electedCandidate = Fruit.Apple
-    val transferValue = TransferValue(0.7d)
-    val count = Count(4)
+    val transferValue    = TransferValue(0.7d)
+    val count            = Count(4)
 
     val origin = PaperBundle.Origin.ElectedCandidate[Fruit](electedCandidate, transferValue, count)
 
@@ -46,7 +47,7 @@ class PaperBundleOriginSpec extends FlatSpec {
 
   it can "be distribution from an excluded candidate" in {
     val excludedCandidate = Fruit.Apple
-    val count = Count(4)
+    val count             = Count(4)
 
     val origin = PaperBundle.Origin.ExcludedCandidate[Fruit](excludedCandidate, count)
 
@@ -61,6 +62,5 @@ class PaperBundleOriginSpec extends FlatSpec {
   "a paper bundle originating after ineligible candidates have been handled" should "originate from the count 1" in {
     assert(PaperBundle.Origin.IneligibleCandidate(Apple).count === Count(1))
   }
-
 
 }

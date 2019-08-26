@@ -7,7 +7,12 @@ import au.id.tmm.countstv.counting.fixtures.CountContextFixtures
 import au.id.tmm.countstv.model.CandidateDistributionReason._
 import au.id.tmm.countstv.model.CandidateStatus._
 import au.id.tmm.countstv.model.CandidateStatuses
-import au.id.tmm.countstv.model.countsteps.{CountSteps, DistributionCountStep, ElectedNoSurplusCountStep, ExcludedNoVotesCountStep}
+import au.id.tmm.countstv.model.countsteps.{
+  CountSteps,
+  DistributionCountStep,
+  ElectedNoSurplusCountStep,
+  ExcludedNoVotesCountStep,
+}
 import au.id.tmm.countstv.model.values.{Count, Ordinal}
 import au.id.tmm.probabilitymeasure.ProbabilityMeasure
 import org.scalatest.FlatSpec
@@ -19,8 +24,8 @@ class NextActionComputationSpec extends FlatSpec {
     * This is to simulate "proposed" countsteps, as required for the computation of the next action and status changes.
     */
   private def countStepsWithoutUpdatedCandidateStatuses[T_COUNT_STEPS <: CountSteps[Fruit]](
-                                                                                             countSteps: T_COUNT_STEPS,
-                                                                                           ): T_COUNT_STEPS = {
+    countSteps: T_COUNT_STEPS,
+  ): T_COUNT_STEPS = {
     val secondLastCountStep = countSteps.init.last
 
     val unUpdatedCandidateStatuses = secondLastCountStep.candidateStatuses
@@ -28,14 +33,15 @@ class NextActionComputationSpec extends FlatSpec {
     (
       countSteps match {
         case steps @ CountSteps.AfterIneligibleHandling(_, allocationAfterIneligibles) =>
-          steps.copy(allocationAfterIneligibles = allocationAfterIneligibles.copy(candidateStatuses = unUpdatedCandidateStatuses))
+          steps.copy(allocationAfterIneligibles =
+            allocationAfterIneligibles.copy(candidateStatuses = unUpdatedCandidateStatuses))
 
         case steps @ CountSteps.DuringDistributions(_, _, distributionCountSteps) => {
           val oldLastCountStep = distributionCountSteps.last
 
           val newLastCountStep = oldLastCountStep match {
-            case c: DistributionCountStep[Fruit] => c.copy(candidateStatuses = unUpdatedCandidateStatuses)
-            case c: ExcludedNoVotesCountStep[Fruit] => c.copy(candidateStatuses = unUpdatedCandidateStatuses)
+            case c: DistributionCountStep[Fruit]     => c.copy(candidateStatuses = unUpdatedCandidateStatuses)
+            case c: ExcludedNoVotesCountStep[Fruit]  => c.copy(candidateStatuses = unUpdatedCandidateStatuses)
             case c: ElectedNoSurplusCountStep[Fruit] => c.copy(candidateStatuses = unUpdatedCandidateStatuses)
           }
 
@@ -44,7 +50,7 @@ class NextActionComputationSpec extends FlatSpec {
 
         case _: CountSteps.Initial[Fruit] => fail()
       }
-      ).asInstanceOf[T_COUNT_STEPS]
+    ).asInstanceOf[T_COUNT_STEPS]
   }
 
   "the next action after initial allocation" must "be to allocate away from ineligible candidates" in {
@@ -66,11 +72,11 @@ class NextActionComputationSpec extends FlatSpec {
 
     val expectedNextActionAndStatuses = NewStatusesAndNextAction(
       CandidateStatuses[Fruit](
-        Apple -> Remaining,
-        Banana -> Remaining,
-        Mango -> Remaining,
-        Pear -> Remaining,
-        Raspberry -> Remaining,
+        Apple      -> Remaining,
+        Banana     -> Remaining,
+        Mango      -> Remaining,
+        Pear       -> Remaining,
+        Raspberry  -> Remaining,
         Strawberry -> Remaining,
         Watermelon -> Excluded(Ordinal.first, Count(1)),
       ),

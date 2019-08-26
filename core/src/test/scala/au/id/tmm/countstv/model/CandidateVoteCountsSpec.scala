@@ -9,9 +9,9 @@ class CandidateVoteCountsSpec extends FlatSpec {
 
   private val testCandidateVoteCounts = CandidateVoteCounts[Fruit](
     perCandidate = Map(
-      Apple -> VoteCount(3),
-      Banana -> VoteCount(2),
-      Pear -> VoteCount(1),
+      Apple      -> VoteCount(3),
+      Banana     -> VoteCount(2),
+      Pear       -> VoteCount(1),
       Strawberry -> VoteCount(0),
     ),
     exhausted = VoteCount(42),
@@ -27,20 +27,21 @@ class CandidateVoteCountsSpec extends FlatSpec {
   }
 
   it should "store the votes per candidate" in {
-    assert(testCandidateVoteCounts.perCandidate === Map(
-      Apple -> VoteCount(3),
-      Banana -> VoteCount(2),
-      Pear -> VoteCount(1),
-      Strawberry -> VoteCount(0),
-    ))
+    assert(
+      testCandidateVoteCounts.perCandidate === Map(
+        Apple      -> VoteCount(3),
+        Banana     -> VoteCount(2),
+        Pear       -> VoteCount(1),
+        Strawberry -> VoteCount(0),
+      ))
   }
 
   it can "have a diff with another instance" in {
     val newCandidateVoteCounts = CandidateVoteCounts[Fruit](
       perCandidate = Map(
-        Apple -> VoteCount(7),
-        Banana -> VoteCount(1),
-        Pear -> VoteCount(5),
+        Apple      -> VoteCount(7),
+        Banana     -> VoteCount(1),
+        Pear       -> VoteCount(5),
         Strawberry -> VoteCount(2),
       ),
       exhausted = VoteCount(70),
@@ -49,9 +50,9 @@ class CandidateVoteCountsSpec extends FlatSpec {
 
     val expectedDiff = CandidateVoteCounts[Fruit](
       perCandidate = Map(
-        Apple -> VoteCount(4),
-        Banana -> VoteCount(-1),
-        Pear -> VoteCount(4),
+        Apple      -> VoteCount(4),
+        Banana     -> VoteCount(-1),
+        Pear       -> VoteCount(4),
         Strawberry -> VoteCount(2),
       ),
       exhausted = VoteCount(28),
@@ -64,9 +65,9 @@ class CandidateVoteCountsSpec extends FlatSpec {
   it can "be added to another instance" in {
     val left = CandidateVoteCounts[Fruit](
       perCandidate = Map(
-        Apple -> VoteCount(7),
-        Banana -> VoteCount(1),
-        Pear -> VoteCount(5),
+        Apple      -> VoteCount(7),
+        Banana     -> VoteCount(1),
+        Pear       -> VoteCount(5),
         Strawberry -> VoteCount(2),
       ),
       exhausted = VoteCount(70),
@@ -75,9 +76,9 @@ class CandidateVoteCountsSpec extends FlatSpec {
 
     val right = CandidateVoteCounts[Fruit](
       perCandidate = Map(
-        Apple -> VoteCount(2),
-        Banana -> VoteCount(4),
-        Pear -> VoteCount(1),
+        Apple      -> VoteCount(2),
+        Banana     -> VoteCount(4),
+        Pear       -> VoteCount(1),
         Strawberry -> VoteCount(6),
       ),
       exhausted = VoteCount(17),
@@ -86,9 +87,9 @@ class CandidateVoteCountsSpec extends FlatSpec {
 
     val expectedSum = CandidateVoteCounts[Fruit](
       perCandidate = Map(
-        Apple -> VoteCount(9),
-        Banana -> VoteCount(5),
-        Pear -> VoteCount(6),
+        Apple      -> VoteCount(9),
+        Banana     -> VoteCount(5),
+        Pear       -> VoteCount(6),
         Strawberry -> VoteCount(8),
       ),
       exhausted = VoteCount(87),

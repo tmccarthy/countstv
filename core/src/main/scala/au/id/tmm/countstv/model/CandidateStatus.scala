@@ -26,7 +26,6 @@ object CandidateStatus {
     */
   case class Elected(ordinalElected: Ordinal, electedAtCount: Count) extends CandidateStatus
 
-
   /**
     * The status of candidates that have been excluded in the count.
     * @param ordinalExcluded whether this candidate was excluded first, second etc.

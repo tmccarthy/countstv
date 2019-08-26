@@ -5,14 +5,14 @@ package au.id.tmm.countstv.model.values
   */
 final case class NumVotes(asDouble: Double) extends AnyVal {
 
-  def + (that: NumVotes): NumVotes = NumVotes(this.asDouble + that.asDouble)
+  def +(that: NumVotes): NumVotes = NumVotes(this.asDouble + that.asDouble)
 
-  def - (that: NumVotes): NumVotes = NumVotes(this.asDouble - that.asDouble)
+  def -(that: NumVotes): NumVotes = NumVotes(this.asDouble - that.asDouble)
 
-  def >(that: NumVotes): Boolean = this.asDouble > that.asDouble
+  def >(that: NumVotes): Boolean  = this.asDouble > that.asDouble
   def >=(that: NumVotes): Boolean = this.asDouble >= that.asDouble
   def <=(that: NumVotes): Boolean = this.asDouble <= that.asDouble
-  def <(that: NumVotes): Boolean = this.asDouble < that.asDouble
+  def <(that: NumVotes): Boolean  = this.asDouble < that.asDouble
 
   def /(that: NumPapers): TransferValue = TransferValue(this.asDouble / that.asLong.toDouble)
 
@@ -43,6 +43,6 @@ object NumVotes {
       -1
     } else {
       0
-    }
+    },
   }
 }

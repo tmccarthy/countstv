@@ -10,9 +10,9 @@ class CandidateVoteCountsSansRoundingErrorSpec extends FlatSpec {
 
   private val testVoteCounts1 = CandidateVoteCountsSansRoundingError[Fruit](
     perCandidate = Map(
-      Apple -> VoteCount(32),
-      Banana -> VoteCount(1),
-      Pear -> VoteCount(5),
+      Apple      -> VoteCount(32),
+      Banana     -> VoteCount(1),
+      Pear       -> VoteCount(5),
       Strawberry -> VoteCount(6),
     ),
     exhausted = VoteCount(2),
@@ -20,9 +20,9 @@ class CandidateVoteCountsSansRoundingErrorSpec extends FlatSpec {
 
   private val testVoteCounts2 = CandidateVoteCountsSansRoundingError[Fruit](
     perCandidate = Map(
-      Apple -> VoteCount(-2),
-      Banana -> VoteCount(5),
-      Pear -> VoteCount(3),
+      Apple      -> VoteCount(-2),
+      Banana     -> VoteCount(5),
+      Pear       -> VoteCount(3),
       Strawberry -> VoteCount(4),
     ),
     exhausted = VoteCount(2),
@@ -35,9 +35,9 @@ class CandidateVoteCountsSansRoundingErrorSpec extends FlatSpec {
   it can "be given a rounding error" in {
     val expectedVoteCountsWithRoundingError = CandidateVoteCounts[Fruit](
       perCandidate = Map(
-        Apple -> VoteCount(32),
-        Banana -> VoteCount(1),
-        Pear -> VoteCount(5),
+        Apple      -> VoteCount(32),
+        Banana     -> VoteCount(1),
+        Pear       -> VoteCount(5),
         Strawberry -> VoteCount(6),
       ),
       exhausted = VoteCount(2),
@@ -54,9 +54,9 @@ class CandidateVoteCountsSansRoundingErrorSpec extends FlatSpec {
 
     val expectedVoteCounts = CandidateVoteCountsSansRoundingError[Fruit](
       perCandidate = Map(
-        Apple -> VoteCount(30),
-        Banana -> VoteCount(6),
-        Pear -> VoteCount(8),
+        Apple      -> VoteCount(30),
+        Banana     -> VoteCount(6),
+        Pear       -> VoteCount(8),
         Strawberry -> VoteCount(10),
       ),
       exhausted = VoteCount(4),
@@ -68,9 +68,9 @@ class CandidateVoteCountsSansRoundingErrorSpec extends FlatSpec {
   it can "be built from some candidate vote counts with a rounding error" in {
     val withRoundingError = CandidateVoteCounts[Fruit](
       perCandidate = Map(
-        Apple -> VoteCount(32),
-        Banana -> VoteCount(1),
-        Pear -> VoteCount(5),
+        Apple      -> VoteCount(32),
+        Banana     -> VoteCount(1),
+        Pear       -> VoteCount(5),
         Strawberry -> VoteCount(6),
       ),
       exhausted = VoteCount(2),

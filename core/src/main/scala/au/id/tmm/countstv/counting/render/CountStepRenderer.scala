@@ -19,8 +19,8 @@ object CountStepRenderer {
 
     def renderCountStep(count: Count) = {
       val previousStep = liftedCountSteps(count.decrement)
-      val thisStep = completedCount.countSteps(count)
-      val nextStep = liftedCountSteps(count.increment)
+      val thisStep     = completedCount.countSteps(count)
+      val nextStep     = liftedCountSteps(count.increment)
 
       CountStepRenderer.renderRowsFor(
         completedCount.countParams.numVacancies,
@@ -34,17 +34,16 @@ object CountStepRenderer {
   }
 
   def renderRowsFor[C](
-                        numVacancies: Int,
-                        totalFormalPapers: NumPapers,
-                        quota: NumVotes,
-                      )
-                      (
-                        previousCountStep: Option[CountStep[C]],
-                        countStep: CountStep[C],
-                        nextCountStep: Option[CountStep[C]],
-                      )(implicit
-                        ordering: Ordering[C],
-                      ): List[RenderedRow[C]] = {
+    numVacancies: Int,
+    totalFormalPapers: NumPapers,
+    quota: NumVotes,
+  )(
+    previousCountStep: Option[CountStep[C]],
+    countStep: CountStep[C],
+    nextCountStep: Option[CountStep[C]],
+  )(implicit
+    ordering: Ordering[C],
+  ): List[RenderedRow[C]] = {
 
     val stepComment = nextCountStep match {
       case Some(_: InitialAllocation[C]) =>
@@ -65,7 +64,8 @@ object CountStepRenderer {
       case None =>
         previousCountStep match {
           case Some(previousCountStep) => {
-            val finallyElectedCandidates = countStep.candidateStatuses.diff(previousCountStep.candidateStatuses)
+            val finallyElectedCandidates = countStep.candidateStatuses
+              .diff(previousCountStep.candidateStatuses)
               .toList
               .collect {
                 case (candidate, status: CandidateStatus.Elected) => candidate -> status
@@ -82,12 +82,12 @@ object CountStepRenderer {
 
     def renderedRow(candidate: StepCandidate[C]): RenderedRow[C] = {
       val previousVoteCount = previousCountStep.map(voteCountFor(_)(candidate)).getOrElse(VoteCount.zero)
-      val thisVoteCount = voteCountFor(countStep)(candidate)
+      val thisVoteCount     = voteCountFor(countStep)(candidate)
 
       val transferredThisCount = thisVoteCount - previousVoteCount
 
       val previousStatus = previousCountStep.map(statusFor(_)(candidate)).getOrElse(Remaining)
-      val thisStatus = statusFor(countStep)(candidate)
+      val thisStatus     = statusFor(countStep)(candidate)
 
       RenderedRow(
         numVacancies,
@@ -99,7 +99,7 @@ object CountStepRenderer {
         thisVoteCount,
         transferValue = countStep match {
           case c: DistributionCountStep[C] => c.distributionSource.transferValue
-          case _ => TransferValue(1)
+          case _                           => TransferValue(1)
         },
         statusFor(countStep)(candidate),
         changedThisStep = thisStatus != previousStatus,
@@ -107,53 +107,60 @@ object CountStepRenderer {
       )
     }
 
-    val candidateRows = countStep.candidateStatuses
-      .allCandidates
-      .toList
-      .sorted
+    val candidateRows = countStep.candidateStatuses.allCandidates.toList.sorted
       .map(c => renderedRow(Candidate(c)))
 
     candidateRows :+ renderedRow(Exhausted) :+ renderedRow(RoundingError)
   }
 
   private def voteCountFor[C](countStep: CountStep[C])(candidate: StepCandidate[C]) = candidate match {
-    case Candidate(c) => countStep.candidateVoteCounts.perCandidate(c)
-    case Exhausted => countStep.candidateVoteCounts.exhausted
+    case Candidate(c)  => countStep.candidateVoteCounts.perCandidate(c)
+    case Exhausted     => countStep.candidateVoteCounts.exhausted
     case RoundingError => countStep.candidateVoteCounts.roundingError
   }
 
   private def statusFor[C](countStep: CountStep[C])(candidate: StepCandidate[C]) = candidate match {
-    case Candidate(c) => countStep.candidateStatuses.asMap(c)
+    case Candidate(c)              => countStep.candidateStatuses.asMap(c)
     case Exhausted | RoundingError => Remaining
   }
 
   final case class RenderedRow[+C](
-                                    numVacancies: Int,
-                                    numFormalPapers: NumPapers,
-                                    quota: NumVotes,
-                                    count: Count,
-                                    candidate: StepCandidate[C],
-                                    votesTransferred: VoteCount,
-                                    progressiveVoteTotal: VoteCount,
-                                    transferValue: TransferValue,
-                                    status: CandidateStatus,
-                                    changedThisStep: Boolean,
-                                    stepComment: StepComment[C],
-                                  )
+    numVacancies: Int,
+    numFormalPapers: NumPapers,
+    quota: NumVotes,
+    count: Count,
+    candidate: StepCandidate[C],
+    votesTransferred: VoteCount,
+    progressiveVoteTotal: VoteCount,
+    transferValue: TransferValue,
+    status: CandidateStatus,
+    changedThisStep: Boolean,
+    stepComment: StepComment[C],
+  )
 
   sealed trait StepComment[+C]
   object StepComment {
     case object InitialAllocation extends StepComment[Nothing]
-    case class NextStepDistributing[C](candidate: C, reason: CandidateDistributionReason, nextCount: Count, transferValue: TransferValue, sourceCounts: Set[Count]) extends StepComment[C]
+    case class NextStepDistributing[C](
+      candidate: C,
+      reason: CandidateDistributionReason,
+      nextCount: Count,
+      transferValue: TransferValue,
+      sourceCounts: Set[Count],
+    ) extends StepComment[C]
     case class ExcludedNoVotes[C](candidate: C, nextCount: Count) extends StepComment[C]
-    case class ElectedNoSurplus[C](candidate: C, nextCount: Count, sourceCounts: Set[Count]) extends StepComment[C]
+    case class ElectedNoSurplus[C](
+      candidate: C,
+      nextCount: Count,
+      sourceCounts: Set[Count],
+    ) extends StepComment[C]
     case class FinalElection[C](candidates: DupelessSeq[C]) extends StepComment[C]
   }
 
   sealed trait StepCandidate[+C]
   object StepCandidate {
-    case object Exhausted extends StepCandidate[Nothing]
-    case object RoundingError extends StepCandidate[Nothing]
+    case object Exhausted                 extends StepCandidate[Nothing]
+    case object RoundingError             extends StepCandidate[Nothing]
     case class Candidate[C](candidate: C) extends StepCandidate[C]
   }
 }

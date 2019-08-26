@@ -8,10 +8,10 @@ final case class Count(asInt: Int) extends AnyVal {
   def increment: Count = Count(asInt + 1)
   def decrement: Count = Count(asInt - 1)
 
-  def >(that: Count): Boolean = this.asInt > that.asInt
+  def >(that: Count): Boolean  = this.asInt > that.asInt
   def >=(that: Count): Boolean = this.asInt >= that.asInt
   def <=(that: Count): Boolean = this.asInt <= that.asInt
-  def <(that: Count): Boolean = this.asInt < that.asInt
+  def <(that: Count): Boolean  = this.asInt < that.asInt
 
 }
 
@@ -27,6 +27,6 @@ object Count {
       -1
     } else {
       0
-    }
+    },
   }
 }

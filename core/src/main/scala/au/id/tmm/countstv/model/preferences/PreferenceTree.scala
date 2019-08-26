@@ -48,21 +48,21 @@ sealed abstract class PreferenceTree[C] private (private val view: PreferenceTab
 
 object PreferenceTree {
 
-  def empty[C: Ordering](allCandidates: Set[C]): RootPreferenceTree[C] = from(allCandidates, numBallotsHint = 0)(Nil)
+  def empty[C : Ordering](allCandidates: Set[C]): RootPreferenceTree[C] = from(allCandidates, numBallotsHint = 0)(Nil)
 
   def from[C : Ordering](
-                          allCandidates: Set[C],
-                          numBallotsHint: Int = 100,
-                        )(
-                          ballots: Iterable[NormalisedBallot[C]],
-                        ): RootPreferenceTree[C] = fromIterator(allCandidates, numBallotsHint)(ballots.iterator)
+    allCandidates: Set[C],
+    numBallotsHint: Int = 100,
+  )(
+    ballots: Iterable[NormalisedBallot[C]],
+  ): RootPreferenceTree[C] = fromIterator(allCandidates, numBallotsHint)(ballots.iterator)
 
   def fromIterator[C : Ordering](
-                                  allCandidates: Set[C],
-                                  numBallotsHint: Int = 100,
-                                )(
-                                  ballots: Iterator[NormalisedBallot[C]],
-                                ): RootPreferenceTree[C] = {
+    allCandidates: Set[C],
+    numBallotsHint: Int = 100,
+  )(
+    ballots: Iterator[NormalisedBallot[C]],
+  ): RootPreferenceTree[C] = {
 
     val ballotsAsJava = ballots
       .map { b =>
@@ -83,12 +83,14 @@ object PreferenceTree {
   }
 
   final class RootPreferenceTree[C] private[preferences] (private[preferences] val preferenceTable: PreferenceTable[C])
-    extends PreferenceTree[C](preferenceTable.rootView()) {
+      extends PreferenceTree[C](preferenceTable.rootView()) {
 
-    override def toString: String = s"${getClass.getSimpleName}(numChildren=${children.size}, numPapers=${numPapers.asLong})"
+    override def toString: String =
+      s"${getClass.getSimpleName}(numChildren=${children.size}, numPapers=${numPapers.asLong})"
   }
 
-  final class PreferenceTreeNode[C] private[preferences] (private val view: PreferenceTable.View[C]) extends PreferenceTree[C](view) {
+  final class PreferenceTreeNode[C] private[preferences] (private val view: PreferenceTable.View[C])
+      extends PreferenceTree[C](view) {
     def associatedCandidate: C = view.assignedCandidate().get
 
     override def toString: String = {

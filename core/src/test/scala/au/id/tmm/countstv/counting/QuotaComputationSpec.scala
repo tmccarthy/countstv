@@ -6,13 +6,18 @@ import org.scalatest.FlatSpec
 
 class QuotaComputationSpec extends FlatSpec {
 
-  private def testQuota(numVacancies: Int, numBallots: Long, expectedQuota: Double, round: Boolean): Unit = {
+  private def testQuota(
+    numVacancies: Int,
+    numBallots: Long,
+    expectedQuota: Double,
+    round: Boolean,
+  ): Unit =
     s"the ${if (round) "rounded" else "unrounded"} quota with $numBallots ballots for $numVacancies vacancies" should s"be $expectedQuota" in {
-      val actualQuota = QuotaComputation.computeQuota(numVacancies, NumPapers(numBallots))(RoundingRules.AEC.copy(roundQuotaComputation = round))
+      val actualQuota = QuotaComputation.computeQuota(numVacancies, NumPapers(numBallots))(
+        RoundingRules.AEC.copy(roundQuotaComputation = round))
 
       assert(actualQuota.asDouble === expectedQuota)
     }
-  }
 
   testQuota(
     numVacancies = 12,

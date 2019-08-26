@@ -15,9 +15,9 @@ object FullCountComputation {
     * Runs a full count according to the given parameters, returning the count steps through the count.
     */
   def runCount[C](
-                   params: CountParams[C],
-                   preferenceTree: PreferenceTree[C],
-                 ): ProbabilityMeasure[CompletedCount[C]] = {
+    params: CountParams[C],
+    preferenceTree: PreferenceTree[C],
+  ): ProbabilityMeasure[CompletedCount[C]] = {
 
     val rootPaperBundle = PaperBundle.rootBundleFor(preferenceTree)
 
@@ -49,7 +49,11 @@ object FullCountComputation {
   }
 
   @tailrec
-  private def computeContextUntilFinal[C](context: CountContext.AllowingAppending[C])(implicit roundingRules: RoundingRules): ProbabilityMeasure[CountContext.AllowingAppending[C]] = {
+  private def computeContextUntilFinal[C](
+    context: CountContext.AllowingAppending[C],
+  )(implicit
+    roundingRules: RoundingRules,
+  ): ProbabilityMeasure[CountContext.AllowingAppending[C]] = {
     if (context.nextAction == CountAction.NoAction) {
       return Always(context)
     }
@@ -58,17 +62,18 @@ object FullCountComputation {
 
     nextContextPossibilities match {
       case Always(onlyOutcome) => computeContextUntilFinal(onlyOutcome)
-      case possibilities: Varied[CountContext.DistributionPhase[C]] => possibilities.flatMap { possibility =>
-        nonRecursiveComputeContextUntilFinal(possibility)
-      }
+      case possibilities: Varied[CountContext.DistributionPhase[C]] =>
+        possibilities.flatMap { possibility =>
+          nonRecursiveComputeContextUntilFinal(possibility)
+        }
     }
   }
 
   private def nonRecursiveComputeContextUntilFinal[C](
-                                                       context: CountContext.AllowingAppending[C],
-                                                     )(implicit
-                                                       roundingRules: RoundingRules,
-                                                     ): ProbabilityMeasure[CountContext.AllowingAppending[C]] =
+    context: CountContext.AllowingAppending[C],
+  )(implicit
+    roundingRules: RoundingRules,
+  ): ProbabilityMeasure[CountContext.AllowingAppending[C]] =
     computeContextUntilFinal(context)
 
 }

@@ -15,21 +15,13 @@ import au.id.tmm.countstv.rules.RoundingRules
 import scala.annotation.tailrec
 
 case class CountFixture(
-                         allBallots: Vector[Vector[Fruit]],
-                         candidates: Set[Fruit] = Set(
-                           Apple,
-                           Banana,
-                           Pear,
-                           Strawberry,
-                           Mango,
-                           Raspberry,
-                           Watermelon,
-                         ),
-                         numVacancies: Int = 2,
-                         ineligibleCandidates: Set[Fruit] = Set.empty
-                       )(implicit
-                         roundingRules: RoundingRules,
-                       ) {
+  allBallots: Vector[Vector[Fruit]],
+  candidates: Set[Fruit] = Set(Apple, Banana, Pear, Strawberry, Mango, Raspberry, Watermelon),
+  numVacancies: Int = 2,
+  ineligibleCandidates: Set[Fruit] = Set.empty,
+)(implicit
+  roundingRules: RoundingRules,
+) {
 
   val countParams: CountParams[Fruit] = CountParams(candidates, ineligibleCandidates, numVacancies, roundingRules)
 
@@ -49,15 +41,13 @@ case class CountFixture(
     CountActionInterpreter.applyActionToContext(initialContext).onlyOutcomeUnsafe
   }
 
-  def getActualCountStep(count: Count): DistributionPhaseCountStep[Fruit] = {
+  def getActualCountStep(count: Count): DistributionPhaseCountStep[Fruit] =
     firstContextAfterCount(count).previousCountSteps(count).asInstanceOf[DistributionPhaseCountStep[Fruit]]
-  }
 
-  def actualDistributionContextAfterCount(count: Count): CountContext.DuringDistributions[Fruit] = {
+  def actualDistributionContextAfterCount(count: Count): CountContext.DuringDistributions[Fruit] =
     actualContextAfterCount(count) match {
       case c: DuringDistributions[Fruit] => c
     }
-  }
 
   def actualContextAfterCount(count: Count): CountContext.DistributionPhase[Fruit] = {
     val candidateContext = firstContextAfterCount(count)
@@ -70,7 +60,10 @@ case class CountFixture(
   }
 
   @tailrec
-  private def firstContextAfterCount(count: Count, previousContext: CountContext.AllowingAppending[Fruit] = contextAfterIneligibles): CountContext.DistributionPhase[Fruit] = {
+  private def firstContextAfterCount(
+    count: Count,
+    previousContext: CountContext.AllowingAppending[Fruit] = contextAfterIneligibles,
+  ): CountContext.DistributionPhase[Fruit] = {
     require(count > Count.ofIneligibleCandidateHandling)
 
     CountActionInterpreter.applyActionToContext(previousContext).onlyOutcomeUnsafe match {
@@ -283,15 +276,18 @@ object CountFixture {
     ),
   )
 
-  def withAVacancyForEachCandidate: CountFixture = withFinalElection.afterEditingBallots { ballots =>
-    ballots.map { ballot =>
-      if (ballot == Vector[Fruit](Pear, Watermelon, Banana, Mango, Strawberry, Raspberry, Apple)) {
-        Vector[Fruit](Apple, Watermelon, Banana, Mango, Strawberry, Raspberry, Pear)
-      } else {
-        ballot
+  def withAVacancyForEachCandidate: CountFixture =
+    withFinalElection
+      .afterEditingBallots { ballots =>
+        ballots.map { ballot =>
+          if (ballot == Vector[Fruit](Pear, Watermelon, Banana, Mango, Strawberry, Raspberry, Apple)) {
+            Vector[Fruit](Apple, Watermelon, Banana, Mango, Strawberry, Raspberry, Pear)
+          } else {
+            ballot
+          }
+        }
       }
-    }
-  }.copy(numVacancies = 7)
+      .copy(numVacancies = 7)
 
   def whereEnoughCandidatesExceedQuotaWithoutDistribution: CountFixture = CountFixture(
     allBallots = Vector(

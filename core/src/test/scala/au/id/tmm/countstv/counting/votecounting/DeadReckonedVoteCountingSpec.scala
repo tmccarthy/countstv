@@ -18,32 +18,33 @@ class DeadReckonedVoteCountingSpec extends FlatSpec {
     implicit val roundingRules: RoundingRules = RoundingRules.AEC
 
     val candidateStatuses = CandidateStatuses[Fruit](
-      Apple -> Elected(Ordinal.first, Count(1)),
-      Banana -> Remaining,
-      Pear -> Remaining,
+      Apple      -> Elected(Ordinal.first, Count(1)),
+      Banana     -> Remaining,
+      Pear       -> Remaining,
       Strawberry -> Remaining,
     )
 
-    val preferenceTree = PreferenceTree.from[Fruit](candidateStatuses.allCandidates, numBallotsHint = 8)(List(
-      Vector(Apple, Banana),
-      Vector(Apple, Banana),
-      Vector(Apple, Banana),
-      Vector(Apple, Banana),
-      Vector(Apple, Banana),
-      Vector(Apple),
-      Vector(Banana),
-      Vector(Banana),
-    ))
+    val preferenceTree = PreferenceTree.from[Fruit](candidateStatuses.allCandidates, numBallotsHint = 8)(
+      List(
+        Vector(Apple, Banana),
+        Vector(Apple, Banana),
+        Vector(Apple, Banana),
+        Vector(Apple, Banana),
+        Vector(Apple, Banana),
+        Vector(Apple),
+        Vector(Banana),
+        Vector(Banana),
+      ))
 
     val numFormalPapers = preferenceTree.numPapers
-    val numVacancies = 2
-    val quota = QuotaComputation.computeQuota(numVacancies, numFormalPapers)
+    val numVacancies    = 2
+    val quota           = QuotaComputation.computeQuota(numVacancies, numFormalPapers)
 
     val oldVoteCounts = CandidateVoteCounts[Fruit](
       perCandidate = Map(
-        Apple -> VoteCount(NumPapers(6), NumVotes(6)),
-        Banana -> VoteCount(NumPapers(2), NumVotes(2)),
-        Pear -> VoteCount(0),
+        Apple      -> VoteCount(NumPapers(6), NumVotes(6)),
+        Banana     -> VoteCount(NumPapers(2), NumVotes(2)),
+        Pear       -> VoteCount(0),
         Strawberry -> VoteCount(0),
       ),
       exhausted = VoteCount(0),
@@ -70,7 +71,7 @@ class DeadReckonedVoteCountingSpec extends FlatSpec {
         PaperBundle.Origin.ElectedCandidate(Apple, TransferValue(0.5d), Count(2)),
         exhaustedAtCount = Count(1),
         originatingNode = preferenceTree.childFor(Apple).get,
-      )
+      ),
     )
 
     val actualVoteCounts = DeadReckonedVoteCounting.performDeadReckonedCount(
@@ -85,9 +86,9 @@ class DeadReckonedVoteCountingSpec extends FlatSpec {
 
     val expectedVoteCounts = CandidateVoteCounts[Fruit](
       perCandidate = Map(
-        Apple -> VoteCount(NumPapers(0), NumVotes(3)),
-        Banana -> VoteCount(NumPapers(7), NumVotes(4)),
-        Pear -> VoteCount(0),
+        Apple      -> VoteCount(NumPapers(0), NumVotes(3)),
+        Banana     -> VoteCount(NumPapers(7), NumVotes(4)),
+        Pear       -> VoteCount(0),
         Strawberry -> VoteCount(0),
       ),
       exhausted = VoteCount(NumPapers(1), NumVotes(0)),

@@ -22,13 +22,34 @@ class AllocationAfterIneligiblesComputationSpec extends FlatSpec {
     val actualPaperBundles = fixture.contextAfterIneligibles.paperBundles
 
     val expectedPaperBundles = ParSet[PaperBundle[Fruit]](
-      AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Apple).get, PaperBundle.Origin.InitialAllocation),
-      AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Banana).get, PaperBundle.Origin.InitialAllocation),
-      AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Mango).get, PaperBundle.Origin.InitialAllocation),
-      AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Pear).get, PaperBundle.Origin.InitialAllocation),
-      AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Raspberry).get, PaperBundle.Origin.InitialAllocation),
-      AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Strawberry).get, PaperBundle.Origin.InitialAllocation),
-      AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Watermelon).get, PaperBundle.Origin.InitialAllocation),
+      AssignedPaperBundle(
+        TransferValue(1),
+        fixture.preferenceTree.childFor(Apple).get,
+        PaperBundle.Origin.InitialAllocation),
+      AssignedPaperBundle(
+        TransferValue(1),
+        fixture.preferenceTree.childFor(Banana).get,
+        PaperBundle.Origin.InitialAllocation),
+      AssignedPaperBundle(
+        TransferValue(1),
+        fixture.preferenceTree.childFor(Mango).get,
+        PaperBundle.Origin.InitialAllocation),
+      AssignedPaperBundle(
+        TransferValue(1),
+        fixture.preferenceTree.childFor(Pear).get,
+        PaperBundle.Origin.InitialAllocation),
+      AssignedPaperBundle(
+        TransferValue(1),
+        fixture.preferenceTree.childFor(Raspberry).get,
+        PaperBundle.Origin.InitialAllocation),
+      AssignedPaperBundle(
+        TransferValue(1),
+        fixture.preferenceTree.childFor(Strawberry).get,
+        PaperBundle.Origin.InitialAllocation),
+      AssignedPaperBundle(
+        TransferValue(1),
+        fixture.preferenceTree.childFor(Watermelon).get,
+        PaperBundle.Origin.InitialAllocation),
     )
 
     assert(actualPaperBundles === expectedPaperBundles)
@@ -41,21 +62,21 @@ class AllocationAfterIneligiblesComputationSpec extends FlatSpec {
 
     val expectedCountStep = AllocationAfterIneligibles(
       candidateStatuses = CandidateStatuses[Fruit](
-        Apple -> Remaining,
-        Banana -> Remaining,
-        Mango -> Remaining,
-        Pear -> Remaining,
-        Raspberry -> Remaining,
+        Apple      -> Remaining,
+        Banana     -> Remaining,
+        Mango      -> Remaining,
+        Pear       -> Remaining,
+        Raspberry  -> Remaining,
         Strawberry -> Remaining,
         Watermelon -> Excluded(Ordinal.first, Count(1)),
       ),
       candidateVoteCounts = CandidateVoteCounts[Fruit](
         perCandidate = Map(
-          Apple -> VoteCount(10),
-          Banana -> VoteCount(6),
-          Mango -> VoteCount(9),
-          Pear -> VoteCount(9),
-          Raspberry -> VoteCount(7),
+          Apple      -> VoteCount(10),
+          Banana     -> VoteCount(6),
+          Mango      -> VoteCount(9),
+          Pear       -> VoteCount(9),
+          Raspberry  -> VoteCount(7),
           Strawberry -> VoteCount(5),
           Watermelon -> VoteCount(4),
         ),
@@ -94,23 +115,74 @@ class AllocationAfterIneligiblesComputationSpec extends FlatSpec {
     val actualPaperBundles = fixture.contextAfterIneligibles.paperBundles
 
     val expectedPaperBundles = ParSet[PaperBundle[Fruit]](
-      AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Apple, Banana).get, PaperBundle.Origin.IneligibleCandidate(Apple)),
-      AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Apple, Pear).get, PaperBundle.Origin.IneligibleCandidate(Apple)),
-      AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Apple, Mango).get, PaperBundle.Origin.IneligibleCandidate(Apple)),
-      AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Apple, Raspberry).get, PaperBundle.Origin.IneligibleCandidate(Apple)),
-      AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Apple, Strawberry, Pear).get, PaperBundle.Origin.IneligibleCandidate(Apple)),
-      AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Apple, Strawberry, Watermelon).get, PaperBundle.Origin.IneligibleCandidate(Apple)),
-      AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Apple, Strawberry, Mango).get, PaperBundle.Origin.IneligibleCandidate(Apple)),
-      AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Apple, Watermelon).get, PaperBundle.Origin.IneligibleCandidate(Apple)),
-      AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Banana).get, PaperBundle.Origin.InitialAllocation),
-      AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Mango).get, PaperBundle.Origin.InitialAllocation),
-      AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Pear).get, PaperBundle.Origin.InitialAllocation),
-      AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Raspberry).get, PaperBundle.Origin.InitialAllocation),
-      AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Strawberry, Apple, Pear).get, PaperBundle.Origin.IneligibleCandidate(Strawberry)),
-      AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Strawberry, Banana).get, PaperBundle.Origin.IneligibleCandidate(Strawberry)),
-      AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Strawberry, Raspberry).get, PaperBundle.Origin.IneligibleCandidate(Strawberry)),
-      AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Strawberry, Watermelon).get, PaperBundle.Origin.IneligibleCandidate(Strawberry)),
-      AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Watermelon).get, PaperBundle.Origin.InitialAllocation),
+      AssignedPaperBundle(
+        TransferValue(1),
+        fixture.preferenceTree.childFor(Apple, Banana).get,
+        PaperBundle.Origin.IneligibleCandidate(Apple)),
+      AssignedPaperBundle(
+        TransferValue(1),
+        fixture.preferenceTree.childFor(Apple, Pear).get,
+        PaperBundle.Origin.IneligibleCandidate(Apple)),
+      AssignedPaperBundle(
+        TransferValue(1),
+        fixture.preferenceTree.childFor(Apple, Mango).get,
+        PaperBundle.Origin.IneligibleCandidate(Apple)),
+      AssignedPaperBundle(
+        TransferValue(1),
+        fixture.preferenceTree.childFor(Apple, Raspberry).get,
+        PaperBundle.Origin.IneligibleCandidate(Apple)),
+      AssignedPaperBundle(
+        TransferValue(1),
+        fixture.preferenceTree.childFor(Apple, Strawberry, Pear).get,
+        PaperBundle.Origin.IneligibleCandidate(Apple)),
+      AssignedPaperBundle(
+        TransferValue(1),
+        fixture.preferenceTree.childFor(Apple, Strawberry, Watermelon).get,
+        PaperBundle.Origin.IneligibleCandidate(Apple)),
+      AssignedPaperBundle(
+        TransferValue(1),
+        fixture.preferenceTree.childFor(Apple, Strawberry, Mango).get,
+        PaperBundle.Origin.IneligibleCandidate(Apple)),
+      AssignedPaperBundle(
+        TransferValue(1),
+        fixture.preferenceTree.childFor(Apple, Watermelon).get,
+        PaperBundle.Origin.IneligibleCandidate(Apple)),
+      AssignedPaperBundle(
+        TransferValue(1),
+        fixture.preferenceTree.childFor(Banana).get,
+        PaperBundle.Origin.InitialAllocation),
+      AssignedPaperBundle(
+        TransferValue(1),
+        fixture.preferenceTree.childFor(Mango).get,
+        PaperBundle.Origin.InitialAllocation),
+      AssignedPaperBundle(
+        TransferValue(1),
+        fixture.preferenceTree.childFor(Pear).get,
+        PaperBundle.Origin.InitialAllocation),
+      AssignedPaperBundle(
+        TransferValue(1),
+        fixture.preferenceTree.childFor(Raspberry).get,
+        PaperBundle.Origin.InitialAllocation),
+      AssignedPaperBundle(
+        TransferValue(1),
+        fixture.preferenceTree.childFor(Strawberry, Apple, Pear).get,
+        PaperBundle.Origin.IneligibleCandidate(Strawberry)),
+      AssignedPaperBundle(
+        TransferValue(1),
+        fixture.preferenceTree.childFor(Strawberry, Banana).get,
+        PaperBundle.Origin.IneligibleCandidate(Strawberry)),
+      AssignedPaperBundle(
+        TransferValue(1),
+        fixture.preferenceTree.childFor(Strawberry, Raspberry).get,
+        PaperBundle.Origin.IneligibleCandidate(Strawberry)),
+      AssignedPaperBundle(
+        TransferValue(1),
+        fixture.preferenceTree.childFor(Strawberry, Watermelon).get,
+        PaperBundle.Origin.IneligibleCandidate(Strawberry)),
+      AssignedPaperBundle(
+        TransferValue(1),
+        fixture.preferenceTree.childFor(Watermelon).get,
+        PaperBundle.Origin.InitialAllocation),
     )
 
     assert(actualPaperBundles === expectedPaperBundles)
@@ -123,21 +195,21 @@ class AllocationAfterIneligiblesComputationSpec extends FlatSpec {
 
     val expectedCountStep = AllocationAfterIneligibles(
       candidateStatuses = CandidateStatuses[Fruit](
-        Apple -> Ineligible,
-        Banana -> Remaining,
-        Mango -> Remaining,
-        Pear -> Remaining,
-        Raspberry -> Remaining,
+        Apple      -> Ineligible,
+        Banana     -> Remaining,
+        Mango      -> Remaining,
+        Pear       -> Remaining,
+        Raspberry  -> Remaining,
         Strawberry -> Ineligible,
         Watermelon -> Excluded(Ordinal.first, Count(1)),
       ),
       candidateVoteCounts = CandidateVoteCounts[Fruit](
         perCandidate = Map(
-          Apple -> VoteCount(0),
-          Banana -> VoteCount(9),
-          Mango -> VoteCount(11),
-          Pear -> VoteCount(13),
-          Raspberry -> VoteCount(10),
+          Apple      -> VoteCount(0),
+          Banana     -> VoteCount(9),
+          Mango      -> VoteCount(11),
+          Pear       -> VoteCount(13),
+          Raspberry  -> VoteCount(10),
           Strawberry -> VoteCount(0),
           Watermelon -> VoteCount(7),
         ),
@@ -147,11 +219,11 @@ class AllocationAfterIneligiblesComputationSpec extends FlatSpec {
       transfersDueToIneligibles = Map[Fruit, CandidateVoteCountsSansRoundingError[Fruit]](
         Strawberry -> CandidateVoteCountsSansRoundingError(
           perCandidate = Map(
-            Apple -> VoteCount(0),
-            Banana -> VoteCount(2),
-            Mango -> VoteCount(0),
-            Pear -> VoteCount(1),
-            Raspberry -> VoteCount(1),
+            Apple      -> VoteCount(0),
+            Banana     -> VoteCount(2),
+            Mango      -> VoteCount(0),
+            Pear       -> VoteCount(1),
+            Raspberry  -> VoteCount(1),
             Strawberry -> VoteCount(0),
             Watermelon -> VoteCount(1),
           ),
@@ -159,11 +231,11 @@ class AllocationAfterIneligiblesComputationSpec extends FlatSpec {
         ),
         Apple -> CandidateVoteCountsSansRoundingError(
           perCandidate = Map(
-            Apple -> VoteCount(0),
-            Banana -> VoteCount(1),
-            Mango -> VoteCount(2),
-            Pear -> VoteCount(3),
-            Raspberry -> VoteCount(2),
+            Apple      -> VoteCount(0),
+            Banana     -> VoteCount(1),
+            Mango      -> VoteCount(2),
+            Pear       -> VoteCount(3),
+            Raspberry  -> VoteCount(2),
             Strawberry -> VoteCount(0),
             Watermelon -> VoteCount(2),
           ),

@@ -23,16 +23,16 @@ class PreferenceTableSerialisationSpec extends FlatSpec {
 
     PreferenceTableDeserialisation.deserialise(candidates, inputStream) match {
       case Right(preferenceTable) => preferenceTable
-      case Left(error) => fail(error)
+      case Left(error)            => fail(error)
     }
   }
 
   private def failToDeserialise(
-                                 preferenceTable: PreferenceTable[Fruit],
-                                 candidates: Set[Fruit] = candidates,
-                               )(
-                                 modifyStream: Vector[Byte] => Vector[Byte],
-                               ): PreferenceTableDeserialisation.Error = {
+    preferenceTable: PreferenceTable[Fruit],
+    candidates: Set[Fruit] = candidates,
+  )(
+    modifyStream: Vector[Byte] => Vector[Byte],
+  ): PreferenceTableDeserialisation.Error = {
     val outputStream = new ByteArrayOutputStream()
 
     PreferenceTableSerialisation.serialise(preferenceTable, outputStream)
@@ -43,13 +43,12 @@ class PreferenceTableSerialisationSpec extends FlatSpec {
 
     PreferenceTableDeserialisation.deserialise(candidates, modifiedInputStream) match {
       case Right(_) => fail("Expected error")
-      case Left(e) => e
+      case Left(e)  => e
     }
   }
 
-  private def assertEquals(left: PreferenceTable[Fruit], right: PreferenceTable[Fruit]): Assertion = {
+  private def assertEquals(left: PreferenceTable[Fruit], right: PreferenceTable[Fruit]): Assertion =
     assert(left equalTo right)
-  }
 
   private val emptyPreferenceTable = PreferenceTableConstruction.from(
     Iterator.empty.asInstanceOf[Iterator[java.util.Collection[Fruit]]].asJava,
@@ -102,20 +101,21 @@ class PreferenceTableSerialisationSpec extends FlatSpec {
     assertEquals(testPreferenceTable, deserialisedTable)
   }
 
-    it can "be serialised and deserialised with compression" in {
-      val outputStream = new ByteArrayOutputStream()
+  it can "be serialised and deserialised with compression" in {
+    val outputStream = new ByteArrayOutputStream()
 
-      PreferenceTableSerialisation.serialiseAndCompress(testPreferenceTable, outputStream)
+    PreferenceTableSerialisation.serialiseAndCompress(testPreferenceTable, outputStream)
 
-      val inputStream = new ByteArrayInputStream(outputStream.toByteArray)
+    val inputStream = new ByteArrayInputStream(outputStream.toByteArray)
 
-      val deserialisedPreferenceTable = PreferenceTableDeserialisation.decompressAndDeserialise(candidates, inputStream) match {
+    val deserialisedPreferenceTable =
+      PreferenceTableDeserialisation.decompressAndDeserialise(candidates, inputStream) match {
         case Right(preferenceTable) => preferenceTable
-        case Left(error) => fail(error)
+        case Left(error)            => fail(error)
       }
 
-      assertEquals(deserialisedPreferenceTable, testPreferenceTable)
-    }
+    assertEquals(deserialisedPreferenceTable, testPreferenceTable)
+  }
 
   "a sequence of bytes" can "not be deserialised if the magic number is incorrect" in {
     val error = failToDeserialise(testPreferenceTable) { bytes =>
@@ -123,8 +123,9 @@ class PreferenceTableSerialisationSpec extends FlatSpec {
     }
 
     assert(error === MagicWordMissing(hex"00E1A1DE", hex"ADE1A1DE", 4))
-    assert(error.getMessage === "The magic word was missing from the start of the preference tree stream. Expected " +
-      "ade1a1de, found 00e1a1de at byte 4")
+    assert(
+      error.getMessage === "The magic word was missing from the start of the preference tree stream. Expected " +
+        "ade1a1de, found 00e1a1de at byte 4")
   }
 
   it can "not be deserialised if the version is 2" in {
@@ -148,18 +149,21 @@ class PreferenceTableSerialisationSpec extends FlatSpec {
       bytes.updated(bytes.length - 200, 5.toByte)
     }
 
-    val expectedDigest = "5eb8709a96ee5191569879a59eea8255297c8fd7358e9ca5a57c288520d6bfc5b77c5d8d460499aeb7d884e390bafce232ad25de8155b9524596611b92eed051"
-    val actualDigest = "09548af2d26deea3f2de53f715924c586b9e522f4014a9224256ef47baa1ed73cad3518da493a2768891fdf05cf0285a972e0287fd338e370b76d1899097fe11"
+    val expectedDigest =
+      "5eb8709a96ee5191569879a59eea8255297c8fd7358e9ca5a57c288520d6bfc5b77c5d8d460499aeb7d884e390bafce232ad25de8155b9524596611b92eed051"
+    val actualDigest =
+      "09548af2d26deea3f2de53f715924c586b9e522f4014a9224256ef47baa1ed73cad3518da493a2768891fdf05cf0285a972e0287fd338e370b76d1899097fe11"
 
-    assert(error ===
-      DigestMismatch(
-        actualDigest = actualDigest.parseHexUnsafe,
-        expectedDigest = expectedDigest.parseHexUnsafe,
-        algorithm = "SHA-512",
-        streamPosition = 292,
-      )
-    )
-    assert(error.getMessage === s"SHA-512 Integrity check failed. Expected $expectedDigest, found $actualDigest at byte 292")
+    assert(
+      error ===
+        DigestMismatch(
+          actualDigest = actualDigest.parseHexUnsafe,
+          expectedDigest = expectedDigest.parseHexUnsafe,
+          algorithm = "SHA-512",
+          streamPosition = 292,
+        ))
+    assert(
+      error.getMessage === s"SHA-512 Integrity check failed. Expected $expectedDigest, found $actualDigest at byte 292")
   }
 
   it can "not be deserialised if it ends prematurely" in {

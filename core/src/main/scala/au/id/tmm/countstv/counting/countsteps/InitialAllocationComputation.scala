@@ -13,15 +13,15 @@ private[counting] object InitialAllocationComputation {
     * candidates.
     */
   def computeInitialContext[C](
-                                allCandidates: Set[C],
-                                ineligibleCandidates: Set[C],
-                                numVacancies: Int,
-                                rootPaperBundle: RootPaperBundle[C],
-                              )(implicit
-                                roundingRules: RoundingRules,
-                              ): CountContext.Initial[C] = {
+    allCandidates: Set[C],
+    ineligibleCandidates: Set[C],
+    numVacancies: Int,
+    rootPaperBundle: RootPaperBundle[C],
+  )(implicit
+    roundingRules: RoundingRules,
+  ): CountContext.Initial[C] = {
     val numFormalPapers = rootPaperBundle.numPapers
-    val quota = QuotaComputation.computeQuota(numVacancies, numFormalPapers)
+    val quota           = QuotaComputation.computeQuota(numVacancies, numFormalPapers)
 
     val firstSetOfPaperBundles = rootPaperBundle.distribute
 
@@ -32,7 +32,7 @@ private[counting] object InitialAllocationComputation {
         } else {
           candidate -> CandidateStatus.Remaining
         }
-      }.toMap
+      }.toMap,
     )
 
     CountContext.Initial[C](
@@ -48,7 +48,7 @@ private[counting] object InitialAllocationComputation {
             quota = quota,
             candidateStatuses = initialCandidateStatuses,
             paperBundles = firstSetOfPaperBundles,
-          )
+          ),
         ),
       ),
     )

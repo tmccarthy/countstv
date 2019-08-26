@@ -11,12 +11,12 @@ private[counting] object ElectedCandidateComputations {
     * Identifies any candidates that exceed quota, but have not yet been marked as elected.
     */
   def newlyExceedingQuota[C](
-                              currentCandidateVoteCounts: CandidateVoteCounts[C],
-                              previousCandidateVoteCountsAscending: List[CandidateVoteCounts[C]],
-                              candidateStatuses: CandidateStatuses[C],
-                              numVacancies: Int,
-                              quota: NumVotes,
-                            ): ProbabilityMeasure[DupelessSeq[C]] = {
+    currentCandidateVoteCounts: CandidateVoteCounts[C],
+    previousCandidateVoteCountsAscending: List[CandidateVoteCounts[C]],
+    candidateStatuses: CandidateStatuses[C],
+    numVacancies: Int,
+    quota: NumVotes,
+  ): ProbabilityMeasure[DupelessSeq[C]] = {
 
     val unelectedCandidatesExceedingQuota = candidateStatuses.remainingCandidates
       .to(LazyList)
@@ -26,24 +26,26 @@ private[counting] object ElectedCandidateComputations {
 
     val ordering = new CandidateVoteCountOrdering[C](currentCandidateVoteCounts, previousCandidateVoteCountsAscending)
 
-    TieSensitiveSorting.sort[C](unelectedCandidatesExceedingQuota)(ordering)
+    TieSensitiveSorting
+      .sort[C](unelectedCandidatesExceedingQuota)(ordering)
       .map(_.reverse.to(DupelessSeq))
   }
 
   def newCandidateStatusesAfterElectionOf[C](
-                                              newlyElectedCandidates: DupelessSeq[C],
-                                              count: Count,
-                                              oldCandidateStatuses: CandidateStatuses[C],
-                                            ): CandidateStatuses[C] = {
+    newlyElectedCandidates: DupelessSeq[C],
+    count: Count,
+    oldCandidateStatuses: CandidateStatuses[C],
+  ): CandidateStatuses[C] = {
     val numCandidatesPreviouslyElected = oldCandidateStatuses.electedCandidates.size
 
-    val statusesForNewlyElectedCandidates = newlyElectedCandidates
-      .zipWithIndex
-      .map { case (newlyElectedCandidate, indexElectedThisStep) =>
-        newlyElectedCandidate -> (numCandidatesPreviouslyElected + indexElectedThisStep)
+    val statusesForNewlyElectedCandidates = newlyElectedCandidates.zipWithIndex
+      .map {
+        case (newlyElectedCandidate, indexElectedThisStep) =>
+          newlyElectedCandidate -> (numCandidatesPreviouslyElected + indexElectedThisStep)
       }
-      .map { case (newlyElectedCandidate, ordinalElected) =>
-        newlyElectedCandidate -> CandidateStatus.Elected(Ordinal(ordinalElected), count)
+      .map {
+        case (newlyElectedCandidate, ordinalElected) =>
+          newlyElectedCandidate -> CandidateStatus.Elected(Ordinal(ordinalElected), count)
       }
       .toMap
 

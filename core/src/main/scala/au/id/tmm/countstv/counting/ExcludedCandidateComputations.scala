@@ -10,13 +10,14 @@ object ExcludedCandidateComputations {
     * [[au.id.tmm.countstv.counting.CandidateVoteCountOrdering CandidateVoteCountOrdering]].
     */
   def computeExcluded[C](
-                          currentCandidateVoteCounts: CandidateVoteCounts[C],
-                          previousCandidateVoteCountsAscending: List[CandidateVoteCounts[C]],
-                          candidateStatuses: CandidateStatuses[C],
-                        ): ProbabilityMeasure[C] = {
+    currentCandidateVoteCounts: CandidateVoteCounts[C],
+    previousCandidateVoteCountsAscending: List[CandidateVoteCounts[C]],
+    candidateStatuses: CandidateStatuses[C],
+  ): ProbabilityMeasure[C] = {
     val ordering = new CandidateVoteCountOrdering[C](currentCandidateVoteCounts, previousCandidateVoteCountsAscending)
 
-    TieSensitiveSorting.min(candidateStatuses.remainingCandidates)(ordering)
+    TieSensitiveSorting
+      .min(candidateStatuses.remainingCandidates)(ordering)
       .getOrElse(throw new IllegalArgumentException("No remaining candidates"))
   }
 

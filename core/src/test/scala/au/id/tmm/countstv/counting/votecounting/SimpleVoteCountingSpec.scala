@@ -12,23 +12,25 @@ import scala.collection.parallel.immutable.ParSet
 
 class SimpleVoteCountingSpec extends FlatSpec {
 
-  private val testPreferenceTree = PreferenceTree.from[Fruit](Set(Apple, Pear, Banana, Strawberry), numBallotsHint = 3)(List(
-    Vector(Apple, Pear, Banana, Strawberry),
-    Vector(Apple, Banana, Strawberry, Pear),
-    Vector(Apple, Strawberry, Pear),
-    Vector(Banana, Pear),
-    Vector(Strawberry),
-  ))
+  private val testPreferenceTree = PreferenceTree.from[Fruit](Set(Apple, Pear, Banana, Strawberry), numBallotsHint = 3)(
+    List(
+      Vector(Apple, Pear, Banana, Strawberry),
+      Vector(Apple, Banana, Strawberry, Pear),
+      Vector(Apple, Strawberry, Pear),
+      Vector(Banana, Pear),
+      Vector(Strawberry),
+    ))
 
   "a simple vote count" should "correctly perform a simple count on a set of paper bundles" in {
     val candidateStatuses = CandidateStatuses[Fruit](
-      Apple -> CandidateStatus.Remaining,
-      Banana -> CandidateStatus.Remaining,
-      Pear -> CandidateStatus.Remaining,
+      Apple      -> CandidateStatus.Remaining,
+      Banana     -> CandidateStatus.Remaining,
+      Pear       -> CandidateStatus.Remaining,
       Strawberry -> CandidateStatus.Remaining,
     )
 
-    val paperBundles = PaperBundle.rootBundleFor(testPreferenceTree)
+    val paperBundles = PaperBundle
+      .rootBundleFor(testPreferenceTree)
       .distributeToRemainingCandidates(PaperBundle.Origin.InitialAllocation, Count(2), candidateStatuses)
 
     val actualVoteCounts = SimpleVoteCounting.performSimpleCount[Fruit](
@@ -38,9 +40,9 @@ class SimpleVoteCountingSpec extends FlatSpec {
 
     val expectedVoteCounts = CandidateVoteCountsSansRoundingError[Fruit](
       perCandidate = Map(
-        Apple -> VoteCount(3),
-        Banana -> VoteCount(1),
-        Pear -> VoteCount.zero,
+        Apple      -> VoteCount(3),
+        Banana     -> VoteCount(1),
+        Pear       -> VoteCount.zero,
         Strawberry -> VoteCount(1),
       ),
       exhausted = VoteCount.zero,
@@ -51,19 +53,20 @@ class SimpleVoteCountingSpec extends FlatSpec {
 
   it should "correctly perform a simple count on another set of paper bundles" in {
     val candidateStatuses = CandidateStatuses[Fruit](
-      Apple -> CandidateStatus.Remaining,
-      Banana -> CandidateStatus.Remaining,
-      Pear -> CandidateStatus.Remaining,
+      Apple      -> CandidateStatus.Remaining,
+      Banana     -> CandidateStatus.Remaining,
+      Pear       -> CandidateStatus.Remaining,
       Strawberry -> CandidateStatus.Excluded(Ordinal.first, Count(1)),
     )
 
-    val paperBundles = PaperBundle.rootBundleFor(testPreferenceTree)
+    val paperBundles = PaperBundle
+      .rootBundleFor(testPreferenceTree)
       .distributeToRemainingCandidates(PaperBundle.Origin.InitialAllocation, Count(1), candidateStatuses)
       .flatMap { b =>
         b.distributeToRemainingCandidates(
           PaperBundle.Origin.ExcludedCandidate(Strawberry, Count(2)),
           Count(2),
-          candidateStatuses
+          candidateStatuses,
         )
       }
 
@@ -74,9 +77,9 @@ class SimpleVoteCountingSpec extends FlatSpec {
 
     val expectedCount = CandidateVoteCountsSansRoundingError(
       perCandidate = Map(
-        Apple -> VoteCount(3),
-        Banana -> VoteCount(1),
-        Pear -> VoteCount.zero,
+        Apple      -> VoteCount(3),
+        Banana     -> VoteCount(1),
+        Pear       -> VoteCount.zero,
         Strawberry -> VoteCount.zero,
       ),
       exhausted = VoteCount(1),
@@ -85,12 +88,11 @@ class SimpleVoteCountingSpec extends FlatSpec {
     assert(actualCount === expectedCount)
   }
 
-
   it should "correctly count the votes when some ballots have exhausted" in {
     val candidateStatuses = CandidateStatuses[Fruit](
-      Apple -> CandidateStatus.Elected(Ordinal.first, Count(1)),
-      Banana -> CandidateStatus.Remaining,
-      Pear -> CandidateStatus.Excluded(Ordinal.first, Count(2)),
+      Apple      -> CandidateStatus.Elected(Ordinal.first, Count(1)),
+      Banana     -> CandidateStatus.Remaining,
+      Pear       -> CandidateStatus.Excluded(Ordinal.first, Count(2)),
       Strawberry -> CandidateStatus.Excluded(Ordinal.second, Count(3)),
     )
 
@@ -123,7 +125,7 @@ class SimpleVoteCountingSpec extends FlatSpec {
         origin = PaperBundle.Origin.ElectedCandidate(Apple, TransferValue(0.666666666d), Count(2)),
         exhaustedAtCount = Count(3),
         originatingNode = testPreferenceTree.childFor(Apple).get,
-      )
+      ),
     )
 
     val actualVoteCounts = SimpleVoteCounting.performSimpleCount[Fruit](
@@ -133,9 +135,9 @@ class SimpleVoteCountingSpec extends FlatSpec {
 
     val expectedVoteCounts = CandidateVoteCountsSansRoundingError[Fruit](
       perCandidate = Map(
-        Apple -> VoteCount(NumPapers(0), NumVotes(0)),
-        Banana -> VoteCount(NumPapers(3), NumVotes(2)),
-        Pear -> VoteCount(NumPapers(0), NumVotes(0)),
+        Apple      -> VoteCount(NumPapers(0), NumVotes(0)),
+        Banana     -> VoteCount(NumPapers(3), NumVotes(2)),
+        Pear       -> VoteCount(NumPapers(0), NumVotes(0)),
         Strawberry -> VoteCount(NumPapers(0), NumVotes(0)),
       ),
       exhausted = VoteCount(NumPapers(2), NumVotes(1)),

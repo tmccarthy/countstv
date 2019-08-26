@@ -10,24 +10,27 @@ import scala.collection.parallel.immutable.ParSet
 object DeadReckonedVoteCounting {
 
   def performDeadReckonedCount[C](
-                                   numFormalPapers: NumPapers,
-                                   quota: NumVotes,
-                                   candidateStatuses: CandidateStatuses[C],
-                                   previousVoteCounts: CandidateVoteCounts[C],
-                                   removedBundles: ParSet[AssignedPaperBundle[C]],
-                                   addedBundles: PaperBundles[C],
-                                   transferValue: TransferValue,
-                                 )(implicit roundingRules: RoundingRules): CandidateVoteCounts[C] = {
+    numFormalPapers: NumPapers,
+    quota: NumVotes,
+    candidateStatuses: CandidateStatuses[C],
+    previousVoteCounts: CandidateVoteCounts[C],
+    removedBundles: ParSet[AssignedPaperBundle[C]],
+    addedBundles: PaperBundles[C],
+    transferValue: TransferValue,
+  )(implicit
+    roundingRules: RoundingRules,
+  ): CandidateVoteCounts[C] = {
 
     // TODO probably do this concurrently
     val papersRemoved = countPapersFor(candidateStatuses.allCandidates, removedBundles.asInstanceOf[PaperBundles[C]])
-    val papersAdded = countPapersFor(candidateStatuses.allCandidates, addedBundles)
+    val papersAdded   = countPapersFor(candidateStatuses.allCandidates, addedBundles)
 
     val papersTransferred = papersAdded - papersRemoved
 
     val votesTransferred = papersTransferred * transferValue
 
-    val newVoteCount = ensureAllVoteCountsNonNegative(CandidateVoteCountsSansRoundingError.from(previousVoteCounts) + votesTransferred)
+    val newVoteCount = ensureAllVoteCountsNonNegative(
+      CandidateVoteCountsSansRoundingError.from(previousVoteCounts) + votesTransferred)
 
     val voteCountsAccountingForElections = VoteCountingUtilities.incorporateElectedCandidatesIntoCount(
       quota,
@@ -40,29 +43,28 @@ object DeadReckonedVoteCounting {
     finalVoteCounts
   }
 
-  private def countPapersFor[C](
-                                 allCandidates: Set[C],
-                                 paperBundles: PaperBundles[C],
-                               ): CandidatePaperCounts[C] = {
+  private def countPapersFor[C](allCandidates: Set[C], paperBundles: PaperBundles[C]): CandidatePaperCounts[C] =
     paperBundles.aggregate(CandidatePaperCounts.zeroForEachOf(allCandidates))(
-      seqop = { case (paperCounts, paperBundle) =>
-        paperBundle.assignedCandidate match {
-          case Some(c) => paperCounts.increment(c, paperBundle.numPapers)
-          case None => paperCounts.copy(exhausted = paperCounts.exhausted + paperBundle.numPapers)
-        }
+      seqop = {
+        case (paperCounts, paperBundle) =>
+          paperBundle.assignedCandidate match {
+            case Some(c) => paperCounts.increment(c, paperBundle.numPapers)
+            case None    => paperCounts.copy(exhausted = paperCounts.exhausted + paperBundle.numPapers)
+          }
       },
-      combop = { case (left, right) =>
-        left + right
+      combop = {
+        case (left, right) =>
+          left + right
       },
     )
-  }
 
   // In some rare cases, due to rounding errors, vote counts can end up negative under the rounding rules that work
   // in normal circumstances. We handle this here.
   private def ensureAllVoteCountsNonNegative[C](
-                                                 voteCounts: CandidateVoteCountsSansRoundingError[C],
-                                               ): CandidateVoteCountsSansRoundingError[C] = {
-    val someCandidatesHaveNegativeVotes = voteCounts.perCandidate.exists { case (_, voteCount) =>
+    voteCounts: CandidateVoteCountsSansRoundingError[C],
+  ): CandidateVoteCountsSansRoundingError[C] = {
+    val someCandidatesHaveNegativeVotes = voteCounts.perCandidate.exists {
+      case (_, voteCount) =>
         voteCount.numVotes < NumVotes(0)
     }
 
@@ -71,7 +73,9 @@ object DeadReckonedVoteCounting {
         perCandidate = voteCounts.perCandidate.view.mapValues { voteCount =>
           if (voteCount.numVotes < NumVotes(0)) voteCount.copy(numVotes = NumVotes(0)) else voteCount
         }.toMap,
-        exhausted = if (voteCounts.exhausted.numVotes < NumVotes(0)) voteCounts.exhausted.copy(numVotes = NumVotes(0)) else voteCounts.exhausted,
+        exhausted =
+          if (voteCounts.exhausted.numVotes < NumVotes(0)) voteCounts.exhausted.copy(numVotes = NumVotes(0))
+          else voteCounts.exhausted,
       )
     } else {
       voteCounts

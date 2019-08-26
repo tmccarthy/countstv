@@ -30,7 +30,8 @@ class CountStepRendererSpec extends FlatSpec {
     testRenderedStep(
       fixture = CountFixture.withFinalElection,
       count = Count(1),
-      expectedStepComment = StepComment.NextStepDistributing(Watermelon, Exclusion, Count(2), TransferValue(1), Set(Count(0))),
+      expectedStepComment =
+        StepComment.NextStepDistributing(Watermelon, Exclusion, Count(2), TransferValue(1), Set(Count(0))),
     )
   }
 
@@ -38,7 +39,12 @@ class CountStepRendererSpec extends FlatSpec {
     testRenderedStep(
       fixture = CountFixture.withFinalElection,
       count = Count(4),
-      expectedStepComment = StepComment.NextStepDistributing(Apple, Election, Count(5), TransferValue(1d / 18d), Set(Count(0), Count(2), Count(3), Count(4)))
+      expectedStepComment = StepComment.NextStepDistributing(
+        Apple,
+        Election,
+        Count(5),
+        TransferValue(1d / 18d),
+        Set(Count(0), Count(2), Count(3), Count(4))),
     )
   }
 
@@ -67,22 +73,28 @@ class CountStepRendererSpec extends FlatSpec {
   }
 
   private def testRenderedStep(
-                                fixture: CountFixture,
-                                count: Count,
-                                expectedStepComment: StepComment[Fruit],
-                              ): Assertion = {
-    val countSteps = FullCountComputation.runCount(
-      fixture.countParams.copy(
-        ineligibleCandidates = Set.empty,
-      ),
-      fixture.preferenceTree,
-    ).onlyOutcomeUnsafe.countSteps
+    fixture: CountFixture,
+    count: Count,
+    expectedStepComment: StepComment[Fruit],
+  ): Assertion = {
+    val countSteps = FullCountComputation
+      .runCount(
+        fixture.countParams.copy(
+          ineligibleCandidates = Set.empty,
+        ),
+        fixture.preferenceTree,
+      )
+      .onlyOutcomeUnsafe
+      .countSteps
 
     val stepPrior = countSteps.lift(count.decrement)
-    val step = countSteps(count)
+    val step      = countSteps(count)
     val stepAfter = countSteps.lift(count.increment)
 
-    val actualRenderedStep = CountStepRenderer.renderRowsFor(fixture.numVacancies, fixture.numPapers, fixture.quota)(stepPrior, step, stepAfter)
+    val actualRenderedStep = CountStepRenderer.renderRowsFor(fixture.numVacancies, fixture.numPapers, fixture.quota)(
+      stepPrior,
+      step,
+      stepAfter)
 
     val expectedRenderedStep = fixture.candidates.toList.sorted.map { candidate =>
       CountStepRenderer.RenderedRow(
@@ -91,14 +103,17 @@ class CountStepRendererSpec extends FlatSpec {
         fixture.quota,
         count,
         candidate = CountStepRenderer.StepCandidate.Candidate(candidate),
-        votesTransferred = step.candidateVoteCounts.perCandidate(candidate) - stepPrior.map(_.candidateVoteCounts.perCandidate(candidate)).getOrElse(VoteCount.zero),
+        votesTransferred = step.candidateVoteCounts.perCandidate(candidate) - stepPrior
+          .map(_.candidateVoteCounts.perCandidate(candidate))
+          .getOrElse(VoteCount.zero),
         progressiveVoteTotal = step.candidateVoteCounts.perCandidate(candidate),
         transferValue = step match {
           case c: DistributionCountStep[Fruit] => c.distributionSource.transferValue
-          case _ => TransferValue(1)
+          case _                               => TransferValue(1)
         },
         status = step.candidateStatuses.asMap(candidate),
-        changedThisStep = stepPrior.exists(_.candidateStatuses.asMap(candidate) != step.candidateStatuses.asMap(candidate)),
+        changedThisStep =
+          stepPrior.exists(_.candidateStatuses.asMap(candidate) != step.candidateStatuses.asMap(candidate)),
         stepComment = expectedStepComment,
       )
     } :+
@@ -112,7 +127,7 @@ class CountStepRendererSpec extends FlatSpec {
         step.candidateVoteCounts.exhausted,
         step match {
           case c: DistributionCountStep[Fruit] => c.distributionSource.transferValue
-          case _ => TransferValue(1)
+          case _                               => TransferValue(1)
         },
         status = Remaining,
         changedThisStep = false,
@@ -124,11 +139,13 @@ class CountStepRendererSpec extends FlatSpec {
         fixture.quota,
         count,
         CountStepRenderer.StepCandidate.RoundingError,
-        step.candidateVoteCounts.roundingError - stepPrior.map(_.candidateVoteCounts.roundingError).getOrElse(VoteCount.zero),
+        step.candidateVoteCounts.roundingError - stepPrior
+          .map(_.candidateVoteCounts.roundingError)
+          .getOrElse(VoteCount.zero),
         step.candidateVoteCounts.roundingError,
         step match {
           case c: DistributionCountStep[Fruit] => c.distributionSource.transferValue
-          case _ => TransferValue(1)
+          case _                               => TransferValue(1)
         },
         status = Remaining,
         changedThisStep = false,
@@ -141,34 +158,252 @@ class CountStepRendererSpec extends FlatSpec {
   it can "render all rows for a completed count" in {
     val fixture = CountFixture.withFourCandidates
 
-    val completedCount = FullCountComputation.runCount(
-      fixture.countParams.copy(
-        ineligibleCandidates = Set.empty,
-      ),
-      fixture.preferenceTree,
-    ).onlyOutcomeUnsafe
+    val completedCount = FullCountComputation
+      .runCount(
+        fixture.countParams.copy(
+          ineligibleCandidates = Set.empty,
+        ),
+        fixture.preferenceTree,
+      )
+      .onlyOutcomeUnsafe
 
     val actualRenderedRows = CountStepRenderer.renderRowsFor(completedCount).toList
 
     val expectedRenderedRows = List(
-      RenderedRow(2,NumPapers(20),NumVotes(7),Count(0),Candidate(Apple),VoteCount(NumPapers(19),NumVotes(19)),VoteCount(NumPapers(19),NumVotes(19)),TransferValue(1.0),Remaining,changedThisStep = false,InitialAllocation),
-      RenderedRow(2,NumPapers(20),NumVotes(7),Count(0),Candidate(Banana),VoteCount(NumPapers(1),NumVotes(1)),VoteCount(NumPapers(1),NumVotes(1)),TransferValue(1.0),Remaining,changedThisStep = false,InitialAllocation),
-      RenderedRow(2,NumPapers(20),NumVotes(7),Count(0),Candidate(Pear),VoteCount(NumPapers(0),NumVotes(0)),VoteCount(NumPapers(0),NumVotes(0)),TransferValue(1.0),Remaining,changedThisStep = false,InitialAllocation),
-      RenderedRow(2,NumPapers(20),NumVotes(7),Count(0),Candidate(Strawberry),VoteCount(NumPapers(0),NumVotes(0)),VoteCount(NumPapers(0),NumVotes(0)),TransferValue(1.0),Remaining,changedThisStep = false,InitialAllocation),
-      RenderedRow(2,NumPapers(20),NumVotes(7),Count(0),Exhausted,VoteCount(NumPapers(0),NumVotes(0)),VoteCount(NumPapers(0),NumVotes(0)),TransferValue(1.0),Remaining,changedThisStep = false,InitialAllocation),
-      RenderedRow(2,NumPapers(20),NumVotes(7),Count(0),RoundingError,VoteCount(NumPapers(0),NumVotes(0)),VoteCount(NumPapers(0),NumVotes(0)),TransferValue(1.0),Remaining,changedThisStep = false,InitialAllocation),
-      RenderedRow(2,NumPapers(20),NumVotes(7),Count(1),Candidate(Apple),VoteCount(NumPapers(0),NumVotes(0)),VoteCount(NumPapers(19),NumVotes(19)),TransferValue(1.0),Elected(Ordinal(0),Count(1)),changedThisStep = true,NextStepDistributing(Apple,Election,Count(2),TransferValue(0.631578947368421),Set(Count(0)))),
-      RenderedRow(2,NumPapers(20),NumVotes(7),Count(1),Candidate(Banana),VoteCount(NumPapers(0),NumVotes(0)),VoteCount(NumPapers(1),NumVotes(1)),TransferValue(1.0),Remaining,changedThisStep = false,NextStepDistributing(Apple,Election,Count(2),TransferValue(0.631578947368421),Set(Count(0)))),
-      RenderedRow(2,NumPapers(20),NumVotes(7),Count(1),Candidate(Pear),VoteCount(NumPapers(0),NumVotes(0)),VoteCount(NumPapers(0),NumVotes(0)),TransferValue(1.0),Remaining,changedThisStep = false,NextStepDistributing(Apple,Election,Count(2),TransferValue(0.631578947368421),Set(Count(0)))),
-      RenderedRow(2,NumPapers(20),NumVotes(7),Count(1),Candidate(Strawberry),VoteCount(NumPapers(0),NumVotes(0)),VoteCount(NumPapers(0),NumVotes(0)),TransferValue(1.0),Remaining,changedThisStep = false,NextStepDistributing(Apple,Election,Count(2),TransferValue(0.631578947368421),Set(Count(0)))),
-      RenderedRow(2,NumPapers(20),NumVotes(7),Count(1),Exhausted,VoteCount(NumPapers(0),NumVotes(0)),VoteCount(NumPapers(0),NumVotes(0)),TransferValue(1.0),Remaining,changedThisStep = false,NextStepDistributing(Apple,Election,Count(2),TransferValue(0.631578947368421),Set(Count(0)))),
-      RenderedRow(2,NumPapers(20),NumVotes(7),Count(1),RoundingError,VoteCount(NumPapers(0),NumVotes(0)),VoteCount(NumPapers(0),NumVotes(0)),TransferValue(1.0),Remaining,changedThisStep = false,NextStepDistributing(Apple,Election,Count(2),TransferValue(0.631578947368421),Set(Count(0)))),
-      RenderedRow(2,NumPapers(20),NumVotes(7),Count(2),Candidate(Apple),VoteCount(NumPapers(-19),NumVotes(-12)),VoteCount(NumPapers(0),NumVotes(7)),TransferValue(0.631578947368421),Elected(Ordinal(0),Count(1)),changedThisStep = false,FinalElection(DupelessSeq(Pear))),
-      RenderedRow(2,NumPapers(20),NumVotes(7),Count(2),Candidate(Banana),VoteCount(NumPapers(1),NumVotes(0)),VoteCount(NumPapers(2),NumVotes(1)),TransferValue(0.631578947368421),Remaining,changedThisStep = false,FinalElection(DupelessSeq(Pear))),
-      RenderedRow(2,NumPapers(20),NumVotes(7),Count(2),Candidate(Pear),VoteCount(NumPapers(18),NumVotes(11)),VoteCount(NumPapers(18),NumVotes(11)),TransferValue(0.631578947368421),Elected(Ordinal(1),Count(2)),changedThisStep = true,FinalElection(DupelessSeq(Pear))),
-      RenderedRow(2,NumPapers(20),NumVotes(7),Count(2),Candidate(Strawberry),VoteCount(NumPapers(0),NumVotes(0)),VoteCount(NumPapers(0),NumVotes(0)),TransferValue(0.631578947368421),Remaining,changedThisStep = false,FinalElection(DupelessSeq(Pear))),
-      RenderedRow(2,NumPapers(20),NumVotes(7),Count(2),Exhausted,VoteCount(NumPapers(0),NumVotes(0)),VoteCount(NumPapers(0),NumVotes(0)),TransferValue(0.631578947368421),Remaining,changedThisStep = false,FinalElection(DupelessSeq(Pear))),
-      RenderedRow(2,NumPapers(20),NumVotes(7),Count(2),RoundingError,VoteCount(NumPapers(0),NumVotes(1)),VoteCount(NumPapers(0),NumVotes(1)),TransferValue(0.631578947368421),Remaining,changedThisStep = false,FinalElection(DupelessSeq(Pear))),
+      RenderedRow(
+        2,
+        NumPapers(20),
+        NumVotes(7),
+        Count(0),
+        Candidate(Apple),
+        VoteCount(NumPapers(19), NumVotes(19)),
+        VoteCount(NumPapers(19), NumVotes(19)),
+        TransferValue(1.0),
+        Remaining,
+        changedThisStep = false,
+        InitialAllocation,
+      ),
+      RenderedRow(
+        2,
+        NumPapers(20),
+        NumVotes(7),
+        Count(0),
+        Candidate(Banana),
+        VoteCount(NumPapers(1), NumVotes(1)),
+        VoteCount(NumPapers(1), NumVotes(1)),
+        TransferValue(1.0),
+        Remaining,
+        changedThisStep = false,
+        InitialAllocation,
+      ),
+      RenderedRow(
+        2,
+        NumPapers(20),
+        NumVotes(7),
+        Count(0),
+        Candidate(Pear),
+        VoteCount(NumPapers(0), NumVotes(0)),
+        VoteCount(NumPapers(0), NumVotes(0)),
+        TransferValue(1.0),
+        Remaining,
+        changedThisStep = false,
+        InitialAllocation,
+      ),
+      RenderedRow(
+        2,
+        NumPapers(20),
+        NumVotes(7),
+        Count(0),
+        Candidate(Strawberry),
+        VoteCount(NumPapers(0), NumVotes(0)),
+        VoteCount(NumPapers(0), NumVotes(0)),
+        TransferValue(1.0),
+        Remaining,
+        changedThisStep = false,
+        InitialAllocation,
+      ),
+      RenderedRow(
+        2,
+        NumPapers(20),
+        NumVotes(7),
+        Count(0),
+        Exhausted,
+        VoteCount(NumPapers(0), NumVotes(0)),
+        VoteCount(NumPapers(0), NumVotes(0)),
+        TransferValue(1.0),
+        Remaining,
+        changedThisStep = false,
+        InitialAllocation,
+      ),
+      RenderedRow(
+        2,
+        NumPapers(20),
+        NumVotes(7),
+        Count(0),
+        RoundingError,
+        VoteCount(NumPapers(0), NumVotes(0)),
+        VoteCount(NumPapers(0), NumVotes(0)),
+        TransferValue(1.0),
+        Remaining,
+        changedThisStep = false,
+        InitialAllocation,
+      ),
+      RenderedRow(
+        2,
+        NumPapers(20),
+        NumVotes(7),
+        Count(1),
+        Candidate(Apple),
+        VoteCount(NumPapers(0), NumVotes(0)),
+        VoteCount(NumPapers(19), NumVotes(19)),
+        TransferValue(1.0),
+        Elected(Ordinal(0), Count(1)),
+        changedThisStep = true,
+        NextStepDistributing(Apple, Election, Count(2), TransferValue(0.631578947368421), Set(Count(0))),
+      ),
+      RenderedRow(
+        2,
+        NumPapers(20),
+        NumVotes(7),
+        Count(1),
+        Candidate(Banana),
+        VoteCount(NumPapers(0), NumVotes(0)),
+        VoteCount(NumPapers(1), NumVotes(1)),
+        TransferValue(1.0),
+        Remaining,
+        changedThisStep = false,
+        NextStepDistributing(Apple, Election, Count(2), TransferValue(0.631578947368421), Set(Count(0))),
+      ),
+      RenderedRow(
+        2,
+        NumPapers(20),
+        NumVotes(7),
+        Count(1),
+        Candidate(Pear),
+        VoteCount(NumPapers(0), NumVotes(0)),
+        VoteCount(NumPapers(0), NumVotes(0)),
+        TransferValue(1.0),
+        Remaining,
+        changedThisStep = false,
+        NextStepDistributing(Apple, Election, Count(2), TransferValue(0.631578947368421), Set(Count(0))),
+      ),
+      RenderedRow(
+        2,
+        NumPapers(20),
+        NumVotes(7),
+        Count(1),
+        Candidate(Strawberry),
+        VoteCount(NumPapers(0), NumVotes(0)),
+        VoteCount(NumPapers(0), NumVotes(0)),
+        TransferValue(1.0),
+        Remaining,
+        changedThisStep = false,
+        NextStepDistributing(Apple, Election, Count(2), TransferValue(0.631578947368421), Set(Count(0))),
+      ),
+      RenderedRow(
+        2,
+        NumPapers(20),
+        NumVotes(7),
+        Count(1),
+        Exhausted,
+        VoteCount(NumPapers(0), NumVotes(0)),
+        VoteCount(NumPapers(0), NumVotes(0)),
+        TransferValue(1.0),
+        Remaining,
+        changedThisStep = false,
+        NextStepDistributing(Apple, Election, Count(2), TransferValue(0.631578947368421), Set(Count(0))),
+      ),
+      RenderedRow(
+        2,
+        NumPapers(20),
+        NumVotes(7),
+        Count(1),
+        RoundingError,
+        VoteCount(NumPapers(0), NumVotes(0)),
+        VoteCount(NumPapers(0), NumVotes(0)),
+        TransferValue(1.0),
+        Remaining,
+        changedThisStep = false,
+        NextStepDistributing(Apple, Election, Count(2), TransferValue(0.631578947368421), Set(Count(0))),
+      ),
+      RenderedRow(
+        2,
+        NumPapers(20),
+        NumVotes(7),
+        Count(2),
+        Candidate(Apple),
+        VoteCount(NumPapers(-19), NumVotes(-12)),
+        VoteCount(NumPapers(0), NumVotes(7)),
+        TransferValue(0.631578947368421),
+        Elected(Ordinal(0), Count(1)),
+        changedThisStep = false,
+        FinalElection(DupelessSeq(Pear)),
+      ),
+      RenderedRow(
+        2,
+        NumPapers(20),
+        NumVotes(7),
+        Count(2),
+        Candidate(Banana),
+        VoteCount(NumPapers(1), NumVotes(0)),
+        VoteCount(NumPapers(2), NumVotes(1)),
+        TransferValue(0.631578947368421),
+        Remaining,
+        changedThisStep = false,
+        FinalElection(DupelessSeq(Pear)),
+      ),
+      RenderedRow(
+        2,
+        NumPapers(20),
+        NumVotes(7),
+        Count(2),
+        Candidate(Pear),
+        VoteCount(NumPapers(18), NumVotes(11)),
+        VoteCount(NumPapers(18), NumVotes(11)),
+        TransferValue(0.631578947368421),
+        Elected(Ordinal(1), Count(2)),
+        changedThisStep = true,
+        FinalElection(DupelessSeq(Pear)),
+      ),
+      RenderedRow(
+        2,
+        NumPapers(20),
+        NumVotes(7),
+        Count(2),
+        Candidate(Strawberry),
+        VoteCount(NumPapers(0), NumVotes(0)),
+        VoteCount(NumPapers(0), NumVotes(0)),
+        TransferValue(0.631578947368421),
+        Remaining,
+        changedThisStep = false,
+        FinalElection(DupelessSeq(Pear)),
+      ),
+      RenderedRow(
+        2,
+        NumPapers(20),
+        NumVotes(7),
+        Count(2),
+        Exhausted,
+        VoteCount(NumPapers(0), NumVotes(0)),
+        VoteCount(NumPapers(0), NumVotes(0)),
+        TransferValue(0.631578947368421),
+        Remaining,
+        changedThisStep = false,
+        FinalElection(DupelessSeq(Pear)),
+      ),
+      RenderedRow(
+        2,
+        NumPapers(20),
+        NumVotes(7),
+        Count(2),
+        RoundingError,
+        VoteCount(NumPapers(0), NumVotes(1)),
+        VoteCount(NumPapers(0), NumVotes(1)),
+        TransferValue(0.631578947368421),
+        Remaining,
+        changedThisStep = false,
+        FinalElection(DupelessSeq(Pear)),
+      ),
     )
 
     assert(actualRenderedRows === expectedRenderedRows)

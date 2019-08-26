@@ -25,7 +25,7 @@ class PreferenceTreeSpec extends FlatSpec {
 
   "a preference tree with a single ballot" should "have 1 paper" in {
     val preferenceTree = preferenceTreeWith(
-      ballotWith4Preferences
+      ballotWith4Preferences,
     )
 
     assert(preferenceTree.numPapers === NumPapers(1))
@@ -33,7 +33,7 @@ class PreferenceTreeSpec extends FlatSpec {
 
   it should "have a child for the first preference" in {
     val preferenceTree = preferenceTreeWith(
-      ballotWith4Preferences
+      ballotWith4Preferences,
     )
 
     val childNode = preferenceTree.childFor(ballotWith4Preferences.head)
@@ -43,7 +43,7 @@ class PreferenceTreeSpec extends FlatSpec {
 
   it should "have a child for the last preference" in {
     val preferenceTree = preferenceTreeWith(
-      ballotWith4Preferences
+      ballotWith4Preferences,
     )
 
     val lastChildNode = preferenceTree
@@ -59,7 +59,7 @@ class PreferenceTreeSpec extends FlatSpec {
 
   it should "have no child when preferences are exhausted" in {
     val preferenceTree = preferenceTreeWith(
-      ballotWith4Preferences
+      ballotWith4Preferences,
     )
 
     val lastChildNode = preferenceTree
@@ -107,7 +107,7 @@ class PreferenceTreeSpec extends FlatSpec {
 
   "a preference tree child node" should "be associated with a candidate" in {
     val preferenceTree = preferenceTreeWith(
-      ballotWith4Preferences
+      ballotWith4Preferences,
     )
 
     val childNode = preferenceTree.childFor(ballotWith4Preferences.head).get

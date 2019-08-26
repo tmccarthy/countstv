@@ -11,11 +11,12 @@ import org.scalatest.Assertion
 
 class PaperBundleSpec extends FlatSpec {
 
-  private val testPreferenceTree = PreferenceTree.from[Fruit](Set(Apple, Pear, Banana, Strawberry), numBallotsHint = 3)(List(
-    Vector(Apple, Pear, Banana, Strawberry),
-    Vector(Apple, Banana, Strawberry, Pear),
-    Vector(Banana, Pear),
-  ))
+  private val testPreferenceTree = PreferenceTree.from[Fruit](Set(Apple, Pear, Banana, Strawberry), numBallotsHint = 3)(
+    List(
+      Vector(Apple, Pear, Banana, Strawberry),
+      Vector(Apple, Banana, Strawberry, Pear),
+      Vector(Banana, Pear),
+    ))
 
   "a paper bundle" should "have a transfer value" in {
     val paperBundle = AssignedPaperBundle[Fruit](
@@ -70,19 +71,19 @@ class PaperBundleSpec extends FlatSpec {
   }
 
   private def testDistribution(
-                                originalCandidate: Fruit,
-                                appleStatus: CandidateStatus = CandidateStatus.Remaining,
-                                bananaStatus: CandidateStatus = CandidateStatus.Remaining,
-                                pearStatus: CandidateStatus = CandidateStatus.Remaining,
-                                strawberryStatus: CandidateStatus = CandidateStatus.Remaining,
-                                originalTransferValue: TransferValue = TransferValue(1d),
-                                expectedBundlesAfterDistribution: Set[PaperBundle[Fruit]] = Set.empty[PaperBundle[Fruit]],
-                                expectBundleUnchanged: Boolean = false,
-                              ): Assertion = {
+    originalCandidate: Fruit,
+    appleStatus: CandidateStatus = CandidateStatus.Remaining,
+    bananaStatus: CandidateStatus = CandidateStatus.Remaining,
+    pearStatus: CandidateStatus = CandidateStatus.Remaining,
+    strawberryStatus: CandidateStatus = CandidateStatus.Remaining,
+    originalTransferValue: TransferValue = TransferValue(1d),
+    expectedBundlesAfterDistribution: Set[PaperBundle[Fruit]] = Set.empty[PaperBundle[Fruit]],
+    expectBundleUnchanged: Boolean = false,
+  ): Assertion = {
     val candidateStatuses = CandidateStatuses[Fruit](
-      Fruit.Apple -> appleStatus,
-      Fruit.Banana -> bananaStatus,
-      Fruit.Pear -> pearStatus,
+      Fruit.Apple      -> appleStatus,
+      Fruit.Banana     -> bananaStatus,
+      Fruit.Pear       -> pearStatus,
       Fruit.Strawberry -> strawberryStatus,
     )
 
@@ -94,7 +95,8 @@ class PaperBundleSpec extends FlatSpec {
 
     val origin = PaperBundle.Origin.IneligibleCandidate(originalCandidate)
 
-    val actualBundlesAfterDistribution = originalBundle.distributeToRemainingCandidates(origin, Count(1), candidateStatuses)
+    val actualBundlesAfterDistribution =
+      originalBundle.distributeToRemainingCandidates(origin, Count(1), candidateStatuses)
 
     if (expectBundleUnchanged) {
       assert(actualBundlesAfterDistribution.seq === Set[PaperBundle[Fruit]](originalBundle))
@@ -107,7 +109,7 @@ class PaperBundleSpec extends FlatSpec {
     testDistribution(
       originalCandidate = Banana,
       bananaStatus = CandidateStatus.Remaining,
-      expectBundleUnchanged = true
+      expectBundleUnchanged = true,
     )
   }
 
@@ -120,8 +122,8 @@ class PaperBundleSpec extends FlatSpec {
           transferValue = TransferValue(1d),
           preferenceTreeNode = testPreferenceTree.childFor(Banana, Pear).get,
           origin = PaperBundle.Origin.IneligibleCandidate(Banana),
-        )
-      )
+        ),
+      ),
     )
   }
 
@@ -140,7 +142,7 @@ class PaperBundleSpec extends FlatSpec {
           preferenceTreeNode = testPreferenceTree.childFor(Apple, Banana).get,
           origin = PaperBundle.Origin.IneligibleCandidate(Apple),
         ),
-      )
+      ),
     )
   }
 
@@ -160,15 +162,15 @@ class PaperBundleSpec extends FlatSpec {
           preferenceTreeNode = testPreferenceTree.childFor(Apple, Banana, Strawberry).get,
           origin = PaperBundle.Origin.IneligibleCandidate(Apple),
         ),
-      )
+      ),
     )
   }
 
   it can "be distributed until exhausted" in {
     val candidateStatuses = CandidateStatuses[Fruit](
-      Fruit.Apple -> CandidateStatus.Remaining,
-      Fruit.Banana -> CandidateStatus.Excluded(Ordinal.first, excludedAtCount = Count(1)),
-      Fruit.Pear -> CandidateStatus.Excluded(Ordinal.second, excludedAtCount = Count(2)),
+      Fruit.Apple      -> CandidateStatus.Remaining,
+      Fruit.Banana     -> CandidateStatus.Excluded(Ordinal.first, excludedAtCount = Count(1)),
+      Fruit.Pear       -> CandidateStatus.Excluded(Ordinal.second, excludedAtCount = Count(2)),
       Fruit.Strawberry -> CandidateStatus.Remaining,
     )
 
@@ -180,7 +182,8 @@ class PaperBundleSpec extends FlatSpec {
 
     val origin = PaperBundle.Origin.ExcludedCandidate(Pear, Count(2))
 
-    val actualBundlesAfterDistribution = originalBundle.distributeToRemainingCandidates(origin, Count(2), candidateStatuses)
+    val actualBundlesAfterDistribution =
+      originalBundle.distributeToRemainingCandidates(origin, Count(2), candidateStatuses)
 
     val expectedBundlesAfterDistribution = Set[PaperBundle[Fruit]](
       ExhaustedPaperBundle[Fruit](
@@ -197,9 +200,9 @@ class PaperBundleSpec extends FlatSpec {
 
   it can "be distributed with a reduced transfer value" in {
     val candidateStatuses = CandidateStatuses[Fruit](
-      Fruit.Apple -> CandidateStatus.Elected(Ordinal.first, electedAtCount = Count(1)),
-      Fruit.Banana -> CandidateStatus.Remaining,
-      Fruit.Pear -> CandidateStatus.Remaining,
+      Fruit.Apple      -> CandidateStatus.Elected(Ordinal.first, electedAtCount = Count(1)),
+      Fruit.Banana     -> CandidateStatus.Remaining,
+      Fruit.Pear       -> CandidateStatus.Remaining,
       Fruit.Strawberry -> CandidateStatus.Remaining,
     )
 
@@ -210,9 +213,10 @@ class PaperBundleSpec extends FlatSpec {
     )
 
     val transferValue = TransferValue(0.7d)
-    val origin = PaperBundle.Origin.ElectedCandidate(Apple, transferValue, Count(1))
+    val origin        = PaperBundle.Origin.ElectedCandidate(Apple, transferValue, Count(1))
 
-    val actualBundlesAfterDistribution = originalBundle.distributeToRemainingCandidates(origin, Count(1), candidateStatuses)
+    val actualBundlesAfterDistribution =
+      originalBundle.distributeToRemainingCandidates(origin, Count(1), candidateStatuses)
 
     val expectedBundlesAfterDistribution = Set[PaperBundle[Fruit]](
       AssignedPaperBundle(
@@ -223,7 +227,7 @@ class PaperBundleSpec extends FlatSpec {
       AssignedPaperBundle(
         transferValue = transferValue,
         preferenceTreeNode = testPreferenceTree.childFor(Apple, Banana).get,
-        origin = origin
+        origin = origin,
       ),
     )
 
@@ -232,9 +236,9 @@ class PaperBundleSpec extends FlatSpec {
 
   "a bundle of exhausted papers" can "not be distributed further" in {
     val candidateStatuses = CandidateStatuses[Fruit](
-      Fruit.Apple -> CandidateStatus.Remaining,
-      Fruit.Banana -> CandidateStatus.Ineligible,
-      Fruit.Pear -> CandidateStatus.Ineligible,
+      Fruit.Apple      -> CandidateStatus.Remaining,
+      Fruit.Banana     -> CandidateStatus.Ineligible,
+      Fruit.Pear       -> CandidateStatus.Ineligible,
       Fruit.Strawberry -> CandidateStatus.Remaining,
     )
 
@@ -249,7 +253,8 @@ class PaperBundleSpec extends FlatSpec {
     val origin: PaperBundle.Origin[Fruit] =
       PaperBundle.Origin.ElectedCandidate(Apple, TransferValue(0.7d), Count(1))
 
-    val actualBundlesAfterDistribution = originalBundle.distributeToRemainingCandidates(origin, Count(1), candidateStatuses)
+    val actualBundlesAfterDistribution =
+      originalBundle.distributeToRemainingCandidates(origin, Count(1), candidateStatuses)
 
     val expectedBundlesAfterDistribution = Set[PaperBundle[Fruit]](originalBundle)
 
@@ -284,13 +289,14 @@ class PaperBundleSpec extends FlatSpec {
 
   it can "distribute its papers" in {
     val candidateStatuses = CandidateStatuses[Fruit](
-      Fruit.Apple -> CandidateStatus.Remaining,
-      Fruit.Banana -> CandidateStatus.Remaining,
-      Fruit.Pear -> CandidateStatus.Remaining,
+      Fruit.Apple      -> CandidateStatus.Remaining,
+      Fruit.Banana     -> CandidateStatus.Remaining,
+      Fruit.Pear       -> CandidateStatus.Remaining,
       Fruit.Strawberry -> CandidateStatus.Remaining,
     )
 
-    val actualBundles = PaperBundle.rootBundleFor(testPreferenceTree)
+    val actualBundles = PaperBundle
+      .rootBundleFor(testPreferenceTree)
       .distributeToRemainingCandidates(PaperBundle.Origin.InitialAllocation, Count(1), candidateStatuses)
 
     val expectedBundles = Set[PaperBundle[Fruit]](
@@ -303,15 +309,14 @@ class PaperBundleSpec extends FlatSpec {
         transferValue = TransferValue(1d),
         preferenceTreeNode = testPreferenceTree.childFor(Banana).get,
         origin = PaperBundle.Origin.InitialAllocation,
-      )
+      ),
     )
 
     assert(actualBundles.seq === expectedBundles)
   }
 
   it can "distribute its papers regardless of their status" in {
-    val actualBundles = PaperBundle.rootBundleFor(testPreferenceTree)
-      .distribute
+    val actualBundles = PaperBundle.rootBundleFor(testPreferenceTree).distribute
 
     val expectedBundles = Set[PaperBundle[Fruit]](
       AssignedPaperBundle(
@@ -323,7 +328,7 @@ class PaperBundleSpec extends FlatSpec {
         transferValue = TransferValue(1d),
         preferenceTreeNode = testPreferenceTree.childFor(Banana).get,
         origin = PaperBundle.Origin.InitialAllocation,
-      )
+      ),
     )
 
     assert(actualBundles.seq === expectedBundles)

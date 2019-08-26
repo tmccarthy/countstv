@@ -12,16 +12,16 @@ class AllocationAfterIneligiblesSpec extends FlatSpec {
 
   private val testAllocationAfterIneligibles = AllocationAfterIneligibles(
     candidateStatuses = CandidateStatuses[Fruit](
-      Apple -> Remaining,
-      Banana -> Remaining,
-      Pear -> Remaining,
+      Apple      -> Remaining,
+      Banana     -> Remaining,
+      Pear       -> Remaining,
       Strawberry -> Remaining,
     ),
     candidateVoteCounts = CandidateVoteCounts[Fruit](
       perCandidate = Map[Fruit, VoteCount](
-        Apple -> VoteCount(40),
-        Banana -> VoteCount(30),
-        Pear -> VoteCount(20),
+        Apple      -> VoteCount(40),
+        Banana     -> VoteCount(30),
+        Pear       -> VoteCount(20),
         Strawberry -> VoteCount(10),
       ),
       exhausted = VoteCount.zero,

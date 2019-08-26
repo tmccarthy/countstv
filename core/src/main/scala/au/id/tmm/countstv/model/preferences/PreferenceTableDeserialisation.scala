@@ -13,26 +13,32 @@ import scala.collection.immutable.ArraySeq
 
 private[model] object PreferenceTableDeserialisation {
 
-  def decompressAndDeserialise[C <: AnyRef : Ordering](allCandidates: Set[C], rawInputStream: InputStream): Either[Error, PreferenceTable[C]] = {
+  def decompressAndDeserialise[C <: AnyRef : Ordering](
+    allCandidates: Set[C],
+    rawInputStream: InputStream,
+  ): Either[Error, PreferenceTable[C]] = {
     val inputStream = new GZIPInputStream(rawInputStream)
     deserialise(allCandidates, inputStream)
   }
 
-  def deserialise[C <: AnyRef : Ordering](allCandidates: Set[C], rawInputStream: InputStream): Either[Error, PreferenceTable[C]] = {
-    val digest = MessageDigest.getInstance(messageDigestAlgorithm)
+  def deserialise[C <: AnyRef : Ordering](
+    allCandidates: Set[C],
+    rawInputStream: InputStream,
+  ): Either[Error, PreferenceTable[C]] = {
+    val digest      = MessageDigest.getInstance(messageDigestAlgorithm)
     val inputStream = new EndSafeInputStream(new DigestInputStream(rawInputStream, digest))
 
     for {
-      _ <- checkMagicWord(inputStream)
-      _ <- checkVersion(inputStream)
+      _              <- checkMagicWord(inputStream)
+      _              <- checkVersion(inputStream)
       totalNumPapers <- inputStream.readInt()
-      numCandidates <- readNumCandidates(allCandidates, inputStream)
-      table <- readTable(inputStream)
+      numCandidates  <- readNumCandidates(allCandidates, inputStream)
+      table          <- readTable(inputStream)
       actualDigest = ArraySeq.unsafeWrapArray(digest.digest())
       _ <- checkDigest(inputStream, actualDigest)
       _ <- confirmStreamComplete(inputStream)
     } yield {
-      val rowPaperCounts = table._1
+      val rowPaperCounts   = table._1
       val preferenceArrays = table._2
 
       val candidateIntLookup = new Array(numCandidates).asInstanceOf[Array[C]]
@@ -43,8 +49,9 @@ private[model] object PreferenceTableDeserialisation {
     }
   }
 
-  private def checkMagicWord(inputStream: EndSafeInputStream): Either[Error, Unit] = {
-    inputStream.readBytes(magicWord.size)
+  private def checkMagicWord(inputStream: EndSafeInputStream): Either[Error, Unit] =
+    inputStream
+      .readBytes(magicWord.size)
       .flatMap { deserialisedMagicWord =>
         if (deserialisedMagicWord != magicWord) {
           Left(Error.MagicWordMissing(deserialisedMagicWord, magicWord, inputStream.position()))
@@ -52,9 +59,8 @@ private[model] object PreferenceTableDeserialisation {
           Right(())
         }
       }
-  }
 
-  private def checkVersion(inputStream: EndSafeInputStream): Either[Error, Unit] = {
+  private def checkVersion(inputStream: EndSafeInputStream): Either[Error, Unit] =
     inputStream.readInt().flatMap { version =>
       if (version != serialisationVerson) {
         Left(Error.UnknownVersion(version, inputStream.position()))
@@ -62,42 +68,41 @@ private[model] object PreferenceTableDeserialisation {
         Right(())
       }
     }
-  }
 
-  private def readNumCandidates[C](allCandidates: Set[C], inputStream: EndSafeInputStream): Either[Error, Int] = {
+  private def readNumCandidates[C](allCandidates: Set[C], inputStream: EndSafeInputStream): Either[Error, Int] =
     inputStream.readInt().flatMap { numCandidates =>
       if (numCandidates != allCandidates.size) {
-        Left(Error.NumCandidatesMismatch(numCandidates, expectedNumCandidates = allCandidates.size, inputStream.position()))
+        Left(
+          Error
+            .NumCandidatesMismatch(numCandidates, expectedNumCandidates = allCandidates.size, inputStream.position()))
       } else {
         Right(numCandidates)
       }
     }
-  }
 
-  private def readTable(inputStream: EndSafeInputStream): Either[Error, (Array[Int], Array[Array[Short]])] = {
+  private def readTable(inputStream: EndSafeInputStream): Either[Error, (Array[Int], Array[Array[Short]])] =
     inputStream.readInt().flatMap { tableSize =>
-      val rowPaperCounts = new Array[Int](tableSize)
+      val rowPaperCounts   = new Array[Int](tableSize)
       val preferenceArrays = new Array[Array[Short]](tableSize)
 
       for (i <- 0 until tableSize) {
         (for {
-          numPapers <- inputStream.readInt()
+          numPapers         <- inputStream.readInt()
           preferencesLength <- inputStream.readInt()
-          preferencesArray <- inputStream.readShortArray(preferencesLength)
+          preferencesArray  <- inputStream.readShortArray(preferencesLength)
         } yield {
           rowPaperCounts(i) = numPapers
           preferenceArrays(i) = preferencesArray
         }) match {
           case Left(error) => return Left(error)
-          case _ =>
+          case _           =>
         }
       }
 
       Right((rowPaperCounts, preferenceArrays))
     }
-  }
 
-  private def checkDigest(inputStream: EndSafeInputStream, actualDigest: ArraySeq[Byte]): Either[Error, Unit] = {
+  private def checkDigest(inputStream: EndSafeInputStream, actualDigest: ArraySeq[Byte]): Either[Error, Unit] =
     inputStream.readBytes(64).flatMap { expectedDigest =>
       if (expectedDigest != actualDigest) {
         Left(DigestMismatch(actualDigest, expectedDigest, messageDigestAlgorithm, inputStream.position()))
@@ -105,15 +110,13 @@ private[model] object PreferenceTableDeserialisation {
         Right(())
       }
     }
-  }
 
-  private def confirmStreamComplete(inputStream: EndSafeInputStream): Either[UnexpectedContent, Unit] = {
+  private def confirmStreamComplete(inputStream: EndSafeInputStream): Either[UnexpectedContent, Unit] =
     inputStream.readBytes(1).fold(_ => Right(()), _ => Left(UnexpectedContent(inputStream.position())))
-  }
 
   private final class EndSafeInputStream(rawInputStream: InputStream) {
     private val countingInputStream = new CountingInputStream(rawInputStream)
-    private val dataInputStream = new DataInputStream(countingInputStream)
+    private val dataInputStream     = new DataInputStream(countingInputStream)
 
     def position(): Long = countingInputStream.getCount
 
@@ -135,13 +138,12 @@ private[model] object PreferenceTableDeserialisation {
       }
     }
 
-    @inline def readInt(): Either[PrematureStreamEnd, Int] = {
+    @inline def readInt(): Either[PrematureStreamEnd, Int] =
       try {
         Right(dataInputStream.readInt())
       } catch {
         case _: EOFException => Left(PrematureStreamEnd(position()))
       }
-    }
 
     def readBytes(length: Int): Either[PrematureStreamEnd, ArraySeq[Byte]] = {
       val array = new Array[Byte](length)
@@ -158,29 +160,46 @@ private[model] object PreferenceTableDeserialisation {
 
   sealed trait Error extends Exception {
     def message: String
-    final override def getMessage: String = s"$message at byte $streamPosition"
+    override final def getMessage: String = s"$message at byte $streamPosition"
     def streamPosition: Long
   }
 
   object Error {
     private def render(bytes: ArraySeq[Byte]): String = bytes.toArray.asHexString
 
-    case class MagicWordMissing(actualMagicWord: ArraySeq[Byte], expectedMagicWord: ArraySeq[Byte], streamPosition: Long) extends Error {
-      override def message: String = s"The magic word was missing from the start of the preference tree stream. Expected ${render(expectedMagicWord)}, found ${render(actualMagicWord)}"
+    case class MagicWordMissing(
+      actualMagicWord: ArraySeq[Byte],
+      expectedMagicWord: ArraySeq[Byte],
+      streamPosition: Long,
+    ) extends Error {
+      override def message: String =
+        s"The magic word was missing from the start of the preference tree stream. Expected ${render(expectedMagicWord)}, found ${render(actualMagicWord)}"
     }
 
     case class UnknownVersion(unrecognisedVersion: Int, streamPosition: Long) extends Error {
-      override def message: String = s"Could not deserialise preference table serialisation version $unrecognisedVersion"
+      override def message: String =
+        s"Could not deserialise preference table serialisation version $unrecognisedVersion"
     }
 
-    case class NumCandidatesMismatch(numCandidates: Int, expectedNumCandidates: Int, streamPosition: Long) extends Error {
-      override def message: String = s"The preference table contains $numCandidates, but $expectedNumCandidates " +
-        s"candidates were expected"
+    case class NumCandidatesMismatch(
+      numCandidates: Int,
+      expectedNumCandidates: Int,
+      streamPosition: Long,
+    ) extends Error {
+      override def message: String =
+        s"The preference table contains $numCandidates, but $expectedNumCandidates " +
+          s"candidates were expected"
     }
 
-    case class DigestMismatch(actualDigest: ArraySeq[Byte], expectedDigest: ArraySeq[Byte], algorithm: String, streamPosition: Long) extends Error {
-      override def message: String = s"$messageDigestAlgorithm Integrity check failed. Expected ${render(expectedDigest)}, " +
-        s"found ${render(actualDigest)}"
+    case class DigestMismatch(
+      actualDigest: ArraySeq[Byte],
+      expectedDigest: ArraySeq[Byte],
+      algorithm: String,
+      streamPosition: Long,
+    ) extends Error {
+      override def message: String =
+        s"$messageDigestAlgorithm Integrity check failed. Expected ${render(expectedDigest)}, " +
+          s"found ${render(actualDigest)}"
     }
 
     case class PrematureStreamEnd(streamPosition: Long) extends Error {

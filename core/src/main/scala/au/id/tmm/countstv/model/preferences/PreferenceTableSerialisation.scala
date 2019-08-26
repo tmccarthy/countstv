@@ -19,12 +19,13 @@ private[model] object PreferenceTableSerialisation {
 
   def serialise[C](preferenceTable: PreferenceTable[C], rawOutputStream: OutputStream): Unit = {
 
-    val digest = MessageDigest.getInstance(messageDigestAlgorithm)
+    val digest       = MessageDigest.getInstance(messageDigestAlgorithm)
     val outputStream = new DigestOutputStream(rawOutputStream, digest)
 
     writeBytes(outputStream, magicWord)
 
-    writeInts(outputStream,
+    writeInts(
+      outputStream,
       ArraySeq(
         serialisationVerson,
         preferenceTable.getTotalNumPapers,
@@ -70,8 +71,7 @@ private[model] object PreferenceTableSerialisation {
     outputStream.write(bytes.array())
   }
 
-  private def writeBytes(outputStream: OutputStream, bytes: ArraySeq[Byte]): Unit = {
+  private def writeBytes(outputStream: OutputStream, bytes: ArraySeq[Byte]): Unit =
     outputStream.write(bytes.unsafeArray.asInstanceOf[Array[Byte]])
-  }
 
 }

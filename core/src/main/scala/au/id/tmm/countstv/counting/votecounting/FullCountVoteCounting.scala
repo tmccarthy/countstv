@@ -12,11 +12,11 @@ object FullCountVoteCounting {
     * quota of votes.
     */
   def performFullRecount[C](
-                             initialNumPapers: NumPapers,
-                             quota: NumVotes,
-                             candidateStatuses: CandidateStatuses[C],
-                             paperBundles: PaperBundles[C],
-                           ): CandidateVoteCounts[C] = {
+    initialNumPapers: NumPapers,
+    quota: NumVotes,
+    candidateStatuses: CandidateStatuses[C],
+    paperBundles: PaperBundles[C],
+  ): CandidateVoteCounts[C] = {
 
     val simpleCount = SimpleVoteCounting.performSimpleCount(candidateStatuses.allCandidates, paperBundles)
 

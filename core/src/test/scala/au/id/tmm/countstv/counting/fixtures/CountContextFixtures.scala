@@ -40,9 +40,8 @@ object CountContextFixtures {
   }
 
   object AfterFinalStep {
-    def whereCandidateElectedToRemainingVacancy: CountContext.DuringDistributions[Fruit] = {
+    def whereCandidateElectedToRemainingVacancy: CountContext.DuringDistributions[Fruit] =
       CountFixture.withFinalElection.actualDistributionContextAfterCount(Count(8))
-    }
   }
 
 }

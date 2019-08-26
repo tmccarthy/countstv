@@ -5,10 +5,10 @@ package au.id.tmm.countstv.model.values
   */
 final case class TransferValue(factor: Double) extends AnyVal {
 
-  def >(that: TransferValue): Boolean = this.factor > that.factor
+  def >(that: TransferValue): Boolean  = this.factor > that.factor
   def >=(that: TransferValue): Boolean = this.factor >= that.factor
   def <=(that: TransferValue): Boolean = this.factor <= that.factor
-  def <(that: TransferValue): Boolean = this.factor < that.factor
+  def <(that: TransferValue): Boolean  = this.factor < that.factor
 
 }
 

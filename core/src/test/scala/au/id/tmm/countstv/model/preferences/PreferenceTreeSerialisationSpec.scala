@@ -8,9 +8,9 @@ import org.scalatest.FlatSpec
 class PreferenceTreeSerialisationSpec extends FlatSpec {
 
   "a preference tree" can "be serialised and deserialised" in {
-    val fixture = CountFixture.withFinalElection
+    val fixture        = CountFixture.withFinalElection
     val preferenceTree = fixture.preferenceTree
-    val candidates = fixture.candidates
+    val candidates     = fixture.candidates
 
     val outputStream = new ByteArrayOutputStream()
 

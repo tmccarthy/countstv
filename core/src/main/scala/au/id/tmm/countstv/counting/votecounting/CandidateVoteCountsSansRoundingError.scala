@@ -5,10 +5,7 @@ import au.id.tmm.countstv.utils.PerCandidateCounts
 
 // TODO find the correct package for this
 // TODO this needs a better name
-final case class CandidateVoteCountsSansRoundingError[C](
-                                                          perCandidate: Map[C, VoteCount],
-                                                          exhausted: VoteCount,
-                                                        ) {
+final case class CandidateVoteCountsSansRoundingError[C](perCandidate: Map[C, VoteCount], exhausted: VoteCount) {
   def total: VoteCount = perCandidate.values.reduceOption(_ + _).getOrElse(VoteCount(0)) + exhausted
 
   def withRoundingError(roundingError: VoteCount): CandidateVoteCounts[C] =

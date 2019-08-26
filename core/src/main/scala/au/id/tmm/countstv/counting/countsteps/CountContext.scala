@@ -22,23 +22,21 @@ private[counting] sealed trait CountContext[C] {
 private[counting] object CountContext {
 
   final case class Initial[C](
-                               numFormalPapers: NumPapers,
-                               numVacancies: Int,
-                               quota: NumVotes,
-
-                               paperBundles: PaperBundles[C],
-
-                               previousCountSteps: CountSteps.Initial[C],
-                             ) extends CountContext[C] {
+    numFormalPapers: NumPapers,
+    numVacancies: Int,
+    quota: NumVotes,
+    paperBundles: PaperBundles[C],
+    previousCountSteps: CountSteps.Initial[C],
+  ) extends CountContext[C] {
     override def mostRecentCountStep: InitialAllocation[C] = previousCountSteps.last
 
     override def nextAction: CountAction.AllocateAwayFromIneligibles.type = CountAction.AllocateAwayFromIneligibles
 
     def updated(
-                 newPaperBundles: PaperBundles[C],
-                 newCountStep: AllocationAfterIneligibles[C],
-                 nextAction: CountAction.DuringDistribution[C],
-               ): AfterIneligibleHandling[C] =
+      newPaperBundles: PaperBundles[C],
+      newCountStep: AllocationAfterIneligibles[C],
+      nextAction: CountAction.DuringDistribution[C],
+    ): AfterIneligibleHandling[C] =
       AfterIneligibleHandling(
         numFormalPapers,
         numVacancies,
@@ -53,39 +51,37 @@ private[counting] object CountContext {
     override def previousCountSteps: CountSteps.AllowingAppending[C]
 
     def updated(
-                 newPaperBundles: PaperBundles[C],
-                 newCountStep: DistributionPhaseCountStep[C],
-                 nextAction: CountAction.DuringDistribution[C],
-               ): CountContext.DuringDistributions[C]
+      newPaperBundles: PaperBundles[C],
+      newCountStep: DistributionPhaseCountStep[C],
+      nextAction: CountAction.DuringDistribution[C],
+    ): CountContext.DuringDistributions[C]
 
     override def nextAction: CountAction.DuringDistribution[C]
   }
 
   final case class AfterIneligibleHandling[C](
-                                               numFormalPapers: NumPapers,
-                                               numVacancies: Int,
-                                               quota: NumVotes,
-
-                                               paperBundles: PaperBundles[C],
-
-                                               previousCountSteps: CountSteps.AfterIneligibleHandling[C],
-
-                                               override val nextAction: CountAction.DuringDistribution[C],
-                                             ) extends CountContext[C] with AllowingAppending[C] {
+    numFormalPapers: NumPapers,
+    numVacancies: Int,
+    quota: NumVotes,
+    paperBundles: PaperBundles[C],
+    previousCountSteps: CountSteps.AfterIneligibleHandling[C],
+    override val nextAction: CountAction.DuringDistribution[C],
+  ) extends CountContext[C]
+      with AllowingAppending[C] {
     override def mostRecentCountStep: AllocationAfterIneligibles[C] = previousCountSteps.last
 
     override def updated(
-                          newPaperBundles: PaperBundles[C],
-                          newCountStep: DistributionPhaseCountStep[C],
-                          nextAction: CountAction.DuringDistribution[C],
-                        ): DuringDistributions[C] =
+      newPaperBundles: PaperBundles[C],
+      newCountStep: DistributionPhaseCountStep[C],
+      nextAction: CountAction.DuringDistribution[C],
+    ): DuringDistributions[C] =
       DuringDistributions(
         this.numFormalPapers,
         this.numVacancies,
         this.quota,
         newPaperBundles,
         this.previousCountSteps.append(newCountStep),
-        nextAction
+        nextAction,
       )
   }
 
@@ -94,23 +90,22 @@ private[counting] object CountContext {
   }
 
   final case class DuringDistributions[C](
-                                           numFormalPapers: NumPapers,
-                                           numVacancies: Int,
-                                           quota: NumVotes,
-
-                                           paperBundles: PaperBundles[C],
-
-                                           previousCountSteps: CountSteps.DuringDistributions[C],
-
-                                           override val nextAction: CountAction.DuringDistribution[C],
-                                         ) extends CountContext[C] with AllowingAppending[C] with DistributionPhase[C] {
+    numFormalPapers: NumPapers,
+    numVacancies: Int,
+    quota: NumVotes,
+    paperBundles: PaperBundles[C],
+    previousCountSteps: CountSteps.DuringDistributions[C],
+    override val nextAction: CountAction.DuringDistribution[C],
+  ) extends CountContext[C]
+      with AllowingAppending[C]
+      with DistributionPhase[C] {
     override def mostRecentCountStep: DistributionPhaseCountStep[C] = previousCountSteps.last
 
     override def updated(
-                          newPaperBundles: PaperBundles[C],
-                          newCountStep: DistributionPhaseCountStep[C],
-                          nextAction: CountAction.DuringDistribution[C],
-                        ): DuringDistributions[C] =
+      newPaperBundles: PaperBundles[C],
+      newCountStep: DistributionPhaseCountStep[C],
+      nextAction: CountAction.DuringDistribution[C],
+    ): DuringDistributions[C] =
       this.copy(
         paperBundles = newPaperBundles,
         previousCountSteps = this.previousCountSteps.append(newCountStep),

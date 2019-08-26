@@ -10,9 +10,9 @@ import org.scalatest.FlatSpec
 class CandidateStatusesSpec extends FlatSpec {
 
   private val testCandidateStatuses: CandidateStatuses[Fruit] = CandidateStatuses(
-    Apple -> Elected(Ordinal.first, electedAtCount = Count(1)),
-    Banana -> Remaining,
-    Pear -> Ineligible,
+    Apple      -> Elected(Ordinal.first, electedAtCount = Count(1)),
+    Banana     -> Remaining,
+    Pear       -> Ineligible,
     Strawberry -> Excluded(Ordinal.first, excludedAtCount = Count(1)),
   )
 
@@ -33,9 +33,9 @@ class CandidateStatusesSpec extends FlatSpec {
 
   it should "indicate elected candidates in order" in {
     val testCandidateStatuses: CandidateStatuses[Fruit] = CandidateStatuses(
-      Apple -> Elected(Ordinal.third, electedAtCount = Count(1)),
-      Banana -> Elected(Ordinal.second, electedAtCount = Count(1)),
-      Pear -> Ineligible,
+      Apple      -> Elected(Ordinal.third, electedAtCount = Count(1)),
+      Banana     -> Elected(Ordinal.second, electedAtCount = Count(1)),
+      Pear       -> Ineligible,
       Strawberry -> Excluded(Ordinal.first, excludedAtCount = Count(1)),
     )
 
@@ -56,9 +56,9 @@ class CandidateStatusesSpec extends FlatSpec {
 
   it should "indicate excluded candidates in order" in {
     val testCandidateStatuses: CandidateStatuses[Fruit] = CandidateStatuses(
-      Apple -> Excluded(Ordinal.third, excludedAtCount = Count(3)),
-      Banana -> Excluded(Ordinal.second, excludedAtCount = Count(2)),
-      Pear -> Ineligible,
+      Apple      -> Excluded(Ordinal.third, excludedAtCount = Count(3)),
+      Banana     -> Excluded(Ordinal.second, excludedAtCount = Count(2)),
+      Pear       -> Ineligible,
       Strawberry -> Excluded(Ordinal.first, excludedAtCount = Count(1)),
     )
 
@@ -77,9 +77,9 @@ class CandidateStatusesSpec extends FlatSpec {
     val actualCandidateStatuses = testCandidateStatuses.update(Banana, Ineligible)
 
     val expectedCandidateStatuses = CandidateStatuses(
-      Apple -> Elected(Ordinal.first, electedAtCount = Count(1)),
-      Banana -> Ineligible,
-      Pear -> Ineligible,
+      Apple      -> Elected(Ordinal.first, electedAtCount = Count(1)),
+      Banana     -> Ineligible,
+      Pear       -> Ineligible,
       Strawberry -> Excluded(Ordinal.first, excludedAtCount = Count(1)),
     )
 
@@ -90,14 +90,14 @@ class CandidateStatusesSpec extends FlatSpec {
     val actualCandidateStatuses = testCandidateStatuses.updateFrom(
       Map(
         Banana -> Excluded(Ordinal.second, excludedAtCount = Count(2)),
-        Pear -> Elected(Ordinal.second, electedAtCount = Count(3)),
-      )
+        Pear   -> Elected(Ordinal.second, electedAtCount = Count(3)),
+      ),
     )
 
     val expectedCandidateStatuses = CandidateStatuses(
-      Apple -> Elected(Ordinal.first, electedAtCount = Count(1)),
-      Banana -> Excluded(Ordinal.second, excludedAtCount = Count(2)),
-      Pear -> Elected(Ordinal.second, electedAtCount = Count(3)),
+      Apple      -> Elected(Ordinal.first, electedAtCount = Count(1)),
+      Banana     -> Excluded(Ordinal.second, excludedAtCount = Count(2)),
+      Pear       -> Elected(Ordinal.second, electedAtCount = Count(3)),
       Strawberry -> Excluded(Ordinal.first, excludedAtCount = Count(1)),
     )
 
@@ -106,9 +106,9 @@ class CandidateStatusesSpec extends FlatSpec {
 
   it can "compute the difference to another CandidateStatuses object" in {
     val newCandidateStatuses: CandidateStatuses[Fruit] = CandidateStatuses(
-      Apple -> Elected(Ordinal.first, electedAtCount = Count(1)),
-      Banana -> Elected(Ordinal.second, electedAtCount = Count(2)),
-      Pear -> Ineligible,
+      Apple      -> Elected(Ordinal.first, electedAtCount = Count(1)),
+      Banana     -> Elected(Ordinal.second, electedAtCount = Count(2)),
+      Pear       -> Ineligible,
       Strawberry -> Excluded(Ordinal.first, excludedAtCount = Count(1)),
     )
 

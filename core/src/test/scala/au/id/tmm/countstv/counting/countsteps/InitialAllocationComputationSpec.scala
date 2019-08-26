@@ -27,40 +27,61 @@ class InitialAllocationComputationSpec extends FlatSpec {
       numVacancies = 2,
       quota = QuotaComputation.computeQuota(numVacancies = 2, numFormalPapers = NumPapers(50)),
       paperBundles = ParSet[PaperBundle[Fruit]](
-        AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Apple).get, PaperBundle.Origin.InitialAllocation),
-        AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Banana).get, PaperBundle.Origin.InitialAllocation),
-        AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Mango).get, PaperBundle.Origin.InitialAllocation),
-        AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Pear).get, PaperBundle.Origin.InitialAllocation),
-        AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Raspberry).get, PaperBundle.Origin.InitialAllocation),
-        AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Strawberry).get, PaperBundle.Origin.InitialAllocation),
-        AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Watermelon).get, PaperBundle.Origin.InitialAllocation),
+        AssignedPaperBundle(
+          TransferValue(1),
+          fixture.preferenceTree.childFor(Apple).get,
+          PaperBundle.Origin.InitialAllocation),
+        AssignedPaperBundle(
+          TransferValue(1),
+          fixture.preferenceTree.childFor(Banana).get,
+          PaperBundle.Origin.InitialAllocation),
+        AssignedPaperBundle(
+          TransferValue(1),
+          fixture.preferenceTree.childFor(Mango).get,
+          PaperBundle.Origin.InitialAllocation),
+        AssignedPaperBundle(
+          TransferValue(1),
+          fixture.preferenceTree.childFor(Pear).get,
+          PaperBundle.Origin.InitialAllocation),
+        AssignedPaperBundle(
+          TransferValue(1),
+          fixture.preferenceTree.childFor(Raspberry).get,
+          PaperBundle.Origin.InitialAllocation),
+        AssignedPaperBundle(
+          TransferValue(1),
+          fixture.preferenceTree.childFor(Strawberry).get,
+          PaperBundle.Origin.InitialAllocation),
+        AssignedPaperBundle(
+          TransferValue(1),
+          fixture.preferenceTree.childFor(Watermelon).get,
+          PaperBundle.Origin.InitialAllocation),
       ),
       previousCountSteps = CountSteps.Initial[Fruit](
         InitialAllocation(
           candidateStatuses = CandidateStatuses[Fruit](
-            Apple -> Remaining,
-            Banana -> Remaining,
-            Mango -> Remaining,
-            Pear -> Remaining,
-            Raspberry -> Remaining,
+            Apple      -> Remaining,
+            Banana     -> Remaining,
+            Mango      -> Remaining,
+            Pear       -> Remaining,
+            Raspberry  -> Remaining,
             Strawberry -> Remaining,
             Watermelon -> Remaining,
           ),
           candidateVoteCounts = CandidateVoteCounts[Fruit](
             perCandidate = Map(
-              Apple -> VoteCount(10),
-              Banana -> VoteCount(6),
-              Mango -> VoteCount(9),
-              Pear -> VoteCount(9),
-              Raspberry -> VoteCount(7),
+              Apple      -> VoteCount(10),
+              Banana     -> VoteCount(6),
+              Mango      -> VoteCount(9),
+              Pear       -> VoteCount(9),
+              Raspberry  -> VoteCount(7),
               Strawberry -> VoteCount(5),
               Watermelon -> VoteCount(4),
             ),
             exhausted = VoteCount.zero,
             roundingError = VoteCount.zero,
-          )
-        )
-      )
+          ),
+        ),
+      ),
     )
 
     assert(actualContext === expectedContext)
@@ -76,40 +97,61 @@ class InitialAllocationComputationSpec extends FlatSpec {
       numVacancies = 2,
       quota = QuotaComputation.computeQuota(numVacancies = 2, numFormalPapers = NumPapers(50)),
       paperBundles = ParSet[PaperBundle[Fruit]](
-        AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Apple).get, PaperBundle.Origin.InitialAllocation),
-        AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Banana).get, PaperBundle.Origin.InitialAllocation),
-        AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Mango).get, PaperBundle.Origin.InitialAllocation),
-        AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Pear).get, PaperBundle.Origin.InitialAllocation),
-        AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Raspberry).get, PaperBundle.Origin.InitialAllocation),
-        AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Strawberry).get, PaperBundle.Origin.InitialAllocation),
-        AssignedPaperBundle(TransferValue(1), fixture.preferenceTree.childFor(Watermelon).get, PaperBundle.Origin.InitialAllocation),
+        AssignedPaperBundle(
+          TransferValue(1),
+          fixture.preferenceTree.childFor(Apple).get,
+          PaperBundle.Origin.InitialAllocation),
+        AssignedPaperBundle(
+          TransferValue(1),
+          fixture.preferenceTree.childFor(Banana).get,
+          PaperBundle.Origin.InitialAllocation),
+        AssignedPaperBundle(
+          TransferValue(1),
+          fixture.preferenceTree.childFor(Mango).get,
+          PaperBundle.Origin.InitialAllocation),
+        AssignedPaperBundle(
+          TransferValue(1),
+          fixture.preferenceTree.childFor(Pear).get,
+          PaperBundle.Origin.InitialAllocation),
+        AssignedPaperBundle(
+          TransferValue(1),
+          fixture.preferenceTree.childFor(Raspberry).get,
+          PaperBundle.Origin.InitialAllocation),
+        AssignedPaperBundle(
+          TransferValue(1),
+          fixture.preferenceTree.childFor(Strawberry).get,
+          PaperBundle.Origin.InitialAllocation),
+        AssignedPaperBundle(
+          TransferValue(1),
+          fixture.preferenceTree.childFor(Watermelon).get,
+          PaperBundle.Origin.InitialAllocation),
       ),
       previousCountSteps = CountSteps.Initial[Fruit](
         InitialAllocation(
           candidateStatuses = CandidateStatuses[Fruit](
-            Apple -> Ineligible,
-            Banana -> Remaining,
-            Mango -> Remaining,
-            Pear -> Remaining,
-            Raspberry -> Remaining,
+            Apple      -> Ineligible,
+            Banana     -> Remaining,
+            Mango      -> Remaining,
+            Pear       -> Remaining,
+            Raspberry  -> Remaining,
             Strawberry -> Ineligible,
             Watermelon -> Remaining,
           ),
           candidateVoteCounts = CandidateVoteCounts[Fruit](
             perCandidate = Map(
-              Apple -> VoteCount(10),
-              Banana -> VoteCount(6),
-              Mango -> VoteCount(9),
-              Pear -> VoteCount(9),
-              Raspberry -> VoteCount(7),
+              Apple      -> VoteCount(10),
+              Banana     -> VoteCount(6),
+              Mango      -> VoteCount(9),
+              Pear       -> VoteCount(9),
+              Raspberry  -> VoteCount(7),
               Strawberry -> VoteCount(5),
               Watermelon -> VoteCount(4),
             ),
             exhausted = VoteCount.zero,
             roundingError = VoteCount.zero,
-          )
-        )
-      )
+          ),
+        ),
+      ),
     )
 
     assert(actualContext === expectedContext)

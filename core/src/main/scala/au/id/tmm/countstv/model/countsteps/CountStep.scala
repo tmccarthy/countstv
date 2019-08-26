@@ -23,14 +23,15 @@ sealed trait CountStep[C] {
   * candidate's eligibility.
   */
 final case class InitialAllocation[C](
-                                       candidateStatuses: CandidateStatuses[C],
-                                       candidateVoteCounts: CandidateVoteCounts[C],
-                                     ) extends CountStep[C] {
-  require{
+  candidateStatuses: CandidateStatuses[C],
+  candidateVoteCounts: CandidateVoteCounts[C],
+) extends CountStep[C] {
+  require {
     val eligibleCandidateStatuses = Set[CandidateStatus](CandidateStatus.Remaining, CandidateStatus.Ineligible)
 
-    candidateStatuses.asMap.forall { case (candidate, candidateStatus) =>
-      eligibleCandidateStatuses.contains(candidateStatus)
+    candidateStatuses.asMap.forall {
+      case (candidate, candidateStatus) =>
+        eligibleCandidateStatuses.contains(candidateStatus)
     }
   }
 
@@ -41,10 +42,10 @@ final case class InitialAllocation[C](
   * The second count step in any count, indicating the allocation of papers away from inelligible candidates.
   */
 final case class AllocationAfterIneligibles[C](
-                                                candidateStatuses: CandidateStatuses[C],
-                                                candidateVoteCounts: CandidateVoteCounts[C],
-                                                transfersDueToIneligibles: TransfersDueToIneligibles[C],
-                                              ) extends CountStep[C] {
+  candidateStatuses: CandidateStatuses[C],
+  candidateVoteCounts: CandidateVoteCounts[C],
+  transfersDueToIneligibles: TransfersDueToIneligibles[C],
+) extends CountStep[C] {
   override def count: Count = Count.ofIneligibleCandidateHandling
 }
 
@@ -58,42 +59,42 @@ sealed trait DistributionPhaseCountStep[C] extends CountStep[C]
   * A normal count step, where papers are distributed away from an elected or ineligible candidate.
   */
 final case class DistributionCountStep[C](
-                                           count: Count,
-                                           candidateStatuses: CandidateStatuses[C],
-                                           candidateVoteCounts: CandidateVoteCounts[C],
-                                           distributionSource: DistributionCountStep.Source[C],
-                                         ) extends DistributionPhaseCountStep[C]
+  count: Count,
+  candidateStatuses: CandidateStatuses[C],
+  candidateVoteCounts: CandidateVoteCounts[C],
+  distributionSource: DistributionCountStep.Source[C],
+) extends DistributionPhaseCountStep[C]
 
 /**
   * A count step during the distribution phase where no distribution happens because a candidate was excluded with no
   * votes.
   */
 final case class ExcludedNoVotesCountStep[C](
-                                              count: Count,
-                                              candidateStatuses: CandidateStatuses[C],
-                                              candidateVoteCounts: CandidateVoteCounts[C],
-                                              excludedCandidate: C,
-                                            ) extends DistributionPhaseCountStep[C]
+  count: Count,
+  candidateStatuses: CandidateStatuses[C],
+  candidateVoteCounts: CandidateVoteCounts[C],
+  excludedCandidate: C,
+) extends DistributionPhaseCountStep[C]
 
 /**
   * A count step during the distribution phase where no distribution happens because a candidate was elected with no
   * surplus.
   */
 final case class ElectedNoSurplusCountStep[C](
-                                               count: Count,
-                                               candidateStatuses: CandidateStatuses[C],
-                                               candidateVoteCounts: CandidateVoteCounts[C],
-                                               electedCandidate: C,
-                                               sourceCounts: Set[Count],
-                                             ) extends DistributionPhaseCountStep[C]
+  count: Count,
+  candidateStatuses: CandidateStatuses[C],
+  candidateVoteCounts: CandidateVoteCounts[C],
+  electedCandidate: C,
+  sourceCounts: Set[Count],
+) extends DistributionPhaseCountStep[C]
 
 object DistributionCountStep {
 
   final case class Source[C](
-                              candidate: C,
-                              candidateDistributionReason: CandidateDistributionReason,
-                              sourceCounts: Set[Count],
-                              transferValue: TransferValue,
-                            )
+    candidate: C,
+    candidateDistributionReason: CandidateDistributionReason,
+    sourceCounts: Set[Count],
+    transferValue: TransferValue,
+  )
 
 }

@@ -13,9 +13,9 @@ class CandidatePaperCountsSpec extends FlatSpec {
 
   private val testPaperCounts1 = CandidatePaperCounts[Fruit](
     perCandidate = Map(
-      Apple -> NumPapers(32),
-      Banana -> NumPapers(1),
-      Pear -> NumPapers(5),
+      Apple      -> NumPapers(32),
+      Banana     -> NumPapers(1),
+      Pear       -> NumPapers(5),
       Strawberry -> NumPapers(6),
     ),
     exhausted = NumPapers(2),
@@ -23,9 +23,9 @@ class CandidatePaperCountsSpec extends FlatSpec {
 
   private val testPaperCounts2 = CandidatePaperCounts[Fruit](
     perCandidate = Map(
-      Apple -> NumPapers(4),
-      Banana -> NumPapers(5),
-      Pear -> NumPapers(5),
+      Apple      -> NumPapers(4),
+      Banana     -> NumPapers(5),
+      Pear       -> NumPapers(5),
       Strawberry -> NumPapers(4),
     ),
     exhausted = NumPapers(6),
@@ -38,9 +38,9 @@ class CandidatePaperCountsSpec extends FlatSpec {
 
     val expectedPaperCounts = CandidatePaperCounts(
       perCandidate = Map(
-        Apple -> NumPapers(0),
-        Banana -> NumPapers(0),
-        Pear -> NumPapers(0),
+        Apple      -> NumPapers(0),
+        Banana     -> NumPapers(0),
+        Pear       -> NumPapers(0),
         Strawberry -> NumPapers(0),
       ),
       exhausted = NumPapers(0),
@@ -54,9 +54,9 @@ class CandidatePaperCountsSpec extends FlatSpec {
 
     val expectedPaperCounts = CandidatePaperCounts[Fruit](
       perCandidate = Map(
-        Apple -> NumPapers(36),
-        Banana -> NumPapers(6),
-        Pear -> NumPapers(10),
+        Apple      -> NumPapers(36),
+        Banana     -> NumPapers(6),
+        Pear       -> NumPapers(10),
         Strawberry -> NumPapers(10),
       ),
       exhausted = NumPapers(8),
@@ -70,9 +70,9 @@ class CandidatePaperCountsSpec extends FlatSpec {
 
     val expectedPaperCounts = CandidatePaperCounts[Fruit](
       perCandidate = Map(
-        Apple -> NumPapers(28),
-        Banana -> NumPapers(-4),
-        Pear -> NumPapers(0),
+        Apple      -> NumPapers(28),
+        Banana     -> NumPapers(-4),
+        Pear       -> NumPapers(0),
         Strawberry -> NumPapers(2),
       ),
       exhausted = NumPapers(-4),
@@ -84,9 +84,9 @@ class CandidatePaperCountsSpec extends FlatSpec {
   it can "be multiplied by a transfer value to get a vote count" in {
     val base = CandidatePaperCounts[Fruit](
       perCandidate = Map(
-        Apple -> NumPapers(28),
-        Banana -> NumPapers(4),
-        Pear -> NumPapers(0),
+        Apple      -> NumPapers(28),
+        Banana     -> NumPapers(4),
+        Pear       -> NumPapers(0),
         Strawberry -> NumPapers(2),
       ),
       exhausted = NumPapers(4),
@@ -96,9 +96,9 @@ class CandidatePaperCountsSpec extends FlatSpec {
 
     val expectedVoteCounts = CandidateVoteCountsSansRoundingError[Fruit](
       perCandidate = Map(
-        Apple -> VoteCount(NumPapers(28), NumVotes(21)),
-        Banana -> VoteCount(NumPapers(4), NumVotes(3)),
-        Pear -> VoteCount(NumPapers(0), NumVotes(0)),
+        Apple      -> VoteCount(NumPapers(28), NumVotes(21)),
+        Banana     -> VoteCount(NumPapers(4), NumVotes(3)),
+        Pear       -> VoteCount(NumPapers(0), NumVotes(0)),
         Strawberry -> VoteCount(NumPapers(2), NumVotes(1)),
       ),
       exhausted = VoteCount(NumPapers(4), NumVotes(3)),
@@ -112,9 +112,9 @@ class CandidatePaperCountsSpec extends FlatSpec {
 
     val expectedPaperCounts = CandidatePaperCounts[Fruit](
       perCandidate = Map(
-        Apple -> NumPapers(32),
-        Banana -> NumPapers(6),
-        Pear -> NumPapers(5),
+        Apple      -> NumPapers(32),
+        Banana     -> NumPapers(6),
+        Pear       -> NumPapers(5),
         Strawberry -> NumPapers(6),
       ),
       exhausted = NumPapers(2),
