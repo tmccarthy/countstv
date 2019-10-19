@@ -14,7 +14,7 @@ import au.id.tmm.countstv.model.countsteps.{
   ExcludedNoVotesCountStep,
 }
 import au.id.tmm.countstv.model.values.{Count, Ordinal}
-import au.id.tmm.probabilitymeasure.ProbabilityMeasure
+import au.id.tmm.probability.measure.ProbabilityMeasure
 import org.scalatest.FlatSpec
 
 class NextActionComputationSpec extends FlatSpec {

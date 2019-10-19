@@ -5,7 +5,7 @@ import au.id.tmm.countstv.counting.votecounting.{FullCountVoteCounting, SimpleVo
 import au.id.tmm.countstv.counting.{NextActionComputation, PaperBundle}
 import au.id.tmm.countstv.model.countsteps.AllocationAfterIneligibles
 import au.id.tmm.countstv.model.values.Count
-import au.id.tmm.probabilitymeasure.ProbabilityMeasure
+import au.id.tmm.probability.measure.ProbabilityMeasure
 
 object AllocationAfterIneligiblesComputation {
 

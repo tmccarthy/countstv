@@ -5,7 +5,7 @@ import au.id.tmm.countstv.Fruit._
 import au.id.tmm.countstv.model.CandidateStatus._
 import au.id.tmm.countstv.model.values.{Count, Ordinal}
 import au.id.tmm.countstv.model.{CandidateStatuses, CandidateVoteCounts, VoteCount}
-import au.id.tmm.probabilitymeasure.ProbabilityMeasure
+import au.id.tmm.probability.measure.ProbabilityMeasure
 import org.scalatest.FlatSpec
 import org.scalatest.Assertion
 

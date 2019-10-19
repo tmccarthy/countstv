@@ -5,8 +5,8 @@ import au.id.tmm.countstv.model.countsteps._
 import au.id.tmm.countstv.model.values.{Count, NumVotes, Ordinal}
 import au.id.tmm.countstv.model.{CandidateStatus, CandidateStatuses, CandidateVoteCounts}
 import au.id.tmm.utilities.collection.DupelessSeq
-import au.id.tmm.probabilitymeasure.ProbabilityMeasure.Always
-import au.id.tmm.probabilitymeasure.{ProbabilityMeasure, TieSensitiveSorting}
+import au.id.tmm.probability.measure.ProbabilityMeasure.Always
+import au.id.tmm.probability.measure.{ProbabilityMeasure, TieSensitiveSorting}
 
 object NextActionComputation {
 

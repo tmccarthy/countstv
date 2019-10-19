@@ -4,8 +4,8 @@ import au.id.tmm.countstv.counting.countsteps.{CountContext, InitialAllocationCo
 import au.id.tmm.countstv.model._
 import au.id.tmm.countstv.model.preferences.PreferenceTree
 import au.id.tmm.countstv.rules.RoundingRules
-import au.id.tmm.probabilitymeasure.ProbabilityMeasure
-import au.id.tmm.probabilitymeasure.ProbabilityMeasure.{Always, Varied}
+import au.id.tmm.probability.measure.ProbabilityMeasure
+import au.id.tmm.probability.measure.ProbabilityMeasure.{Always, Varied}
 
 import scala.annotation.tailrec
 

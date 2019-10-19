@@ -7,7 +7,7 @@ import au.id.tmm.countstv.counting.countsteps.{
   DistributionComputation,
 }
 import au.id.tmm.countstv.rules.RoundingRules
-import au.id.tmm.probabilitymeasure.ProbabilityMeasure
+import au.id.tmm.probability.measure.ProbabilityMeasure
 
 object CountActionInterpreter {
 

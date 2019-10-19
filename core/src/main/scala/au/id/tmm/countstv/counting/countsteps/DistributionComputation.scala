@@ -8,8 +8,8 @@ import au.id.tmm.countstv.model.countsteps.{DistributionCountStep, ElectedNoSurp
 import au.id.tmm.countstv.model.values._
 import au.id.tmm.countstv.model.{CandidateDistributionReason, CandidateStatuses, CandidateVoteCounts}
 import au.id.tmm.countstv.rules.RoundingRules
-import au.id.tmm.probabilitymeasure.ProbabilityMeasure
-import au.id.tmm.probabilitymeasure.ProbabilityMeasure.{Always, Varied}
+import au.id.tmm.probability.measure.ProbabilityMeasure
+import au.id.tmm.probability.measure.ProbabilityMeasure.{Always, Varied}
 
 import scala.annotation.tailrec
 import scala.collection.immutable.Queue

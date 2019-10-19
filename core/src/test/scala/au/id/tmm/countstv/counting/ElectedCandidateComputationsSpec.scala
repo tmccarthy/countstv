@@ -6,7 +6,7 @@ import au.id.tmm.countstv.model.CandidateStatus._
 import au.id.tmm.countstv.model.values.{Count, NumPapers, Ordinal}
 import au.id.tmm.countstv.model.{CandidateStatuses, CandidateVoteCounts, VoteCount}
 import au.id.tmm.countstv.rules.RoundingRules
-import au.id.tmm.probabilitymeasure.ProbabilityMeasure
+import au.id.tmm.probability.measure.ProbabilityMeasure
 import au.id.tmm.utilities.collection.DupelessSeq
 import org.scalatest.{Assertion, FlatSpec}
 
