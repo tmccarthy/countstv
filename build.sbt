@@ -14,7 +14,7 @@ lazy val root = project
   )
 
 val probabilityVersion = "0.1.0"
-val tmmUtilsVersion = "0.3.1"
+val tmmUtilsVersion = "0.3.3"
 
 lazy val core = project
   .in(file("core"))
